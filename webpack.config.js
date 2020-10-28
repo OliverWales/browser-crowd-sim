@@ -19,6 +19,7 @@ module.exports = {
   },
   output: {
     filename: 'bundle.js',
+    library: 'CrowdSimulator',
     path: path.resolve(__dirname, 'build')
   }
 };
