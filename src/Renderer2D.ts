@@ -11,11 +11,15 @@ export class Renderer2D implements IRenderer {
       0,
       0,
       this._context.canvas.width,
-      this._context.canvas.width
+      this._context.canvas.height
     );
   }
 
-  drawAgent(agent: any) {
-    throw new Error("Method not implemented.");
+  drawAgent(agent: IAgent) {
+    let position = agent.getPosition();
+
+    this._context.beginPath();
+    this._context.arc(position.x, position.y, 50, 0, 2 * Math.PI);
+    this._context.stroke();
   }
 }
