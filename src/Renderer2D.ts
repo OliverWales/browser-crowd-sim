@@ -1,3 +1,6 @@
+import { IAgent } from "./IAgent";
+import { IRenderer } from "./IRenderer";
+
 export class Renderer2D implements IRenderer {
   _context: CanvasRenderingContext2D;
 

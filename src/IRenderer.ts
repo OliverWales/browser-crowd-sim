@@ -1,4 +1,6 @@
-interface IRenderer {
+import { IAgent } from "./IAgent";
+
+export interface IRenderer {
   clear(): void;
-  drawAgent(agent: any): void;
+  drawAgent(agent: IAgent): void;
 }
