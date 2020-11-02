@@ -4,3 +4,15 @@ canvas {
   margin-right: auto;
   border: 1px solid #000000;
 }
+
+.controls {
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+button {
+  min-width: 60px;
+  height: 30px;
+}
