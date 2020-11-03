@@ -1,16 +1,20 @@
+import { Simulation } from "./Simulation";
 import { Renderer2D } from "./Renderer2D";
 import { BasicAgent } from "./BasicAgent";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-var play = false;
-const playPauseButton = document.getElementById(
-  "playPauseButton"
-) as HTMLButtonElement;
+const playButton = document.getElementById("playButton") as HTMLButtonElement;
+const stepButton = document.getElementById("stepButton") as HTMLButtonElement;
 
+const renderer = new Renderer2D(canvas);
+const simulation = new Simulation(renderer);
+var play = false;
+
+// initialise simulation and begin update/render loop
 export function init() {
-  //const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-  const renderer = new Renderer2D(canvas);
   const agent = new BasicAgent({ x: canvas.width / 2, y: canvas.height / 2 });
+  simulation.addAgent(agent);
+
   let lastRender = 0;
 
   function loop(timestamp: number) {
@@ -18,11 +22,12 @@ export function init() {
     lastRender = timestamp;
 
     // update
-    agent.update(deltaT);
+    if (play) {
+      simulation.update(deltaT);
+    }
 
     // render
-    renderer.clear();
-    renderer.drawAgent(agent);
+    simulation.draw();
 
     window.requestAnimationFrame(loop);
   }
@@ -30,18 +35,20 @@ export function init() {
   window.requestAnimationFrame(loop);
 }
 
+// toggle play/pause, and disallow step while playing
 export function playPause() {
   play = !play;
 
   if (play) {
-    playPauseButton.textContent = "Pause";
-    console.log("Play");
+    playButton.textContent = "Pause";
+    stepButton.disabled = true;
   } else {
-    playPauseButton.textContent = "Play";
-    console.log("Pause");
+    playButton.textContent = "Play";
+    stepButton.disabled = false;
   }
 }
 
+// step simulation 1 frame, assuming 60FPS
 export function step() {
-  console.log("Step");
+  simulation.update(1000 / 60);
 }
