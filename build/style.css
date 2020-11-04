@@ -5,9 +5,24 @@ canvas {
   border: 1px solid #000000;
 }
 
-.controls {
+#container {
+  max-width: 640px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#framerate {
+  float: left;
+  width: 200px;
+  line-height: 30px;
+  margin: 5px 0;
+}
+
+#controls {
   padding: 5px;
   display: flex;
+  width: 240px;
   justify-content: center;
   gap: 5px;
 }

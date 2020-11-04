@@ -6,12 +6,15 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body onload="CrowdSimulator.init();">
-    <canvas id="canvas" width="640" height="360"
-      ><p id="framerate">FPS</p></canvas
-    >
-    <div class="controls">
-      <button id="playButton" onclick="CrowdSimulator.playPause()">Play</button>
-      <button id="stepButton" onclick="CrowdSimulator.step()">Step</button>
+    <canvas id="canvas" width="640" height="360"></canvas>
+    <div id="container">
+      <p id="framerate">FPS: -</p>
+      <div id="controls">
+        <button id="playButton" onclick="CrowdSimulator.playPause()">
+          Play
+        </button>
+        <button id="stepButton" onclick="CrowdSimulator.step()">Step</button>
+      </div>
     </div>
     <script src="bundle.js"></script>
   </body>
