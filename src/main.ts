@@ -15,9 +15,11 @@ var play = false;
 export function init() {
   for (let i = 0; i < 25; i++) {
     const agent = new BasicAgent(
-      { x: canvas.width * Math.random(), y: canvas.height * Math.random() },
-      { dx: 2 * Math.random() - 1, dy: 2 * Math.random() - 1 }
+      { x: canvas.width * Math.random(), y: canvas.height * Math.random() }, // start position
+      { dx: 2 * Math.random() - 1, dy: 2 * Math.random() - 1 }, // direction
+      20 // radius
     );
+
     simulation.addAgent(agent);
   }
 
@@ -38,12 +40,13 @@ export function init() {
     simulation.draw();
     frames++;
 
-    // every 250ms, recalculate framerate
+    // recalculate framerate every 250ms
     if (timestamp - lastFPS >= 250) {
       framerate.textContent = `FPS: ${(
         (1000 * frames) /
         (timestamp - lastFPS)
       ).toFixed(1)}`;
+
       frames = 0;
       lastFPS = timestamp;
     }
@@ -54,7 +57,7 @@ export function init() {
   window.requestAnimationFrame(loop);
 }
 
-// toggle play/pause, and disallow step while playing
+// toggle play/pause
 export function playPause() {
   play = !play;
 
@@ -67,7 +70,7 @@ export function playPause() {
   }
 }
 
-// step simulation 1 frame, assuming 60FPS
+// step simulation by 1 frame
 export function step() {
-  simulation.update(1000 / 60);
+  simulation.update(1000 / 60); // Assumes 60FPS
 }

@@ -3,13 +3,16 @@ import { IAgent } from "./IAgent";
 export class BasicAgent implements IAgent {
   private _position: { x: number; y: number };
   private _direction: { dx: number; dy: number };
+  public readonly Radius: number;
 
   constructor(
     position: { x: number; y: number },
-    direction: { dx: number; dy: number }
+    direction: { dx: number; dy: number },
+    radius: number
   ) {
     this._position = position;
     this._direction = direction;
+    this.Radius = radius;
   }
 
   getPosition(): { x: number; y: number } {
