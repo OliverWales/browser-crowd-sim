@@ -1,0 +1,33 @@
+canvas {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid #000000;
+}
+
+#container {
+  max-width: 1280px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#framerate {
+  float: left;
+  width: 400px;
+  line-height: 30px;
+  margin: 5px 0;
+}
+
+#controls {
+  padding: 5px;
+  display: flex;
+  width: 480px;
+  justify-content: center;
+  gap: 5px;
+}
+
+button {
+  min-width: 60px;
+  height: 30px;
+}

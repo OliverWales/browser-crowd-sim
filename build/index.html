@@ -1,10 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Hello, World!</title>
+    <meta charset="UTF-8" />
+    <title>Crowd Simulator</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
-  <body>
-    <h1>Hello, World!</h1>
+  <body onload="CrowdSimulator.init();">
+    <canvas id="canvas" width="1280" height="720"></canvas>
+    <div id="container">
+      <p id="framerate">FPS: -</p>
+      <div id="controls">
+        <button id="playButton" onclick="CrowdSimulator.playPause()">
+          Play
+        </button>
+        <button id="stepButton" onclick="CrowdSimulator.step()">Step</button>
+      </div>
+    </div>
     <script src="bundle.js"></script>
   </body>
 </html>
