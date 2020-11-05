@@ -6,7 +6,7 @@ canvas {
 }
 
 #container {
-  max-width: 640px;
+  max-width: 1280px;
   display: block;
   margin-left: auto;
   margin-right: auto;
@@ -14,7 +14,7 @@ canvas {
 
 #framerate {
   float: left;
-  width: 200px;
+  width: 400px;
   line-height: 30px;
   margin: 5px 0;
 }
@@ -22,7 +22,7 @@ canvas {
 #controls {
   padding: 5px;
   display: flex;
-  width: 240px;
+  width: 480px;
   justify-content: center;
   gap: 5px;
 }

@@ -20,9 +20,21 @@ export class Renderer2D implements IRenderer {
 
   drawAgent(agent: IAgent) {
     let position = agent.getPosition();
+    let direction = agent.getDirection();
+    let radius = 20;
 
     this._context.beginPath();
-    this._context.arc(position.x, position.y, 50, 0, 2 * Math.PI);
+    this._context.arc(position.x, position.y, radius, 0, 2 * Math.PI);
+    if (direction.dx !== 0 || direction.dy !== 0) {
+      let magnitude = Math.sqrt(
+        direction.dx * direction.dx + direction.dy * direction.dy
+      );
+      this._context.moveTo(position.x, position.y);
+      this._context.lineTo(
+        position.x + (radius * direction.dx) / magnitude,
+        position.y + (radius * direction.dy) / magnitude
+      );
+    }
     this._context.stroke();
   }
 }

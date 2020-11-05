@@ -13,8 +13,13 @@ var play = false;
 
 // initialise simulation and begin update/render loop
 export function init() {
-  const agent = new BasicAgent({ x: canvas.width / 2, y: canvas.height / 2 });
-  simulation.addAgent(agent);
+  for (let i = 0; i < 25; i++) {
+    const agent = new BasicAgent(
+      { x: canvas.width * Math.random(), y: canvas.height * Math.random() },
+      { dx: 2 * Math.random() - 1, dy: 2 * Math.random() - 1 }
+    );
+    simulation.addAgent(agent);
+  }
 
   let lastRender = 0;
   let lastFPS = 0;
