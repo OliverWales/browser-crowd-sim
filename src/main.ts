@@ -13,10 +13,11 @@ var play = false;
 
 // initialise simulation and begin update/render loop
 export function init() {
+  let n = 25;
   for (let i = 0; i < 25; i++) {
     const agent = new BasicAgent(
       { x: canvas.width * Math.random(), y: canvas.height * Math.random() }, // start position
-      { dx: 2 * Math.random() - 1, dy: 2 * Math.random() - 1 }, // direction
+      { x: ((i + 1) / (n + 1)) * canvas.width, y: canvas.height / 2 }, // goal position
       20 // radius
     );
 

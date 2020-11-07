@@ -2,17 +2,21 @@ import { IAgent } from "./IAgent";
 
 export class BasicAgent implements IAgent {
   private _position: { x: number; y: number };
-  private _direction: { dx: number; dy: number };
+  private _goalPosition: { x: number; y: number };
   public readonly Radius: number;
+
+  private _direction: { dx: number; dy: number };
 
   constructor(
     position: { x: number; y: number },
-    direction: { dx: number; dy: number },
+    goalPosition: { x: number; y: number },
     radius: number
   ) {
     this._position = position;
-    this._direction = direction;
+    this._goalPosition = goalPosition;
     this.Radius = radius;
+
+    this._direction = { dx: 0, dy: 0 };
   }
 
   getPosition(): { x: number; y: number } {
@@ -24,20 +28,17 @@ export class BasicAgent implements IAgent {
   }
 
   update(deltaT: number): void {
-    this._position.x += this._direction.dx;
-    this._position.y += this._direction.dy;
+    let goalDirection = {
+      x: this._goalPosition.x - this._position.x,
+      y: this._goalPosition.y - this._position.y,
+    };
+    let goalDistance = Math.sqrt(goalDirection.x ** 2 + goalDirection.y ** 2);
 
-    if (this._position.x > 1280) {
-      this._position.x = 0;
-    }
-    if (this._position.y > 720) {
-      this._position.y = 0;
-    }
-    if (this._position.x < 0) {
-      this._position.x = 1280;
-    }
-    if (this._position.y < 0) {
-      this._position.y = 720;
+    if (goalDistance > 1) {
+      this._direction.dx = goalDirection.x / goalDistance;
+      this._direction.dy = goalDirection.y / goalDistance;
+      this._position.x += this._direction.dx;
+      this._position.y += this._direction.dy;
     }
   }
 }
