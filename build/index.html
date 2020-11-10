@@ -6,10 +6,25 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body onload="CrowdSimulator.init();">
-    <canvas id="canvas" width="1280" height="720"></canvas>
-    <div id="container">
+    <div class="container">
+      <div class="configuration">
+        <p style="float: left; margin: 0px 10px 0px 0px">Configuration:</p>
+        <select
+          onchange="CrowdSimulator.reconfigure(this.selectedIndex)"
+          onfocus="this.selectedIndex = -1"
+        >
+          <option>Random to Random</option>
+          <option>Random to Line</option>
+          <option>Circle to Circle</option>
+        </select>
+      </div>
+    </div>
+
+    <canvas id="canvas" width="1280" height="640"></canvas>
+
+    <div class="container">
       <p id="framerate">FPS: -</p>
-      <div id="controls">
+      <div class="controls">
         <button id="playButton" onclick="CrowdSimulator.playPause()">
           Play
         </button>
