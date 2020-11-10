@@ -1,6 +1,7 @@
 import { Simulation } from "./Simulation";
 import { Renderer2D } from "./Renderer2D";
 import { BasicAgent } from "./BasicAgent";
+import { Configurations, IConfiguration } from "./Configurations";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const framerate = document.getElementById("framerate") as HTMLCanvasElement;
@@ -13,15 +14,7 @@ var play = false;
 
 // initialise simulation and begin update/render loop
 export function init() {
-  for (let i = 0; i < 25; i++) {
-    const agent = new BasicAgent(
-      { x: canvas.width * Math.random(), y: canvas.height * Math.random() }, // start position
-      { dx: 2 * Math.random() - 1, dy: 2 * Math.random() - 1 }, // direction
-      20 // radius
-    );
-
-    simulation.addAgent(agent);
-  }
+  this.reconfigure(0);
 
   let lastRender = 0;
   let lastFPS = 0;
@@ -73,4 +66,51 @@ export function playPause() {
 // step simulation by 1 frame
 export function step() {
   simulation.update(1000 / 60); // Assumes 60FPS
+}
+
+export function reconfigure(index: number) {
+  if (play) {
+    this.playPause();
+  }
+
+  const n = 25;
+
+  switch (index) {
+    case 0: {
+      simulation.init(
+        Configurations.RandomToRandom(
+          n,
+          canvas.width,
+          canvas.height,
+          (s, g, r) => new BasicAgent(s, g, r)
+        )
+      );
+      break;
+    }
+    case 1: {
+      simulation.init(
+        Configurations.RandomToLine(
+          n,
+          canvas.width,
+          canvas.height,
+          (s, g, r) => new BasicAgent(s, g, r)
+        )
+      );
+      break;
+    }
+    case 2: {
+      simulation.init(
+        Configurations.CircleToCircle(
+          n,
+          canvas.width,
+          canvas.height,
+          (s, g, r) => new BasicAgent(s, g, r)
+        )
+      );
+      break;
+    }
+    default: {
+      throw new Error("Configuration not implemented");
+    }
+  }
 }

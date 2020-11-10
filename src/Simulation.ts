@@ -1,3 +1,4 @@
+import { IConfiguration } from "./Configurations";
 import { IAgent } from "./IAgent";
 import { IRenderer } from "./IRenderer";
 
@@ -10,8 +11,8 @@ export class Simulation {
     this._agents = [];
   }
 
-  addAgent(agent: IAgent) {
-    this._agents.push(agent);
+  init(config: IConfiguration) {
+    this._agents = config.agents;
   }
 
   update(deltaT: number) {

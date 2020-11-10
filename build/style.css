@@ -5,11 +5,15 @@ canvas {
   border: 1px solid #000000;
 }
 
-#container {
+.container {
   max-width: 1280px;
   display: block;
   margin-left: auto;
   margin-right: auto;
+}
+
+.configuration {
+  line-height: 50px;
 }
 
 #framerate {
@@ -19,7 +23,7 @@ canvas {
   margin: 5px 0;
 }
 
-#controls {
+.controls {
   padding: 5px;
   display: flex;
   width: 480px;

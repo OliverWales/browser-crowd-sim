@@ -29,9 +29,7 @@ export class Renderer2D implements IRenderer {
 
     // draw direction
     if (direction.dx !== 0 || direction.dy !== 0) {
-      let magnitude = Math.sqrt(
-        direction.dx * direction.dx + direction.dy * direction.dy
-      );
+      let magnitude = Math.sqrt(direction.dx ** 2 + direction.dy ** 2);
 
       this._context.moveTo(position.x, position.y);
       this._context.lineTo(
