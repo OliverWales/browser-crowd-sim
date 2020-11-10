@@ -12,27 +12,6 @@ const renderer = new Renderer2D(canvas);
 const simulation = new Simulation(renderer);
 var play = false;
 
-const configurations: IConfiguration[] = [
-  Configurations.RandomToRandom(
-    25,
-    canvas.width,
-    canvas.height,
-    (pos, goalPos, radius) => new BasicAgent(pos, goalPos, radius)
-  ),
-  Configurations.RandomToLine(
-    25,
-    canvas.width,
-    canvas.height,
-    (pos, goalPos, radius) => new BasicAgent(pos, goalPos, radius)
-  ),
-  Configurations.CircleToCircle(
-    25,
-    canvas.width,
-    canvas.height,
-    (pos, goalPos, radius) => new BasicAgent(pos, goalPos, radius)
-  ),
-];
-
 // initialise simulation and begin update/render loop
 export function init() {
   this.reconfigure(0);
