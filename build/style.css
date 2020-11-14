@@ -12,15 +12,17 @@ canvas {
   margin-right: auto;
 }
 
-.configuration {
-  line-height: 50px;
+.settings {
+  padding: 5px 0;
 }
 
-#framerate {
-  float: left;
-  width: 400px;
-  line-height: 30px;
-  margin: 5px 0;
+.settings input {
+  margin-right: 10px;
+  width: 100px;
+}
+
+.settings select {
+  margin-right: 15px;
 }
 
 .controls {
@@ -29,6 +31,13 @@ canvas {
   width: 480px;
   justify-content: center;
   gap: 5px;
+}
+
+#framerate {
+  float: left;
+  width: 400px;
+  line-height: 30px;
+  margin: 5px 0;
 }
 
 button {
