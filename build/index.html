@@ -7,7 +7,9 @@
   </head>
   <body onload="CrowdSimulator.init()">
     <div class="container">
-      <form class="settings">
+      <div
+        class="settings"
+      >
         <label for="config">Configuration:</label>
         <select id="config">
           <option value="RandomToRandom">Random to Random</option>
@@ -22,7 +24,6 @@
         <input type="number" id="numberOfAgents" value="25" />
         <button
           type="button"
-          onsubmit="return false;"
           onclick="CrowdSimulator.init()"
         >
           Initialise
