@@ -1,6 +1,6 @@
 import { IAgent } from "./IAgent";
 
-export class BasicAgent implements IAgent {
+export class StopAgent implements IAgent {
   public readonly Id: number;
   public readonly Radius: number;
 
@@ -50,12 +50,34 @@ export class BasicAgent implements IAgent {
     if (goalDistance > (deltaT * 60) / 1000) {
       this._direction.dx = goalDirection.x / goalDistance;
       this._direction.dy = goalDirection.y / goalDistance;
-      this._position.x += ((deltaT * 60) / 1000) * this._direction.dx;
-      this._position.y += ((deltaT * 60) / 1000) * this._direction.dy;
+      let newX = this._position.x + ((deltaT * 60) / 1000) * this._direction.dx;
+      let newY = this._position.y + ((deltaT * 60) / 1000) * this._direction.dy;
+
+      let collides = false;
+      agents.forEach((agent) => {
+        if (agent.Id != this.Id && this.collides(agent, { x: newX, y: newY })) {
+          collides = true;
+        }
+      });
+
+      if (!collides) {
+        this._position = { x: newX, y: newY };
+      }
     } else {
       this._position.x = this._goalPosition.x;
       this._position.y = this._goalPosition.y;
       this._goalReached = true;
     }
+  }
+
+  collides(agent: IAgent, position: { x: number; y: number }): boolean {
+    let a1x = position.x;
+    let a1y = position.y;
+    let a1r = this.Radius;
+    let a2x = agent.getPosition().x;
+    let a2y = agent.getPosition().y;
+    let a2r = agent.Radius;
+
+    return Math.sqrt((a1x - a2x) ** 2 + (a1y - a2y) ** 2) < a1r + a2r;
   }
 }

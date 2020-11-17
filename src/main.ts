@@ -1,7 +1,9 @@
 import { Simulation } from "./Simulation";
 import { Renderer2D } from "./Renderer2D";
+
 import { BasicAgent } from "./BasicAgent";
-import { Configurations, IConfiguration } from "./Configurations";
+import { StopAgent } from "./StopAgent";
+import { Configurations } from "./Configurations";
 
 const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
@@ -90,10 +92,19 @@ export function reconfigure() {
   switch (agentType) {
     case "BasicAgent":
       agentConstructor = (
+        id: number,
         position: { x: number; y: number },
         goalPosition: { x: number; y: number },
         radius: number
-      ) => new BasicAgent(position, goalPosition, radius);
+      ) => new BasicAgent(id, position, goalPosition, radius);
+      break;
+    case "StopAgent":
+      agentConstructor = (
+        id: number,
+        position: { x: number; y: number },
+        goalPosition: { x: number; y: number },
+        radius: number
+      ) => new StopAgent(id, position, goalPosition, radius);
       break;
     default: {
       throw new Error("Agent not implemented");
