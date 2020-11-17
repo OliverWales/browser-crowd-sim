@@ -3,8 +3,16 @@ import { Renderer2D } from "./Renderer2D";
 import { BasicAgent } from "./BasicAgent";
 import { Configurations, IConfiguration } from "./Configurations";
 
+const configSelect = document.getElementById("config") as HTMLSelectElement;
+const agentTypeSelect = document.getElementById(
+  "agentType"
+) as HTMLSelectElement;
+const numberOfAgentsInput = document.getElementById(
+  "numberOfAgents"
+) as HTMLInputElement;
+
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-const framerate = document.getElementById("framerate") as HTMLCanvasElement;
+const framerate = document.getElementById("framerate") as HTMLParagraphElement;
 const playButton = document.getElementById("playButton") as HTMLButtonElement;
 const stepButton = document.getElementById("stepButton") as HTMLButtonElement;
 
@@ -14,7 +22,7 @@ var play = false;
 
 // initialise simulation and begin update/render loop
 export function init() {
-  this.reconfigure(0);
+  this.reconfigure();
 
   let lastRender = 0;
   let lastFPS = 0;
@@ -68,43 +76,61 @@ export function step() {
   simulation.update(1000 / 60); // Assumes 60FPS
 }
 
-export function reconfigure(index: number) {
+export function reconfigure() {
   if (play) {
     this.playPause();
   }
 
-  const n = 25;
+  const config = configSelect.value;
+  const agentType = agentTypeSelect.value; // TODO: wire this in
+  const n = parseInt(numberOfAgentsInput.value) ?? 0;
 
-  switch (index) {
-    case 0: {
+  // Select agent constructor
+  let agentConstructor;
+  switch (agentType) {
+    case "BasicAgent":
+      agentConstructor = (
+        position: { x: number; y: number },
+        goalPosition: { x: number; y: number },
+        radius: number
+      ) => new BasicAgent(position, goalPosition, radius);
+      break;
+    default: {
+      throw new Error("Agent not implemented");
+    }
+  }
+
+  // Select configuration
+  switch (config) {
+    case "RandomToRandom": {
       simulation.init(
         Configurations.RandomToRandom(
           n,
           canvas.width,
           canvas.height,
-          (s, g, r) => new BasicAgent(s, g, r)
+          agentConstructor
         )
       );
       break;
     }
-    case 1: {
+    case "RandomToLine": {
       simulation.init(
         Configurations.RandomToLine(
           n,
           canvas.width,
           canvas.height,
-          (s, g, r) => new BasicAgent(s, g, r)
+          agentConstructor
         )
       );
       break;
     }
-    case 2: {
+    case "CircleToCircle": {
       simulation.init(
         Configurations.CircleToCircle(
           n,
           canvas.width,
           canvas.height,
-          (s, g, r) => new BasicAgent(s, g, r)
+          agentConstructor
         )
       );
       break;

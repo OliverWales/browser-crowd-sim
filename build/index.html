@@ -5,19 +5,30 @@
     <title>Crowd Simulator</title>
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body onload="CrowdSimulator.init();">
+  <body onload="CrowdSimulator.init()">
     <div class="container">
-      <div class="configuration">
-        <p style="float: left; margin: 0px 10px 0px 0px">Configuration:</p>
-        <select
-          onchange="CrowdSimulator.reconfigure(this.selectedIndex)"
-          onfocus="this.selectedIndex = -1"
-        >
-          <option>Random to Random</option>
-          <option>Random to Line</option>
-          <option>Circle to Circle</option>
+      <div
+        class="settings"
+      >
+        <label for="config">Configuration:</label>
+        <select id="config">
+          <option value="RandomToRandom">Random to Random</option>
+          <option value="RandomToLine">Random to Line</option>
+          <option value="CircleToCircle">Circle to Circle</option>
         </select>
-      </div>
+        <label for="agentType">Agent type(s):</label>
+        <select id="agentType">
+          <option value="BasicAgent">Basic Agent</option>
+        </select>
+        <label for="numberOfAgents">Number of Agents:</label>
+        <input type="number" id="numberOfAgents" value="25" />
+        <button
+          type="button"
+          onclick="CrowdSimulator.init()"
+        >
+          Initialise
+        </button>
+      </form>
     </div>
 
     <canvas id="canvas" width="1280" height="640"></canvas>

@@ -34,11 +34,11 @@ export class BasicAgent implements IAgent {
     };
     let goalDistance = Math.sqrt(goalDirection.x ** 2 + goalDirection.y ** 2);
 
-    if (goalDistance > deltaT / 16) {
+    if (goalDistance > (deltaT * 60) / 1000) {
       this._direction.dx = goalDirection.x / goalDistance;
       this._direction.dy = goalDirection.y / goalDistance;
-      this._position.x += (deltaT / 16) * this._direction.dx;
-      this._position.y += (deltaT / 16) * this._direction.dy;
+      this._position.x += ((deltaT * 60) / 1000) * this._direction.dx;
+      this._position.y += ((deltaT * 60) / 1000) * this._direction.dy;
     } else {
       this._position.x = this._goalPosition.x;
       this._position.y = this._goalPosition.y;
