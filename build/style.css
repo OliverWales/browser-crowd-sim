@@ -17,12 +17,12 @@ canvas {
 }
 
 .settings input {
-  margin-right: 10px;
+  margin-right: 7px;
   width: 100px;
 }
 
 .settings select {
-  margin-right: 15px;
+  margin-right: 10px;
 }
 
 .controls {
