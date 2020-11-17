@@ -50,18 +50,22 @@ export class StopAgent implements IAgent {
     if (goalDistance > (deltaT * 60) / 1000) {
       this._direction.dx = goalDirection.x / goalDistance;
       this._direction.dy = goalDirection.y / goalDistance;
-      let newX = this._position.x + ((deltaT * 60) / 1000) * this._direction.dx;
-      let newY = this._position.y + ((deltaT * 60) / 1000) * this._direction.dy;
+      let headingX = this._position.x + 20 * this._direction.dx;
+      let headingY = this._position.y + 20 * this._direction.dy;
 
       let collides = false;
       agents.forEach((agent) => {
-        if (agent.Id != this.Id && this.collides(agent, { x: newX, y: newY })) {
+        if (
+          agent.Id != this.Id &&
+          this.collides(agent, { x: headingX, y: headingY })
+        ) {
           collides = true;
         }
       });
 
       if (!collides) {
-        this._position = { x: newX, y: newY };
+        this._position.x += ((deltaT * 60) / 1000) * this._direction.dx;
+        this._position.y += ((deltaT * 60) / 1000) * this._direction.dy;
       }
     } else {
       this._position.x = this._goalPosition.x;
