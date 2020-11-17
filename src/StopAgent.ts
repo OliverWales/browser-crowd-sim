@@ -7,7 +7,8 @@ export class StopAgent implements IAgent {
   private _position: { x: number; y: number };
   private _goalPosition: { x: number; y: number };
   private _direction: { dx: number; dy: number };
-  private _goalReached: boolean;
+  private _isDone: boolean;
+  private _isStuck: boolean;
 
   constructor(
     id: number,
@@ -21,7 +22,8 @@ export class StopAgent implements IAgent {
     this.Radius = radius;
 
     this._direction = { dx: 0, dy: 0 };
-    this._goalReached = false;
+    this._isDone = false;
+    this._isStuck = false;
   }
 
   getPosition(): { x: number; y: number } {
@@ -32,12 +34,16 @@ export class StopAgent implements IAgent {
     return this._direction;
   }
 
-  getGoalReached(): boolean {
-    return this._goalReached;
+  getIsDone(): boolean {
+    return this._isDone;
+  }
+
+  getIsStuck(): boolean {
+    return this._isStuck;
   }
 
   update(deltaT: number, agents: IAgent[]): void {
-    if (this._goalReached) {
+    if (this._isDone) {
       return;
     }
 
@@ -53,24 +59,24 @@ export class StopAgent implements IAgent {
       let headingX = this._position.x + 20 * this._direction.dx;
       let headingY = this._position.y + 20 * this._direction.dy;
 
-      let collides = false;
+      this._isStuck = false;
       agents.forEach((agent) => {
         if (
           agent.Id != this.Id &&
           this.collides(agent, { x: headingX, y: headingY })
         ) {
-          collides = true;
+          this._isStuck = true;
         }
       });
 
-      if (!collides) {
+      if (!this._isStuck) {
         this._position.x += ((deltaT * 60) / 1000) * this._direction.dx;
         this._position.y += ((deltaT * 60) / 1000) * this._direction.dy;
       }
     } else {
       this._position.x = this._goalPosition.x;
       this._position.y = this._goalPosition.y;
-      this._goalReached = true;
+      this._isDone = true;
     }
   }
 

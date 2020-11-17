@@ -25,6 +25,13 @@ export class Renderer2D implements IRenderer {
     this._context.beginPath();
 
     // draw agent
+    if (agent.getIsDone()) {
+      this._context.strokeStyle = "#00FF00";
+    } else if (agent.getIsStuck()) {
+      this._context.strokeStyle = "#FF0000";
+    } else {
+      this._context.strokeStyle = "#000000";
+    }
     this._context.arc(position.x, position.y, agent.Radius, 0, 2 * Math.PI);
 
     // draw direction

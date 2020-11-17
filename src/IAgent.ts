@@ -4,7 +4,8 @@ export interface IAgent {
 
   getPosition(): { x: number; y: number };
   getDirection(): { dx: number; dy: number };
-  getGoalReached(): boolean;
+  getIsDone(): boolean;
+  getIsStuck(): boolean;
 
   update(deltaT: number, agents: IAgent[]): void;
 }
