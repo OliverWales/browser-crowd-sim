@@ -17,7 +17,7 @@ export class Simulation {
 
   update(deltaT: number) {
     this._agents.forEach((agent) => {
-      agent.update(deltaT);
+      agent.update(deltaT, this._agents);
     });
   }
 

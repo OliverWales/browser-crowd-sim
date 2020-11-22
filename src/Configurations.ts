@@ -10,6 +10,7 @@ export class Configurations {
     width: number,
     height: number,
     agentConstructor: (
+      id: number,
       startPosition: { x: number; y: number },
       goalPosition: { x: number; y: number },
       radius: number
@@ -19,6 +20,7 @@ export class Configurations {
     let agents: IAgent[] = [];
     for (let i = 0; i < n; i++) {
       const agent = agentConstructor(
+        i,
         { x: width * Math.random(), y: height * Math.random() },
         { x: width * Math.random(), y: height * Math.random() },
         20
@@ -34,6 +36,7 @@ export class Configurations {
     width: number,
     height: number,
     agentConstructor: (
+      id: number,
       startPosition: { x: number; y: number },
       goalPosition: { x: number; y: number },
       radius: number
@@ -43,6 +46,7 @@ export class Configurations {
     let agents: IAgent[] = [];
     for (let i = 0; i < n; i++) {
       const agent = agentConstructor(
+        i,
         { x: width * Math.random(), y: height * Math.random() },
         { x: ((i + 1) / (n + 1)) * width, y: height / 2 },
         20
@@ -58,6 +62,7 @@ export class Configurations {
     width: number,
     height: number,
     agentConstructor: (
+      id: number,
       startPosition: { x: number; y: number },
       goalPosition: { x: number; y: number },
       radius: number
@@ -72,6 +77,7 @@ export class Configurations {
     for (let i = 0; i < n; i++) {
       const angle = (2 * Math.PI * i) / n;
       const agent = agentConstructor(
+        i,
         {
           x: centreX + radius * Math.cos(angle),
           y: centreY + radius * Math.sin(angle),
