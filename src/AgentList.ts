@@ -12,6 +12,10 @@ export class AgentList implements IAgentCollection {
     this._agents.push(agent);
   }
 
+  addAgents(agents: IAgent[]) {
+    this._agents = this._agents.concat(agents);
+  }
+
   getAll(): IAgent[] {
     return this._agents;
   }
@@ -33,5 +37,9 @@ export class AgentList implements IAgentCollection {
           (agent.getPosition().y - other.getPosition().y) ** 2 <=
           range ** 2
     );
+  }
+
+  forEach(fun: (agent: IAgent) => void): void {
+    this._agents.forEach((agent) => fun(agent));
   }
 }

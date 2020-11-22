@@ -4,6 +4,7 @@ import { Renderer2D } from "./Renderer2D";
 import { BasicAgent } from "./BasicAgent";
 import { StopAgent } from "./StopAgent";
 import { Configurations } from "./Configurations";
+import { AgentList } from "./AgentList";
 
 const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
@@ -19,7 +20,7 @@ const playButton = document.getElementById("playButton") as HTMLButtonElement;
 const stepButton = document.getElementById("stepButton") as HTMLButtonElement;
 
 const renderer = new Renderer2D(canvas);
-const simulation = new Simulation(renderer);
+const simulation = new Simulation(renderer, new AgentList());
 var play = false;
 
 // initialise simulation and begin update/render loop
