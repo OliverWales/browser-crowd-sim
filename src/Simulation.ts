@@ -12,13 +12,14 @@ export class Simulation {
   }
 
   init(config: IConfiguration) {
-    this._agents.addAgents(config.agents);
+    this._agents.init(config.agents);
   }
 
   update(deltaT: number) {
     this._agents.forEach((agent) => {
       agent.update(deltaT, this._agents.getAll());
     });
+    this._agents.init(this._agents.getAll());
   }
 
   draw() {

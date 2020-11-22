@@ -1,9 +1,7 @@
 import { IAgent } from "./IAgent";
 
 export interface IAgentCollection {
-  addAgent(agent: IAgent): void;
-
-  addAgents(agent: IAgent[]): void;
+  init(agents: IAgent[]): void;
 
   getAll(): IAgent[];
 

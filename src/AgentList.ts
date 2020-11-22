@@ -4,16 +4,12 @@ import { IAgent } from "./IAgent";
 export class AgentList implements IAgentCollection {
   private _agents: IAgent[];
 
-  constructor() {
-    this._agents = [];
+  init(agents: IAgent[]) {
+    this._agents = agents;
   }
 
   addAgent(agent: IAgent) {
     this._agents.push(agent);
-  }
-
-  addAgents(agents: IAgent[]) {
-    this._agents = this._agents.concat(agents);
   }
 
   getAll(): IAgent[] {
