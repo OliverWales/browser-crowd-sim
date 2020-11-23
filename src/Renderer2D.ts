@@ -32,6 +32,12 @@ export class Renderer2D implements IRenderer {
     } else {
       this._context.strokeStyle = "#000000";
     }
+
+    // debug
+    if (agent.Id == 0) {
+      this._context.strokeStyle = "#FF00FF";
+    }
+
     this._context.arc(position.x, position.y, agent.Radius, 0, 2 * Math.PI);
 
     // draw direction

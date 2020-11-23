@@ -7,5 +7,7 @@ export interface IAgent {
   getIsDone(): boolean;
   getIsStuck(): boolean;
 
+  makeStuck(): void;
+
   update(deltaT: number, agents: IAgent[]): void;
 }

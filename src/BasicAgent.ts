@@ -8,6 +8,7 @@ export class BasicAgent implements IAgent {
   private _goalPosition: { x: number; y: number };
   private _direction: { dx: number; dy: number };
   private _isDone: boolean;
+  private _isStuck: boolean;
 
   constructor(
     id: number,
@@ -37,7 +38,11 @@ export class BasicAgent implements IAgent {
   }
 
   getIsStuck(): boolean {
-    return false;
+    return this._isStuck;
+  }
+
+  makeStuck() {
+    this._isStuck = true;
   }
 
   update(deltaT: number, _agents: IAgent[]): void {
