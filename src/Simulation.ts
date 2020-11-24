@@ -1,24 +1,29 @@
-import { IConfiguration } from "./Configurations";
-import { IAgent } from "./IAgent";
+import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
+import { IConfiguration } from "./Configurations";
 
 export class Simulation {
   _renderer: IRenderer;
-  _agents: IAgent[];
+  _agents: IAgentCollection;
 
-  constructor(renderer: IRenderer) {
+  constructor(renderer: IRenderer, agents: IAgentCollection) {
     this._renderer = renderer;
-    this._agents = [];
+    this._agents = agents;
   }
 
   init(config: IConfiguration) {
-    this._agents = config.agents;
+    this._agents.init(config.agents);
   }
 
   update(deltaT: number) {
+    let range = 200;
     this._agents.forEach((agent) => {
-      agent.update(deltaT, this._agents);
+      agent.update(
+        deltaT,
+        this._agents.getNeighboursInRangeRectilinear(agent, range)
+      );
     });
+    this._agents.init(this._agents.getAll());
   }
 
   draw() {
