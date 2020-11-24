@@ -18,17 +18,6 @@ export class Simulation {
   update(deltaT: number) {
     let range = 200;
     this._agents.forEach((agent) => {
-      if (agent.Id == 0) {
-        let neighbours = this._agents.getNeighboursInRangeRectilinear(
-          agent,
-          range
-        );
-        neighbours.forEach((a) => {
-          a.makeStuck();
-        });
-        console.log(neighbours.length);
-      }
-
       agent.update(
         deltaT,
         this._agents.getNeighboursInRangeRectilinear(agent, range)

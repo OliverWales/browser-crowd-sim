@@ -42,10 +42,6 @@ export class StopAgent implements IAgent {
     return this._isStuck;
   }
 
-  makeStuck() {
-    this._isStuck = true;
-  }
-
   update(deltaT: number, agents: IAgent[]): void {
     if (this._isDone) {
       return;

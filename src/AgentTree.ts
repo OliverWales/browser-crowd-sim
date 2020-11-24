@@ -28,70 +28,13 @@ export class AgentTree implements IAgentCollection {
     return candidates.filter((other) => other.Id !== agent.Id);
   }
 
-  rectilinear(
-    root: Node,
-    minX: number,
-    minY: number,
-    maxX: number,
-    maxY: number,
-    xAxis: boolean
-  ): IAgent[] {
-    if (root == null) {
-      return [];
-    }
-
-    let res: IAgent[] = [];
-    if (xAxis) {
-      // If x <= maxX need to check left subtree
-      if (root.agent.getPosition().x <= maxX) {
-        res = res.concat(
-          this.rectilinear(root.left, minX, minY, maxX, maxY, !xAxis)
-        );
-      }
-
-      // If x >= minX need to check right subtree
-      if (root.agent.getPosition().x >= minX) {
-        res = res.concat(
-          this.rectilinear(root.right, minX, minY, maxX, maxY, !xAxis)
-        );
-      }
-    } else {
-      // If y <= maxY need to check left subtree
-      if (root.agent.getPosition().y <= maxY) {
-        res = res.concat(
-          this.rectilinear(root.left, minX, minY, maxX, maxY, !xAxis)
-        );
-      }
-
-      // If y >= minY need to check right subtree
-      if (root.agent.getPosition().y >= minY) {
-        res = res.concat(
-          this.rectilinear(root.right, minX, minY, maxX, maxY, !xAxis)
-        );
-      }
-    }
-
-    // If the agent is in range range add to the result
-    if (
-      root.agent.getPosition().x >= minX &&
-      root.agent.getPosition().y >= minY &&
-      root.agent.getPosition().x <= maxX &&
-      root.agent.getPosition().y <= maxY
-    ) {
-      res = res.concat(root.agent);
-    }
-
-    return res;
-  }
-
   getNeighboursInRangeEuclidean(agent: IAgent, range: number): IAgent[] {
     let candidates = this.getNeighboursInRangeRectilinear(agent, range);
     return candidates.filter(
       (other) =>
-        other.Id !== agent.Id &&
         (agent.getPosition().x - other.getPosition().x) ** 2 +
           (agent.getPosition().y - other.getPosition().y) ** 2 <=
-          range ** 2
+        range ** 2
     );
   }
 
@@ -144,6 +87,62 @@ export class AgentTree implements IAgentCollection {
     }
 
     return this.get(root.left).concat(this.get(root.right)).concat(root.agent);
+  }
+
+  private rectilinear(
+    root: Node,
+    minX: number,
+    minY: number,
+    maxX: number,
+    maxY: number,
+    xAxis: boolean
+  ): IAgent[] {
+    if (root == null) {
+      return [];
+    }
+
+    let res: IAgent[] = [];
+    if (xAxis) {
+      // If x <= maxX need to check right subtree
+      if (root.agent.getPosition().x <= maxX) {
+        res = res.concat(
+          this.rectilinear(root.right, minX, minY, maxX, maxY, !xAxis)
+        );
+      }
+
+      // If x >= minX need to check left subtree
+      if (root.agent.getPosition().x >= minX) {
+        res = res.concat(
+          this.rectilinear(root.left, minX, minY, maxX, maxY, !xAxis)
+        );
+      }
+    } else {
+      // If y <= maxY need to check right subtree
+      if (root.agent.getPosition().y <= maxY) {
+        res = res.concat(
+          this.rectilinear(root.right, minX, minY, maxX, maxY, !xAxis)
+        );
+      }
+
+      // If y >= minY need to check left subtree
+      if (root.agent.getPosition().y >= minY) {
+        res = res.concat(
+          this.rectilinear(root.left, minX, minY, maxX, maxY, !xAxis)
+        );
+      }
+    }
+
+    // If the agent is in range range add to the result
+    if (
+      root.agent.getPosition().x >= minX &&
+      root.agent.getPosition().y >= minY &&
+      root.agent.getPosition().x <= maxX &&
+      root.agent.getPosition().y <= maxY
+    ) {
+      res = res.concat(root.agent);
+    }
+
+    return res;
   }
 
   private apply(root: Node, fun: (agent: IAgent) => void): void {
