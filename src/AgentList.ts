@@ -8,10 +8,6 @@ export class AgentList implements IAgentCollection {
     this._agents = agents;
   }
 
-  addAgent(agent: IAgent) {
-    this._agents.push(agent);
-  }
-
   getAll(): IAgent[] {
     return this._agents;
   }
@@ -36,6 +32,6 @@ export class AgentList implements IAgentCollection {
   }
 
   forEach(fun: (agent: IAgent) => void): void {
-    this._agents.forEach((agent) => fun(agent));
+    this._agents.forEach(fun);
   }
 }

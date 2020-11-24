@@ -8,14 +8,16 @@ interface Node {
 }
 
 export class AgentTree implements IAgentCollection {
+  private _agents: IAgent[];
   private _root: Node;
 
   init(agents: IAgent[]): void {
-    this._root = this.construct(agents, true);
+    this._agents = agents;
+    this._root = this.constructTree(this._agents, true);
   }
 
   getAll(): IAgent[] {
-    return this.get(this._root);
+    return this._agents;
   }
 
   getNeighboursInRangeRectilinear(agent: IAgent, range: number): IAgent[] {
@@ -24,7 +26,7 @@ export class AgentTree implements IAgentCollection {
     let maxX = agent.getPosition().x + range;
     let maxY = agent.getPosition().y + range;
 
-    let candidates = this.rectilinear(this._root, minX, minY, maxX, maxY, true);
+    let candidates = this.rangeSearch(this._root, minX, minY, maxX, maxY, true);
     return candidates.filter((other) => other.Id !== agent.Id);
   }
 
@@ -39,10 +41,10 @@ export class AgentTree implements IAgentCollection {
   }
 
   forEach(fun: (agent: IAgent) => void): void {
-    this.apply(this._root, fun);
+    this._agents.forEach(fun);
   }
 
-  private construct(agents: IAgent[], xAxis: boolean): Node {
+  private constructTree(agents: IAgent[], xAxis: boolean): Node {
     if (agents.length === 0) {
       return null;
     }
@@ -53,43 +55,16 @@ export class AgentTree implements IAgentCollection {
       ? agents.sort((a, b) => a.getPosition().x - b.getPosition().x)
       : agents.sort((a, b) => a.getPosition().y - b.getPosition().y);
 
-    let left = this.construct(sorted.slice(0, mid), !xAxis);
-    let right = this.construct(sorted.slice(mid + 1, agents.length), !xAxis);
+    let left = this.constructTree(sorted.slice(0, mid), !xAxis);
+    let right = this.constructTree(
+      sorted.slice(mid + 1, agents.length),
+      !xAxis
+    );
 
     return { agent: agents[mid], left: left, right: right };
   }
 
-  private insert(agent: IAgent, root: Node, xAxis: boolean): Node {
-    if (root == null) {
-      return { agent: agent, left: null, right: null };
-    }
-
-    if (xAxis) {
-      if (agent.getPosition().x < root.agent.getPosition().x) {
-        root.left = this.insert(agent, root.left, !xAxis);
-      } else {
-        root.right = this.insert(agent, root.right, !xAxis);
-      }
-    } else {
-      if (agent.getPosition().y < root.agent.getPosition().y) {
-        root.left = this.insert(agent, root.left, !xAxis);
-      } else {
-        root.right = this.insert(agent, root.right, !xAxis);
-      }
-    }
-
-    return root;
-  }
-
-  private get(root: Node): IAgent[] {
-    if (root == null) {
-      return [];
-    }
-
-    return this.get(root.left).concat(this.get(root.right)).concat(root.agent);
-  }
-
-  private rectilinear(
+  private rangeSearch(
     root: Node,
     minX: number,
     minY: number,
@@ -106,28 +81,28 @@ export class AgentTree implements IAgentCollection {
       // If x <= maxX need to check right subtree
       if (root.agent.getPosition().x <= maxX) {
         res = res.concat(
-          this.rectilinear(root.right, minX, minY, maxX, maxY, !xAxis)
+          this.rangeSearch(root.right, minX, minY, maxX, maxY, !xAxis)
         );
       }
 
       // If x >= minX need to check left subtree
       if (root.agent.getPosition().x >= minX) {
         res = res.concat(
-          this.rectilinear(root.left, minX, minY, maxX, maxY, !xAxis)
+          this.rangeSearch(root.left, minX, minY, maxX, maxY, !xAxis)
         );
       }
     } else {
       // If y <= maxY need to check right subtree
       if (root.agent.getPosition().y <= maxY) {
         res = res.concat(
-          this.rectilinear(root.right, minX, minY, maxX, maxY, !xAxis)
+          this.rangeSearch(root.right, minX, minY, maxX, maxY, !xAxis)
         );
       }
 
       // If y >= minY need to check left subtree
       if (root.agent.getPosition().y >= minY) {
         res = res.concat(
-          this.rectilinear(root.left, minX, minY, maxX, maxY, !xAxis)
+          this.rangeSearch(root.left, minX, minY, maxX, maxY, !xAxis)
         );
       }
     }
@@ -139,19 +114,9 @@ export class AgentTree implements IAgentCollection {
       root.agent.getPosition().x <= maxX &&
       root.agent.getPosition().y <= maxY
     ) {
-      res = res.concat(root.agent);
+      res.push(root.agent);
     }
 
     return res;
-  }
-
-  private apply(root: Node, fun: (agent: IAgent) => void): void {
-    if (root == null) {
-      return;
-    }
-
-    fun(root.agent);
-    this.apply(root.left, fun);
-    this.apply(root.right, fun);
   }
 }

@@ -3,22 +3,6 @@ import { BasicAgent } from "../src/BasicAgent";
 import { IAgent } from "../src/IAgent";
 
 describe("AgentTree Range Search Tests", function () {
-  it("Tree Initialisation", function () {
-    let tree = new AgentTree();
-    let agents: IAgent[] = [];
-    for (var i = 0; i < 5; i++) {
-      for (var j = 0; j < 5; j++) {
-        agents.push(
-          new BasicAgent(5 * i + j, { x: i, y: j }, { x: i, y: j }, 2)
-        );
-      }
-    }
-
-    tree.init(agents);
-
-    expect(tree.getAll().length).toEqual(agents.length);
-  });
-
   it("Rectilinear Range Search", function () {
     let tree = new AgentTree();
     let agents: IAgent[] = [];
