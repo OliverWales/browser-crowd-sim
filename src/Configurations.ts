@@ -1,4 +1,5 @@
 import { IAgent } from "./IAgent";
+import { Vector2f } from "./Vector2f";
 
 export interface IConfiguration {
   agents: IAgent[];
@@ -11,8 +12,8 @@ export class Configurations {
     height: number,
     agentConstructor: (
       id: number,
-      startPosition: { x: number; y: number },
-      goalPosition: { x: number; y: number },
+      startPosition: Vector2f,
+      goalPosition: Vector2f,
       radius: number
     ) => IAgent
   ) {
@@ -21,8 +22,8 @@ export class Configurations {
     for (let i = 0; i < n; i++) {
       const agent = agentConstructor(
         i,
-        { x: width * Math.random(), y: height * Math.random() },
-        { x: width * Math.random(), y: height * Math.random() },
+        new Vector2f(width * Math.random(), height * Math.random()),
+        new Vector2f(width * Math.random(), height * Math.random()),
         20
       );
       agents.push(agent);
@@ -37,8 +38,8 @@ export class Configurations {
     height: number,
     agentConstructor: (
       id: number,
-      startPosition: { x: number; y: number },
-      goalPosition: { x: number; y: number },
+      startPosition: Vector2f,
+      goalPosition: Vector2f,
       radius: number
     ) => IAgent
   ) {
@@ -47,8 +48,8 @@ export class Configurations {
     for (let i = 0; i < n; i++) {
       const agent = agentConstructor(
         i,
-        { x: width * Math.random(), y: height * Math.random() },
-        { x: ((i + 1) / (n + 1)) * width, y: height / 2 },
+        new Vector2f(width * Math.random(), height * Math.random()),
+        new Vector2f(((i + 1) / (n + 1)) * width, height / 2),
         20
       );
       agents.push(agent);
@@ -63,8 +64,8 @@ export class Configurations {
     height: number,
     agentConstructor: (
       id: number,
-      startPosition: { x: number; y: number },
-      goalPosition: { x: number; y: number },
+      startPosition: Vector2f,
+      goalPosition: Vector2f,
       radius: number
     ) => IAgent
   ) {
@@ -78,14 +79,14 @@ export class Configurations {
       const angle = (2 * Math.PI * i) / n;
       const agent = agentConstructor(
         i,
-        {
-          x: centreX + radius * Math.cos(angle),
-          y: centreY + radius * Math.sin(angle),
-        },
-        {
-          x: centreX + radius * Math.cos(angle + Math.PI),
-          y: centreY + radius * Math.sin(angle + Math.PI),
-        },
+        new Vector2f(
+          centreX + radius * Math.cos(angle),
+          centreY + radius * Math.sin(angle)
+        ),
+        new Vector2f(
+          centreX + radius * Math.cos(angle + Math.PI),
+          centreY + radius * Math.sin(angle + Math.PI)
+        ),
         20
       );
       agents.push(agent);

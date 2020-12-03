@@ -36,14 +36,13 @@ export class Renderer2D implements IRenderer {
     this._context.arc(position.x, position.y, agent.Radius, 0, 2 * Math.PI);
 
     // draw direction
-    if (direction.dx !== 0 || direction.dy !== 0) {
-      let magnitude = Math.sqrt(direction.dx ** 2 + direction.dy ** 2);
-
+    let magnitude = direction.magnitude();
+    if (magnitude !== 0) {
       this._context.moveTo(position.x, position.y);
-      this._context.lineTo(
-        position.x + (agent.Radius * direction.dx) / magnitude,
-        position.y + (agent.Radius * direction.dy) / magnitude
-      );
+      let newPos = position
+        .add(direction.multiply(agent.Radius))
+        .divide(magnitude);
+      this._context.lineTo(newPos.x, newPos.y);
     }
 
     this._context.stroke();

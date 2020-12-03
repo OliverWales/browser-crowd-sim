@@ -1,18 +1,19 @@
 import { IAgent } from "./IAgent";
+import { Vector2f } from "./Vector2f";
 
 export class BasicAgent implements IAgent {
   public readonly Id: number;
   public readonly Radius: number;
 
-  private _position: { x: number; y: number };
-  private _goalPosition: { x: number; y: number };
-  private _direction: { dx: number; dy: number };
+  private _position: Vector2f;
+  private _goalPosition: Vector2f;
+  private _direction: Vector2f;
   private _isDone: boolean;
 
   constructor(
     id: number,
-    startPosition: { x: number; y: number },
-    goalPosition: { x: number; y: number },
+    startPosition: Vector2f,
+    goalPosition: Vector2f,
     radius: number
   ) {
     this.Id = id;
@@ -20,15 +21,15 @@ export class BasicAgent implements IAgent {
     this._goalPosition = goalPosition;
     this.Radius = radius;
 
-    this._direction = { dx: 0, dy: 0 };
+    this._direction = new Vector2f(0, 0);
     this._isDone = false;
   }
 
-  getPosition(): { x: number; y: number } {
+  getPosition(): Vector2f {
     return this._position;
   }
 
-  getDirection(): { dx: number; dy: number } {
+  getDirection(): Vector2f {
     return this._direction;
   }
 
@@ -45,20 +46,16 @@ export class BasicAgent implements IAgent {
       return;
     }
 
-    let goalDirection = {
-      x: this._goalPosition.x - this._position.x,
-      y: this._goalPosition.y - this._position.y,
-    };
-    let goalDistance = Math.sqrt(goalDirection.x ** 2 + goalDirection.y ** 2);
+    let goalDirection = this._goalPosition.subtract(this._position);
+    let goalDistance = goalDirection.magnitude();
 
     if (goalDistance > (deltaT * 60) / 1000) {
-      this._direction.dx = goalDirection.x / goalDistance;
-      this._direction.dy = goalDirection.y / goalDistance;
-      this._position.x += ((deltaT * 60) / 1000) * this._direction.dx;
-      this._position.y += ((deltaT * 60) / 1000) * this._direction.dy;
+      this._direction = goalDirection.normalise();
+      this._position = this._position.add(
+        this._direction.multiply((deltaT * 60) / 1000)
+      );
     } else {
-      this._position.x = this._goalPosition.x;
-      this._position.y = this._goalPosition.y;
+      this._position = this._goalPosition;
       this._isDone = true;
     }
   }

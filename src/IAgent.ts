@@ -1,9 +1,11 @@
+import { Vector2f } from "./Vector2f";
+
 export interface IAgent {
   readonly Radius: number;
   readonly Id: number;
 
-  getPosition(): { x: number; y: number };
-  getDirection(): { dx: number; dy: number };
+  getPosition(): Vector2f;
+  getDirection(): Vector2f;
   getIsDone(): boolean;
   getIsStuck(): boolean;
 

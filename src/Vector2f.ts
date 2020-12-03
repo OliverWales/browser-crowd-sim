@@ -1,37 +1,46 @@
-export interface Vector2f {
+export class Vector2f {
   x: number;
   y: number;
-}
 
-export function add(a: Vector2f, b: Vector2f): Vector2f {
-  return { x: a.x + b.x, y: a.y + b.y };
-}
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
 
-export function subtract(a: Vector2f, b: Vector2f): Vector2f {
-  return { x: a.x - b.x, y: a.y - b.y };
-}
+  copy(v: Vector2f): Vector2f {
+    return new Vector2f(v.x, v.y);
+  }
 
-export function multiply(a: Vector2f, b: number): Vector2f {
-  return { x: a.x * b, y: a.y * b };
-}
+  add(v: Vector2f): Vector2f {
+    return new Vector2f(this.x + v.x, this.y + v.y);
+  }
 
-export function divide(a: Vector2f, b: number): Vector2f {
-  return { x: a.x / b, y: a.y / b };
-}
+  subtract(v: Vector2f): Vector2f {
+    return new Vector2f(this.x - v.x, this.y - v.y);
+  }
 
-export function dot(a: Vector2f, b: Vector2f) {
-  return a.x * b.x + a.y * b.y;
-}
+  multiply(s: number): Vector2f {
+    return new Vector2f(this.x * s, this.y * s);
+  }
 
-export function magnitudeSqrd(a: Vector2f): number {
-  return a.x ** 2 + a.y ** 2;
-}
+  divide(s: number): Vector2f {
+    return new Vector2f(this.x / s, this.y / s);
+  }
 
-export function magnitude(a: Vector2f): number {
-  return Math.sqrt(magnitudeSqrd(a));
-}
+  dot(a: Vector2f, b: Vector2f) {
+    return a.x * b.x + a.y * b.y;
+  }
 
-export function normalise(a: Vector2f): Vector2f {
-  let m = magnitude(a);
-  return m == 0 ? { x: 0, y: 0 } : divide(a, m);
+  magnitudeSqrd(): number {
+    return this.x ** 2 + this.y ** 2;
+  }
+
+  magnitude(): number {
+    return Math.sqrt(this.magnitudeSqrd());
+  }
+
+  normalise(): Vector2f {
+    let m = this.magnitude();
+    return m == 0 ? new Vector2f(0, 0) : this.divide(m);
+  }
 }
