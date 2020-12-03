@@ -4,8 +4,8 @@ import { Renderer2D } from "./Renderer2D";
 import { BasicAgent } from "./BasicAgent";
 import { StopAgent } from "./StopAgent";
 import { Configurations } from "./Configurations";
-import { AgentList } from "./AgentList";
 import { AgentTree } from "./AgentTree";
+import { Vector2f } from "./Vector2f";
 
 const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
@@ -95,16 +95,16 @@ export function reconfigure() {
     case "BasicAgent":
       agentConstructor = (
         id: number,
-        position: { x: number; y: number },
-        goalPosition: { x: number; y: number },
+        position: Vector2f,
+        goalPosition: Vector2f,
         radius: number
       ) => new BasicAgent(id, position, goalPosition, radius);
       break;
     case "StopAgent":
       agentConstructor = (
         id: number,
-        position: { x: number; y: number },
-        goalPosition: { x: number; y: number },
+        position: Vector2f,
+        goalPosition: Vector2f,
         radius: number
       ) => new StopAgent(id, position, goalPosition, radius);
       break;

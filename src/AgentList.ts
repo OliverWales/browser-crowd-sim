@@ -25,8 +25,7 @@ export class AgentList implements IAgentCollection {
     return this._agents.filter(
       (other) =>
         other.Id !== agent.Id &&
-        (agent.getPosition().x - other.getPosition().x) ** 2 +
-          (agent.getPosition().y - other.getPosition().y) ** 2 <=
+        agent.getPosition().subtract(other.getPosition()).magnitudeSqrd() <=
           range ** 2
     );
   }

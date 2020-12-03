@@ -34,8 +34,7 @@ export class AgentTree implements IAgentCollection {
     let candidates = this.getNeighboursInRangeRectilinear(agent, range);
     return candidates.filter(
       (other) =>
-        (agent.getPosition().x - other.getPosition().x) ** 2 +
-          (agent.getPosition().y - other.getPosition().y) ** 2 <=
+        agent.getPosition().subtract(other.getPosition()).magnitudeSqrd() <=
         range ** 2
     );
   }

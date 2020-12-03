@@ -1,19 +1,20 @@
 import { IAgent } from "./IAgent";
+import { Vector2f } from "./Vector2f";
 
 export class StopAgent implements IAgent {
   public readonly Id: number;
   public readonly Radius: number;
 
-  private _position: { x: number; y: number };
-  private _goalPosition: { x: number; y: number };
-  private _direction: { dx: number; dy: number };
+  private _position: Vector2f;
+  private _goalPosition: Vector2f;
+  private _direction: Vector2f;
   private _isDone: boolean;
   private _isStuck: boolean;
 
   constructor(
     id: number,
-    startPosition: { x: number; y: number },
-    goalPosition: { x: number; y: number },
+    startPosition: Vector2f,
+    goalPosition: Vector2f,
     radius: number
   ) {
     this.Id = id;
@@ -21,16 +22,16 @@ export class StopAgent implements IAgent {
     this._goalPosition = goalPosition;
     this.Radius = radius;
 
-    this._direction = { dx: 0, dy: 0 };
+    this._direction = new Vector2f(0, 0);
     this._isDone = false;
     this._isStuck = false;
   }
 
-  getPosition(): { x: number; y: number } {
+  getPosition(): Vector2f {
     return this._position;
   }
 
-  getDirection(): { dx: number; dy: number } {
+  getDirection(): Vector2f {
     return this._direction;
   }
 
@@ -47,47 +48,35 @@ export class StopAgent implements IAgent {
       return;
     }
 
-    let goalDirection = {
-      x: this._goalPosition.x - this._position.x,
-      y: this._goalPosition.y - this._position.y,
-    };
-    let goalDistance = Math.sqrt(goalDirection.x ** 2 + goalDirection.y ** 2);
+    let goalDirection = this._goalPosition.subtract(this._position);
+    let goalDistance = goalDirection.magnitude();
 
     if (goalDistance > (deltaT * 60) / 1000) {
-      this._direction.dx = goalDirection.x / goalDistance;
-      this._direction.dy = goalDirection.y / goalDistance;
-      let headingX = this._position.x + 20 * this._direction.dx;
-      let headingY = this._position.y + 20 * this._direction.dy;
+      this._direction = goalDirection.normalise();
+      let heading = this._position.add(this._direction.multiply(20));
 
       this._isStuck = false;
       agents.forEach((agent) => {
-        if (
-          agent.Id != this.Id &&
-          this.collides(agent, { x: headingX, y: headingY })
-        ) {
+        if (agent.Id != this.Id && this.collides(agent, heading)) {
           this._isStuck = true;
         }
       });
 
       if (!this._isStuck) {
-        this._position.x += ((deltaT * 60) / 1000) * this._direction.dx;
-        this._position.y += ((deltaT * 60) / 1000) * this._direction.dy;
+        this._position = this._position.add(
+          this._direction.multiply((deltaT * 60) / 1000)
+        );
       }
     } else {
-      this._position.x = this._goalPosition.x;
-      this._position.y = this._goalPosition.y;
+      this._position = this._goalPosition;
       this._isDone = true;
     }
   }
 
-  collides(agent: IAgent, position: { x: number; y: number }): boolean {
-    let a1x = position.x;
-    let a1y = position.y;
-    let a1r = this.Radius;
-    let a2x = agent.getPosition().x;
-    let a2y = agent.getPosition().y;
-    let a2r = agent.Radius;
-
-    return Math.sqrt((a1x - a2x) ** 2 + (a1y - a2y) ** 2) < a1r + a2r;
+  collides(agent: IAgent, position: Vector2f): boolean {
+    return (
+      agent.getPosition().subtract(position).magnitude() <
+      agent.Radius + this.Radius
+    );
   }
 }
