@@ -10,4 +10,5 @@ export interface IAgent {
   getIsStuck(): boolean;
 
   update(deltaT: number, agents: IAgent[]): void;
+  finalize(): void;
 }

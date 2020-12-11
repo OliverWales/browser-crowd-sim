@@ -6,6 +6,7 @@ import { StopAgent } from "./StopAgent";
 import { Configurations } from "./Configurations";
 import { AgentTree } from "./AgentTree";
 import { Vector2f } from "./Vector2f";
+import { VOAgent } from "./VOAgent";
 
 const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
@@ -107,6 +108,14 @@ export function reconfigure() {
         goalPosition: Vector2f,
         radius: number
       ) => new StopAgent(id, position, goalPosition, radius);
+      break;
+    case "VOAgent":
+      agentConstructor = (
+        id: number,
+        position: Vector2f,
+        goalPosition: Vector2f,
+        radius: number
+      ) => new VOAgent(id, position, goalPosition, radius);
       break;
     default: {
       throw new Error("Agent not implemented");

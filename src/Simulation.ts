@@ -16,12 +16,15 @@ export class Simulation {
   }
 
   update(deltaT: number) {
-    let range = 200;
+    let range = 400;
     this._agents.forEach((agent) => {
       agent.update(
         deltaT,
         this._agents.getNeighboursInRangeRectilinear(agent, range)
       );
+    });
+    this._agents.forEach((agent) => {
+      agent.finalize();
     });
     this._agents.init(this._agents.getAll());
   }
