@@ -19,11 +19,14 @@ export class Configurations {
   ) {
     // Random start position to random goal position
     let agents: IAgent[] = [];
+    let startPositions = this.poissonDiskSample(width, height, n, 50);
+    let goalPositions = this.poissonDiskSample(width, height, n, 50);
+
     for (let i = 0; i < n; i++) {
       const agent = agentConstructor(
         i,
-        new Vector2f(width * Math.random(), height * Math.random()),
-        new Vector2f(width * Math.random(), height * Math.random()),
+        startPositions[i],
+        goalPositions[i],
         20
       );
       agents.push(agent);
@@ -45,10 +48,12 @@ export class Configurations {
   ) {
     // Random start position to fixed position on line
     let agents: IAgent[] = [];
+    let startPositions = this.poissonDiskSample(width, height, n, 50);
+
     for (let i = 0; i < n; i++) {
       const agent = agentConstructor(
         i,
-        new Vector2f(width * Math.random(), height * Math.random()),
+        startPositions[i],
         new Vector2f(((i + 1) / (n + 1)) * width, height / 2),
         20
       );
@@ -93,5 +98,34 @@ export class Configurations {
     }
 
     return { agents: agents } as IConfiguration;
+  }
+
+  private static poissonDiskSample(
+    xRange: number,
+    yRange: number,
+    n: number,
+    threshold: number
+  ): Vector2f[] {
+    let samples: Vector2f[] = [];
+
+    for (var i = 0; i < n; i++) {
+      let resample = true;
+      let pos: Vector2f;
+
+      while (resample) {
+        resample = false;
+        pos = new Vector2f(xRange * Math.random(), yRange * Math.random());
+
+        samples.forEach((sample) => {
+          if (pos.subtract(sample).magnitudeSqrd() < threshold ** 2) {
+            resample = true;
+          }
+        });
+      }
+
+      samples.push(pos);
+    }
+
+    return samples;
   }
 }
