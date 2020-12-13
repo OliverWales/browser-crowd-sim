@@ -39,9 +39,9 @@ export class Renderer2D implements IRenderer {
     let magnitude = direction.magnitude();
     if (magnitude !== 0) {
       this._context.moveTo(position.x, position.y);
-      let newPos = position
-        .add(direction.multiply(agent.Radius))
-        .divide(magnitude);
+      let newPos = position.add(
+        direction.divide(magnitude).multiply(agent.Radius)
+      );
       this._context.lineTo(newPos.x, newPos.y);
     }
 

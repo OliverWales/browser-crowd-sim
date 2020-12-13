@@ -27,8 +27,8 @@ export class Vector2f {
     return new Vector2f(this.x / s, this.y / s);
   }
 
-  dot(a: Vector2f, b: Vector2f) {
-    return a.x * b.x + a.y * b.y;
+  dot(v: Vector2f) {
+    return this.x * v.x + this.y * v.y;
   }
 
   magnitudeSqrd(): number {
@@ -42,5 +42,15 @@ export class Vector2f {
   normalise(): Vector2f {
     let m = this.magnitude();
     return m == 0 ? new Vector2f(0, 0) : this.divide(m);
+  }
+
+  sample(maxRadius: number) {
+    // Uniformly sample the circle centred at this point with radius maxRadius
+    let radius = Math.sqrt(Math.random()) * maxRadius;
+    let angle = 2 * Math.PI * Math.random();
+    return new Vector2f(
+      this.x + radius * Math.cos(angle),
+      this.y + radius * Math.sin(angle)
+    );
   }
 }
