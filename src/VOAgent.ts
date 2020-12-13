@@ -64,7 +64,7 @@ export class VOAgent implements IAgent {
     }
 
     this._isStuck = false;
-    let speed = 0.3;
+    let speed = 0.5;
     let preferredVelocity = this.getPreferredVelocity(speed);
 
     let safe = true;
@@ -155,7 +155,7 @@ export class VOAgent implements IAgent {
     }
 
     // Else, sample random velocities and select the one with the least penalty
-    let samples = 100; // number of velocities to try
+    let samples = 150; // number of velocities to try
     let w = 100; // parameter for penalty
     let minPenalty = Infinity;
     let bestVelocity = new Vector2f(0, 0);
@@ -289,17 +289,18 @@ export class VOAgent implements IAgent {
   ): number {
     let delta = origin.subtract(centre);
 
-    let discrim =
-      direction.dot(delta) ** 2 -
-      direction.dot(direction) * (delta.magnitudeSqrd() - radius ** 2);
+    let a = direction.dot(direction);
+    let b = 2 * direction.dot(delta);
+    let c = delta.dot(delta) - radius ** 2;
+
+    let discrim = b ** 2 - 4 * a * c;
 
     if (discrim < 0) {
       // No intersection
       return Infinity;
     }
 
-    let distance =
-      (-direction.dot(delta) - Math.sqrt(discrim)) / direction.magnitudeSqrd();
+    let distance = ((-b - Math.sqrt(discrim)) / 2) * a;
 
     if (distance < 0) {
       // Intersection behind
