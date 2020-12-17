@@ -9,8 +9,6 @@ export class BasicAgent implements IAgent {
   private _goalPosition: Vector2f;
   private _direction: Vector2f;
 
-  private _nextPosition: Vector2f;
-  private _nextDirection: Vector2f;
   private _isDone: boolean;
 
   constructor(
@@ -25,8 +23,6 @@ export class BasicAgent implements IAgent {
     this.Radius = radius;
     this._direction = new Vector2f(0, 0);
 
-    this._nextPosition = this._position;
-    this._nextDirection = new Vector2f(0, 0);
     this._isDone = false;
   }
 
@@ -43,6 +39,7 @@ export class BasicAgent implements IAgent {
   }
 
   getIsStuck(): boolean {
+    // This agent cannot get stuck
     return false;
   }
 
@@ -55,18 +52,13 @@ export class BasicAgent implements IAgent {
     let goalDistance = goalDirection.magnitude();
 
     if (goalDistance > (deltaT * 60) / 1000) {
-      this._nextDirection = goalDirection.normalise();
-      this._nextPosition = this._position.add(
-        this._nextDirection.multiply((deltaT * 60) / 1000)
+      this._direction = goalDirection.normalise();
+      this._position = this._position.add(
+        this._direction.multiply((deltaT * 60) / 1000)
       );
     } else {
-      this._nextPosition = this._goalPosition;
+      this._position = this._goalPosition;
       this._isDone = true;
     }
-  }
-
-  finalize(): void {
-    this._direction = this._nextDirection;
-    this._position = this._nextPosition;
   }
 }
