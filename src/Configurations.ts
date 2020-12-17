@@ -100,6 +100,55 @@ export class Configurations {
     return { agents: agents } as IConfiguration;
   }
 
+  static GridToGrid(
+    n: number,
+    width: number,
+    height: number,
+    agentConstructor: (
+      id: number,
+      startPosition: Vector2f,
+      goalPosition: Vector2f,
+      radius: number
+    ) => IAgent
+  ) {
+    // Two opposing grids of agents passing through eachother
+    let agents: IAgent[] = [];
+    let rows = 4;
+    let cols = Math.ceil(n / (2 * rows));
+    let spacing = 80;
+    let left = 50;
+    let right = width - left - spacing * (cols - 1);
+    let top = height / 2 - (spacing / 2) * (rows - 1);
+
+    let id = 0;
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        let a = new Vector2f(left + spacing * i, top + spacing * j);
+        let b = new Vector2f(right + spacing * i, top + spacing * j);
+
+        // Left grid
+        agents.push(agentConstructor(id, a, b, 20));
+        id++;
+        if (id >= n) {
+          break;
+        }
+
+        // Right grid
+        agents.push(agentConstructor(id, b, a, 20));
+        id++;
+
+        if (id >= n) {
+          break;
+        }
+      }
+      if (id >= n) {
+        break;
+      }
+    }
+
+    return { agents: agents } as IConfiguration;
+  }
+
   private static poissonDiskSample(
     xRange: number,
     yRange: number,

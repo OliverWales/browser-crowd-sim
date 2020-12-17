@@ -157,6 +157,17 @@ export function reconfigure() {
       );
       break;
     }
+    case "GridToGrid": {
+      simulation.init(
+        Configurations.GridToGrid(
+          n,
+          canvas.width,
+          canvas.height,
+          agentConstructor
+        )
+      );
+      break;
+    }
     default: {
       throw new Error("Configuration not implemented");
     }
