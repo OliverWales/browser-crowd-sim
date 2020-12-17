@@ -80,11 +80,7 @@ export class VOAgent implements IAgent {
     if (safe) {
       this._direction = preferredVelocity;
       this._position = this._position.add(preferredVelocity);
-      if (this._position.subtract(this._goalPosition).magnitudeSqrd() < 0.1) {
-        this._isDone = true;
-        this._position = this._goalPosition;
-        this._direction = new Vector2f(0, 0);
-      }
+      this.checkIfDone();
       return;
     }
 
@@ -114,6 +110,7 @@ export class VOAgent implements IAgent {
         if (safe) {
           this._direction = halfplane1;
           this._position = this._position.add(halfplane1);
+          this.checkIfDone();
           return;
         }
       }
@@ -143,6 +140,7 @@ export class VOAgent implements IAgent {
         if (safe) {
           this._direction = halfPlane2;
           this._position = this._position.add(halfPlane2);
+          this.checkIfDone();
           return;
         }
       }
@@ -150,7 +148,7 @@ export class VOAgent implements IAgent {
 
     // Else, sample random velocities and select the one with the least penalty
     let samples = 100; // number of velocities to try
-    let w = 50; // parameter for penalty
+    let w = 300; // parameter for penalty
     let minPenalty = Infinity;
     let bestVelocity = new Vector2f(0, 0);
 
@@ -174,6 +172,7 @@ export class VOAgent implements IAgent {
           if (timeToCollision < minTimeToCollision) {
             minTimeToCollision = timeToCollision;
             if (minTimeToCollision == 0) {
+              this.checkIfDone();
               return;
             }
           }
@@ -195,6 +194,7 @@ export class VOAgent implements IAgent {
 
     this._direction = bestVelocity;
     this._position = this._position.add(bestVelocity);
+    this.checkIfDone();
     return;
   }
 
@@ -297,5 +297,18 @@ export class VOAgent implements IAgent {
     }
 
     return distance;
+  }
+
+  private checkIfDone() {
+    let finishThreshold = 1.0;
+
+    if (
+      this._position.subtract(this._goalPosition).magnitudeSqrd() <
+      finishThreshold
+    ) {
+      this._isDone = true;
+      this._position = this._goalPosition;
+      this._direction = new Vector2f(0, 0);
+    }
   }
 }
