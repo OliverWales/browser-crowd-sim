@@ -19,8 +19,6 @@ export class VOAgent implements IAgent {
   private _goalPosition: Vector2f;
   private _direction: Vector2f;
 
-  private _nextPosition: Vector2f;
-  private _nextDirection: Vector2f;
   private _isDone: boolean;
   private _isStuck: boolean;
 
@@ -36,8 +34,6 @@ export class VOAgent implements IAgent {
     this.Radius = radius;
     this._direction = new Vector2f(0, 0);
 
-    this._nextPosition = this._position;
-    this._nextDirection = new Vector2f(0, 0);
     this._isDone = false;
     this._isStuck = false;
   }
@@ -82,15 +78,9 @@ export class VOAgent implements IAgent {
 
     // If preferred velocity is safe, go in that direction
     if (safe) {
-      this._nextDirection = preferredVelocity;
-      this._nextPosition = this._position.add(preferredVelocity);
-      if (
-        this._nextPosition.subtract(this._goalPosition).magnitudeSqrd() < 0.1
-      ) {
-        this._isDone = true;
-        this._nextPosition = this._goalPosition;
-        this._nextDirection = new Vector2f(0, 0);
-      }
+      this._direction = preferredVelocity;
+      this._position = this._position.add(preferredVelocity);
+      this.checkIfDone();
       return;
     }
 
@@ -118,8 +108,9 @@ export class VOAgent implements IAgent {
         }
 
         if (safe) {
-          this._nextDirection = halfplane1;
-          this._nextPosition = this._position.add(halfplane1);
+          this._direction = halfplane1;
+          this._position = this._position.add(halfplane1);
+          this.checkIfDone();
           return;
         }
       }
@@ -147,16 +138,17 @@ export class VOAgent implements IAgent {
         }
 
         if (safe) {
-          this._nextDirection = halfPlane2;
-          this._nextPosition = this._position.add(halfPlane2);
+          this._direction = halfPlane2;
+          this._position = this._position.add(halfPlane2);
+          this.checkIfDone();
           return;
         }
       }
     }
 
     // Else, sample random velocities and select the one with the least penalty
-    let samples = 150; // number of velocities to try
-    let w = 100; // parameter for penalty
+    let samples = 100; // number of velocities to try
+    let w = 300; // parameter for penalty
     let minPenalty = Infinity;
     let bestVelocity = new Vector2f(0, 0);
 
@@ -180,6 +172,7 @@ export class VOAgent implements IAgent {
           if (timeToCollision < minTimeToCollision) {
             minTimeToCollision = timeToCollision;
             if (minTimeToCollision == 0) {
+              this.checkIfDone();
               return;
             }
           }
@@ -199,14 +192,10 @@ export class VOAgent implements IAgent {
       this._isStuck = true;
     }
 
-    this._nextDirection = bestVelocity;
-    this._nextPosition = this._position.add(bestVelocity);
+    this._direction = bestVelocity;
+    this._position = this._position.add(bestVelocity);
+    this.checkIfDone();
     return;
-  }
-
-  finalize(): void {
-    this._direction = this._nextDirection;
-    this._position = this._nextPosition;
   }
 
   private getPreferredVelocity(maxSpeed: number): Vector2f {
@@ -308,5 +297,18 @@ export class VOAgent implements IAgent {
     }
 
     return distance;
+  }
+
+  private checkIfDone() {
+    let finishThreshold = 1.0;
+
+    if (
+      this._position.subtract(this._goalPosition).magnitudeSqrd() <
+      finishThreshold
+    ) {
+      this._isDone = true;
+      this._position = this._goalPosition;
+      this._direction = new Vector2f(0, 0);
+    }
   }
 }
