@@ -115,7 +115,7 @@ export class Configurations {
     let agents: IAgent[] = [];
     let rows = 4;
     let cols = Math.ceil(n / (2 * rows));
-    let spacing = 80;
+    let spacing = 90;
     let left = 50;
     let right = width - left - spacing * (cols - 1);
     let top = height / 2 - (spacing / 2) * (rows - 1);
