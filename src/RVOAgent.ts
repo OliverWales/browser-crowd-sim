@@ -8,7 +8,7 @@ interface VelocityObstacle {
   tangent2: Vector2f;
 }
 
-export class VOAgent implements IAgent {
+export class RVOAgent implements IAgent {
   Radius: number;
   Id: number;
 
@@ -67,7 +67,7 @@ export class VOAgent implements IAgent {
     let collision;
     let agent;
     for (var i = 0; i < neighbours.length; i++) {
-      let velocityObstacle = this.getVelocityObstacle(neighbours[i]);
+      let velocityObstacle = this.getReciprocalVelocityObstacle(neighbours[i]);
       if (
         velocityObstacle != null &&
         this.isInside(preferredVelocity, velocityObstacle)
@@ -99,7 +99,9 @@ export class VOAgent implements IAgent {
         safe = true;
         for (var i = 0; i < neighbours.length; i++) {
           if (i != agent) {
-            let velocityObstacle = this.getVelocityObstacle(neighbours[i]);
+            let velocityObstacle = this.getReciprocalVelocityObstacle(
+              neighbours[i]
+            );
             if (
               velocityObstacle != null &&
               this.isInside(halfplane1, velocityObstacle)
@@ -129,7 +131,9 @@ export class VOAgent implements IAgent {
         safe = true;
         for (var i = 0; i < neighbours.length; i++) {
           if (i != agent) {
-            let velocityObstacle = this.getVelocityObstacle(neighbours[i]);
+            let velocityObstacle = this.getReciprocalVelocityObstacle(
+              neighbours[i]
+            );
             if (
               velocityObstacle != null &&
               this.isInside(halfPlane2, velocityObstacle)
@@ -163,16 +167,19 @@ export class VOAgent implements IAgent {
       // Find time to first collision
       for (var j = 0; j < neighbours.length; j++) {
         let b = neighbours[j];
-        let velocityObstacle = this.getVelocityObstacle(b);
+        let velocityObstacle = this.getReciprocalVelocityObstacle(b);
         if (
-          velocityObstacle == null ||
+          velocityObstacle != null &&
           this.isInside(sample, velocityObstacle)
         ) {
           let timeToCollision = this.getFirstRayCircleIntersection(
             b.getPosition().add(b.getDirection()),
             this.Radius + b.Radius,
             this._position,
-            sample.subtract(b.getDirection())
+            sample
+              .multiply(2)
+              .subtract(this.getDirection())
+              .subtract(b.getDirection())
           );
 
           if (timeToCollision < minTimeToCollision) {
@@ -214,8 +221,10 @@ export class VOAgent implements IAgent {
     return goalDirection;
   }
 
-  private getVelocityObstacle(b: IAgent): VelocityObstacle | null {
+  private getReciprocalVelocityObstacle(b: IAgent): VelocityObstacle | null {
+    let velocityA = this.getDirection();
     let velocityB = b.getDirection();
+    let vertex = velocityA.add(velocityB).divide(2);
 
     // Translate origin to this agent's position
     let positionB = b.getPosition().subtract(this._position);
@@ -248,7 +257,7 @@ export class VOAgent implements IAgent {
     );
 
     // Return velocity obstacle
-    return { vertex: velocityB, tangent1: tangent1, tangent2: tangent2 };
+    return { vertex: vertex, tangent1: tangent1, tangent2: tangent2 };
   }
 
   private isInside(

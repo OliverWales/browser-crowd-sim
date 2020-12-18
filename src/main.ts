@@ -7,6 +7,7 @@ import { Configurations } from "./Configurations";
 import { AgentTree } from "./AgentTree";
 import { Vector2f } from "./Vector2f";
 import { VOAgent } from "./VOAgent";
+import { RVOAgent } from "./RVOAgent";
 
 const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
@@ -116,6 +117,14 @@ export function reconfigure() {
         goalPosition: Vector2f,
         radius: number
       ) => new VOAgent(id, position, goalPosition, radius);
+      break;
+    case "RVOAgent":
+      agentConstructor = (
+        id: number,
+        position: Vector2f,
+        goalPosition: Vector2f,
+        radius: number
+      ) => new RVOAgent(id, position, goalPosition, radius);
       break;
     default: {
       throw new Error("Agent not implemented");
