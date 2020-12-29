@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Crowd Sim | 2D Demo</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body onload="CrowdSimulator.init()">
+    <div class="container">
+      <div
+        class="settings"
+      >
+        <label for="config">Configuration:</label>
+        <select id="config">
+          <option value="RandomToRandom">Random to Random</option>
+          <option value="RandomToLine">Random to Line</option>
+          <option value="CircleToCircle">Circle to Circle</option>
+          <option value="GridToGrid">Grid to Grid</option>
+        </select>
+        <label for="agentType">Agent type(s):</label>
+        <select id="agentType">
+          <option value="BasicAgent">Basic Agent</option>
+          <option value="StopAgent">Stop Agent</option>
+          <option value="VOAgent">VO Agent</option>
+          <option value="RVOAgent">RVO Agent</option>
+        </select>
+        <label for="numberOfAgents">Number of Agents:</label>
+        <input type="number" id="numberOfAgents" value="25" />
+        <button
+          type="button"
+          onclick="CrowdSimulator.init()"
+        >
+          Initialise
+        </button>
+      </form>
+    </div>
+
+    <canvas id="canvas" width="1280" height="640"></canvas>
+
+    <div class="container">
+      <p id="framerate">FPS: -</p>
+      <div class="controls">
+        <button id="playButton" onclick="CrowdSimulator.playPause()">
+          Play
+        </button>
+        <button id="stepButton" onclick="CrowdSimulator.step()">Step</button>
+      </div>
+    </div>
+    <script src="demo2d.js"></script>
+  </body>
+</html>
