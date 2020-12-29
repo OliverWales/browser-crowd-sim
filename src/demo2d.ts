@@ -1,6 +1,5 @@
 import { Simulation } from "./Simulation";
 import { Renderer2D } from "./Renderer2D";
-
 import { BasicAgent } from "./BasicAgent";
 import { StopAgent } from "./StopAgent";
 import { Configurations } from "./Configurations";

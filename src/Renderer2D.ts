@@ -1,4 +1,5 @@
 import { IAgent } from "./IAgent";
+import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
 
 export class Renderer2D implements IRenderer {
@@ -18,7 +19,13 @@ export class Renderer2D implements IRenderer {
     );
   }
 
-  drawAgent(agent: IAgent) {
+  drawAgents(agents: IAgentCollection) {
+    agents.forEach((agent) => {
+      this.drawAgent(agent);
+    });
+  }
+
+  private drawAgent(agent: IAgent): void {
     let position = agent.getPosition();
     let direction = agent.getDirection();
 

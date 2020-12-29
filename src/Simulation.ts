@@ -20,7 +20,7 @@ export class Simulation {
     this._agents.forEach((agent) => {
       agent.update(
         deltaT,
-        this._agents.getNeighboursInRangeRectilinear(agent, range)
+        this._agents.getNeighboursInRangeEuclidean(agent, range)
       );
     });
 
@@ -29,8 +29,6 @@ export class Simulation {
 
   draw() {
     this._renderer.clear();
-    this._agents.forEach((agent) => {
-      this._renderer.drawAgent(agent);
-    });
+    this._renderer.drawAgents(this._agents);
   }
 }
