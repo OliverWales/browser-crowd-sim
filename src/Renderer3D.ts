@@ -4,10 +4,15 @@ import { IRenderer } from "./IRenderer";
 const vertexShaderText = [
   "precision mediump float;",
   "attribute vec2 position;",
+  "attribute float radius;",
+  "uniform float width;",
+  "uniform float height;",
   "void main()",
   "{",
-  "  gl_Position = vec4(position, 0.0, 1.0);",
-  "  gl_PointSize = 40.0;",
+  "  gl_Position = vec4(2.0 * position.x / width - 1.0,",
+  "                     2.0 * position.y / height - 1.0,",
+  "                     0.0, 1.0);",
+  "  gl_PointSize = 2.0 * radius;",
   "}",
 ].join("\n");
 
@@ -15,6 +20,8 @@ const fragmentShaderText = [
   "precision mediump float;",
   "void main()",
   "{",
+  "  float dist = distance( gl_PointCoord, vec2(0.5) );",
+  "  if (dist > 0.5) discard;",
   "  gl_FragColor = vec4(1, 0, 0, 1);",
   "}",
 ].join("\n");
@@ -23,6 +30,9 @@ export class Renderer3D implements IRenderer {
   gl: WebGLRenderingContext;
   program: WebGLProgram;
   positionAttribute: number;
+  radiusAttribute: number;
+  widthUniform: WebGLUniformLocation;
+  heightUniform: WebGLUniformLocation;
   VBO: WebGLBuffer;
 
   constructor(canvas: HTMLCanvasElement) {
@@ -83,6 +93,10 @@ export class Renderer3D implements IRenderer {
       this.program,
       "position"
     );
+    this.radiusAttribute = this.gl.getAttribLocation(this.program, "radius");
+
+    this.widthUniform = this.gl.getUniformLocation(this.program, "width");
+    this.heightUniform = this.gl.getUniformLocation(this.program, "height");
 
     this.VBO = this.gl.createBuffer();
   }
@@ -93,22 +107,19 @@ export class Renderer3D implements IRenderer {
   }
 
   drawAgents(agents: IAgentCollection): void {
-    let positions: number[] = [];
-    let width = this.gl.canvas.width;
-    let height = this.gl.canvas.height;
+    let vertexData: number[] = [];
 
-    let agentCount = 0;
     agents.forEach((agent) => {
       const pos = agent.getPosition();
-      positions.push((2 * pos.x) / width - 1);
-      positions.push((2 * pos.y) / height - 1);
-      agentCount++;
+      vertexData.push(pos.x);
+      vertexData.push(pos.y);
+      vertexData.push(agent.Radius);
     });
 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.VBO);
     this.gl.bufferData(
       this.gl.ARRAY_BUFFER,
-      new Float32Array(positions),
+      new Float32Array(vertexData),
       this.gl.STATIC_DRAW
     );
 
@@ -117,13 +128,25 @@ export class Renderer3D implements IRenderer {
       2,
       this.gl.FLOAT,
       false,
-      0,
+      3 * Float32Array.BYTES_PER_ELEMENT,
       0
     );
     this.gl.enableVertexAttribArray(this.positionAttribute);
 
-    this.gl.useProgram(this.program);
+    this.gl.vertexAttribPointer(
+      this.radiusAttribute,
+      1,
+      this.gl.FLOAT,
+      false,
+      3 * Float32Array.BYTES_PER_ELEMENT,
+      2 * Float32Array.BYTES_PER_ELEMENT
+    );
+    this.gl.enableVertexAttribArray(this.radiusAttribute);
 
-    this.gl.drawArrays(this.gl.POINTS, 0, agentCount);
+    this.gl.useProgram(this.program);
+    this.gl.uniform1f(this.widthUniform, this.gl.canvas.width);
+    this.gl.uniform1f(this.heightUniform, this.gl.canvas.height);
+
+    this.gl.drawArrays(this.gl.POINTS, 0, vertexData.length / 3);
   }
 }
