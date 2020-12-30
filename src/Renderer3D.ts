@@ -1,39 +1,35 @@
 import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
+import { AgentMesh } from "./AgentMesh";
+import { Vector2f } from "./Vector2f";
 
-const vertexShaderText = [
-  "precision mediump float;",
-  "attribute vec2 position;",
-  "attribute float radius;",
-  "uniform float width;",
-  "uniform float height;",
-  "void main()",
-  "{",
-  "  gl_Position = vec4(2.0 * position.x / width - 1.0,",
-  "                     2.0 * position.y / height - 1.0,",
-  "                     0.0, 1.0);",
-  "  gl_PointSize = 2.0 * radius;",
-  "}",
-].join("\n");
+const vertexShaderText = `
+  precision mediump float;
+  attribute vec3 vertPosition;
+  uniform mat4 projMat;
+  uniform mat4 modelMat;
+  void main()
+  {
+    gl_Position = projMat * vec4(vertPosition, 1.0);
+  }
+`;
 
-const fragmentShaderText = [
-  "precision mediump float;",
-  "void main()",
-  "{",
-  "  float dist = distance( gl_PointCoord, vec2(0.5) );",
-  "  if (dist > 0.5) discard;",
-  "  gl_FragColor = vec4(1, 0, 0, 1);",
-  "}",
-].join("\n");
+const fragmentShaderText = `
+  precision mediump float;
+  void main()
+  {
+    gl_FragColor = vec4(1, 0, 0, 1);
+  }
+`;
 
 export class Renderer3D implements IRenderer {
   gl: WebGLRenderingContext;
   program: WebGLProgram;
+  VertexBuffer: WebGLBuffer;
+  IndexBuffer: WebGLBuffer;
   positionAttribute: number;
-  radiusAttribute: number;
-  widthUniform: WebGLUniformLocation;
-  heightUniform: WebGLUniformLocation;
-  VBO: WebGLBuffer;
+  projMatLoc: WebGLUniformLocation;
+  modelMatLoc: WebGLUniformLocation;
 
   constructor(canvas: HTMLCanvasElement) {
     this.gl = canvas.getContext("webgl");
@@ -89,43 +85,32 @@ export class Renderer3D implements IRenderer {
       return;
     }
 
-    this.positionAttribute = this.gl.getAttribLocation(
-      this.program,
-      "position"
-    );
-    this.radiusAttribute = this.gl.getAttribLocation(this.program, "radius");
+    this.gl.useProgram(this.program);
 
-    this.widthUniform = this.gl.getUniformLocation(this.program, "width");
-    this.heightUniform = this.gl.getUniformLocation(this.program, "height");
-
-    this.VBO = this.gl.createBuffer();
-  }
-
-  clear(): void {
-    this.gl.clearColor(1, 1, 1, 1);
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-  }
-
-  drawAgents(agents: IAgentCollection): void {
-    let vertexData: number[] = [];
-
-    agents.forEach((agent) => {
-      const pos = agent.getPosition();
-      vertexData.push(pos.x);
-      vertexData.push(pos.y);
-      vertexData.push(agent.Radius);
-    });
-
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.VBO);
+    this.VertexBuffer = this.gl.createBuffer();
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.VertexBuffer);
     this.gl.bufferData(
       this.gl.ARRAY_BUFFER,
-      new Float32Array(vertexData),
+      new Float32Array(AgentMesh.vertices),
       this.gl.STATIC_DRAW
+    );
+
+    this.IndexBuffer = this.gl.createBuffer();
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.IndexBuffer);
+    this.gl.bufferData(
+      this.gl.ELEMENT_ARRAY_BUFFER,
+      new Uint16Array(AgentMesh.indices),
+      this.gl.STATIC_DRAW
+    );
+
+    this.positionAttribute = this.gl.getAttribLocation(
+      this.program,
+      "vertPosition"
     );
 
     this.gl.vertexAttribPointer(
       this.positionAttribute,
-      2,
+      3,
       this.gl.FLOAT,
       false,
       3 * Float32Array.BYTES_PER_ELEMENT,
@@ -133,20 +118,61 @@ export class Renderer3D implements IRenderer {
     );
     this.gl.enableVertexAttribArray(this.positionAttribute);
 
-    this.gl.vertexAttribPointer(
-      this.radiusAttribute,
+    this.projMatLoc = this.gl.getUniformLocation(this.program, "projMat");
+    const projectionMatrix = this.getProjMatrix(
       1,
-      this.gl.FLOAT,
-      false,
-      3 * Float32Array.BYTES_PER_ELEMENT,
-      2 * Float32Array.BYTES_PER_ELEMENT
+      this.gl.canvas.width / this.gl.canvas.height,
+      0,
+      100
     );
-    this.gl.enableVertexAttribArray(this.radiusAttribute);
+    this.gl.uniformMatrix4fv(this.projMatLoc, false, projectionMatrix);
 
-    this.gl.useProgram(this.program);
-    this.gl.uniform1f(this.widthUniform, this.gl.canvas.width);
-    this.gl.uniform1f(this.heightUniform, this.gl.canvas.height);
+    this.modelMatLoc = this.gl.getUniformLocation(this.program, "modelMat");
+    this.gl.clearColor(1, 1, 1, 1);
+  }
 
-    this.gl.drawArrays(this.gl.POINTS, 0, vertexData.length / 3);
+  clear(): void {
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+  }
+
+  drawAgents(agents: IAgentCollection): void {
+    agents.forEach((agent) => {
+      const modelMat = this.getModelMatrix(agent.getPosition(), -5);
+      this.gl.uniformMatrix4fv(this.modelMatLoc, false, modelMat);
+      this.gl.drawElements(
+        this.gl.TRIANGLES,
+        AgentMesh.indices.length,
+        this.gl.UNSIGNED_SHORT,
+        0
+      );
+    });
+  }
+
+  private getProjMatrix(
+    fov: number,
+    aspectRatio: number,
+    near: number,
+    far: number
+  ): Float32Array {
+    const f = 1.0 / Math.tan(fov / 2);
+    const i = 1 / (near - far);
+
+    // prettier-ignore
+    return new Float32Array([
+      f / aspectRatio, 0,                  0,  0,
+                    0, f,                  0,  0,
+                    0, 0,   (near + far) * i, -1,
+                    0, 0, near * far * i * 2,  0
+    ]);
+  }
+
+  private getModelMatrix(position: Vector2f, z: number): Float32Array {
+    // prettier-ignore
+    return new Float32Array([
+               1,          0, 0, 0,
+               0,          1, 0, 0,
+               0,          0, 1, 0,
+      position.x, position.y, z, 1
+    ]);
   }
 }

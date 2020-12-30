@@ -7,9 +7,7 @@
   </head>
   <body onload="CrowdSimulator.init()">
     <div class="container">
-      <div
-        class="settings"
-      >
+      <div class="settings">
         <label for="config">Configuration:</label>
         <select id="config">
           <option value="RandomToRandom">Random to Random</option>
@@ -26,13 +24,10 @@
         </select>
         <label for="numberOfAgents">Number of Agents:</label>
         <input type="number" id="numberOfAgents" value="25" />
-        <button
-          type="button"
-          onclick="CrowdSimulator.init()"
-        >
+        <button type="button" onclick="CrowdSimulator.init()">
           Initialise
         </button>
-      </form>
+      </div>
     </div>
 
     <canvas id="canvas" width="1280" height="640"></canvas>
@@ -46,6 +41,12 @@
         <button id="stepButton" onclick="CrowdSimulator.step()">Step</button>
       </div>
     </div>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
+      integrity="sha512-zhHQR0/H5SEBL3Wn6yYSaTTZej12z0hVZKOv3TwCUXT1z5qeqGcXJLLrbERYRScEDDpYIJhPC1fk31gqR783iQ=="
+      crossorigin="anonymous"
+      defer
+    ></script>
     <script src="demo3d.js"></script>
   </body>
 </html>
