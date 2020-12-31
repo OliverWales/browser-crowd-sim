@@ -1,16 +1,18 @@
 import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
 import { AgentMesh } from "./AgentMesh";
-import { Vector2f } from "./Vector2f";
+import { MatrixMath } from "./MatrixMath";
+import { TestMesh } from "./TestMesh";
 
 const vertexShaderText = `
   precision mediump float;
   attribute vec3 vertPosition;
   uniform mat4 projMat;
-  uniform mat4 modelMat;
+  uniform mat4 viewMat;
+  uniform mat4 worldMat;
   void main()
   {
-    gl_Position = projMat * vec4(vertPosition, 1.0);
+    gl_Position = projMat * viewMat * worldMat * vec4(vertPosition, 1.0);
   }
 `;
 
@@ -23,22 +25,38 @@ const fragmentShaderText = `
 `;
 
 export class Renderer3D implements IRenderer {
-  gl: WebGLRenderingContext;
-  program: WebGLProgram;
-  VertexBuffer: WebGLBuffer;
-  IndexBuffer: WebGLBuffer;
-  positionAttribute: number;
-  projMatLoc: WebGLUniformLocation;
-  modelMatLoc: WebGLUniformLocation;
+  // Rendering
+  private canvas: HTMLCanvasElement;
+  private gl: WebGLRenderingContext;
+  private program: WebGLProgram;
+  private VertexBuffer: WebGLBuffer;
+  private IndexBuffer: WebGLBuffer;
+  private positionAttribute: number;
+  private projMatLoc: WebGLUniformLocation;
+  private viewMatLoc: WebGLUniformLocation;
+  private worldMatLoc: WebGLUniformLocation;
+
+  // Camera controls
+  private drag: boolean;
+  private oldX: number;
+  private oldY: number;
+  private dX: number;
+  private dY: number;
+  private xRot = 0;
+  private yRot = Math.PI / 2; // Start from top-down view
 
   constructor(canvas: HTMLCanvasElement) {
-    this.gl = canvas.getContext("webgl");
+    this.canvas = canvas;
+
+    // Get WebGL context
+    this.gl = this.canvas.getContext("webgl");
 
     if (!this.gl) {
       console.error("WebGL not supported");
       return;
     }
 
+    // Compile shaders
     const vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
     const fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
 
@@ -63,6 +81,7 @@ export class Renderer3D implements IRenderer {
       return;
     }
 
+    // Create and validate program
     this.program = this.gl.createProgram();
     this.gl.attachShader(this.program, vertexShader);
     this.gl.attachShader(this.program, fragmentShader);
@@ -85,8 +104,21 @@ export class Renderer3D implements IRenderer {
       return;
     }
 
+    // Set WebGL settings
     this.gl.useProgram(this.program);
+    //this.gl.enable(this.gl.DEPTH_TEST);
+    //this.gl.enable(this.gl.CULL_FACE);
+    //this.gl.frontFace(this.gl.CCW);
+    //this.gl.cullFace(this.gl.BACK);
+    this.gl.clearColor(1, 1, 1, 1);
 
+    // Add event listeners
+    this.canvas.addEventListener("mousedown", this.mouseDown, false);
+    this.canvas.addEventListener("mouseup", this.mouseUp, false);
+    this.canvas.addEventListener("mouseout", this.mouseUp, false);
+    this.canvas.addEventListener("mousemove", this.mouseMove, false);
+
+    // Initialise vertex and index buffer
     this.VertexBuffer = this.gl.createBuffer();
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.VertexBuffer);
     this.gl.bufferData(
@@ -103,6 +135,7 @@ export class Renderer3D implements IRenderer {
       this.gl.STATIC_DRAW
     );
 
+    // Get attribute locations
     this.positionAttribute = this.gl.getAttribLocation(
       this.program,
       "vertPosition"
@@ -118,61 +151,82 @@ export class Renderer3D implements IRenderer {
     );
     this.gl.enableVertexAttribArray(this.positionAttribute);
 
+    // Get uniform locations
     this.projMatLoc = this.gl.getUniformLocation(this.program, "projMat");
-    const projectionMatrix = this.getProjMatrix(
-      1,
-      this.gl.canvas.width / this.gl.canvas.height,
-      0,
-      100
-    );
-    this.gl.uniformMatrix4fv(this.projMatLoc, false, projectionMatrix);
+    this.viewMatLoc = this.gl.getUniformLocation(this.program, "viewMat");
+    this.worldMatLoc = this.gl.getUniformLocation(this.program, "worldMat");
 
-    this.modelMatLoc = this.gl.getUniformLocation(this.program, "modelMat");
-    this.gl.clearColor(1, 1, 1, 1);
+    // Set up matrices
+    const projectionMatrix = MatrixMath.getPerspectiveProjectionMatrix(
+      45 * (Math.PI / 180), // 45deg y-axis FOV
+      this.canvas.width / this.canvas.height,
+      0.1,
+      1000
+    );
+
+    const viewMatrix = MatrixMath.getTranslationMatrix(0, 0, -20); // Move back on z axis
+
+    // prettier-ignore
+    const worldMatrix = MatrixMath.getXRotationMatrix(Math.PI / 2);
+
+    this.gl.uniformMatrix4fv(this.projMatLoc, false, projectionMatrix);
+    this.gl.uniformMatrix4fv(this.viewMatLoc, false, viewMatrix);
+    this.gl.uniformMatrix4fv(this.worldMatLoc, false, worldMatrix);
   }
 
   clear(): void {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
   }
 
-  drawAgents(agents: IAgentCollection): void {
-    agents.forEach((agent) => {
-      const modelMat = this.getModelMatrix(agent.getPosition(), -5);
-      this.gl.uniformMatrix4fv(this.modelMatLoc, false, modelMat);
-      this.gl.drawElements(
-        this.gl.TRIANGLES,
-        AgentMesh.indices.length,
-        this.gl.UNSIGNED_SHORT,
-        0
-      );
-    });
+  drawAgents(_agents: IAgentCollection): void {
+    // TODO: render a mesh for each agent
+    this.gl.drawElements(
+      this.gl.TRIANGLES,
+      AgentMesh.indices.length,
+      this.gl.UNSIGNED_SHORT,
+      0
+    );
   }
 
-  private getProjMatrix(
-    fov: number,
-    aspectRatio: number,
-    near: number,
-    far: number
-  ): Float32Array {
-    const f = 1.0 / Math.tan(fov / 2);
-    const i = 1 / (near - far);
+  private mouseDown = (event: MouseEvent) => {
+    this.drag = true;
+    this.oldX = event.pageX;
+    this.oldY = event.pageY;
+    event.preventDefault();
+    return false;
+  };
 
-    // prettier-ignore
-    return new Float32Array([
-      f / aspectRatio, 0,                  0,  0,
-                    0, f,                  0,  0,
-                    0, 0,   (near + far) * i, -1,
-                    0, 0, near * far * i * 2,  0
-    ]);
-  }
+  private mouseUp = (event: MouseEvent) => {
+    this.drag = false;
+    event.preventDefault();
+    return false;
+  };
 
-  private getModelMatrix(position: Vector2f, z: number): Float32Array {
-    // prettier-ignore
-    return new Float32Array([
-               1,          0, 0, 0,
-               0,          1, 0, 0,
-               0,          0, 1, 0,
-      position.x, position.y, z, 1
-    ]);
-  }
+  private mouseMove = (event: MouseEvent) => {
+    if (!this.drag) return false;
+    this.dX = ((event.pageX - this.oldX) * 2 * Math.PI) / this.canvas.width;
+    this.dY = ((event.pageY - this.oldY) * 2 * Math.PI) / this.canvas.height;
+    this.xRot += this.dX;
+    this.yRot += this.dY;
+    this.oldX = event.pageX;
+    this.oldY = event.pageY;
+
+    // Clamp Y rotation
+    if (this.yRot > Math.PI / 2) {
+      this.yRot = Math.PI / 2;
+    }
+
+    if (this.yRot < -Math.PI / 2) {
+      this.yRot = -Math.PI / 2;
+    }
+
+    let xRotMat = MatrixMath.getYRotationMatrix(this.xRot);
+    let yRotMat = MatrixMath.getXRotationMatrix(this.yRot);
+    let worldMatrix = MatrixMath.multiplyMatrices(xRotMat, yRotMat);
+    console.log(worldMatrix);
+    this.gl.uniformMatrix4fv(this.worldMatLoc, false, worldMatrix);
+
+    event.preventDefault();
+    return false;
+  };
 }
