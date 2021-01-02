@@ -2,7 +2,6 @@ import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
 import { AgentMesh } from "./AgentMesh";
 import { MatrixMath } from "./MatrixMath";
-import { TestMesh } from "./TestMesh";
 
 const vertexShaderText = `
   precision mediump float;
@@ -10,9 +9,11 @@ const vertexShaderText = `
   uniform mat4 projMat;
   uniform mat4 viewMat;
   uniform mat4 worldMat;
+  uniform vec2 position;
+  uniform float radius;
   void main()
   {
-    gl_Position = projMat * viewMat * worldMat * vec4(vertPosition, 1.0);
+    gl_Position = projMat * viewMat * worldMat * vec4(vertPosition.x * radius + position.x, vertPosition.y * radius, vertPosition.z * radius + position.y, 1.0);
   }
 `;
 
@@ -35,6 +36,8 @@ export class Renderer3D implements IRenderer {
   private projMatLoc: WebGLUniformLocation;
   private viewMatLoc: WebGLUniformLocation;
   private worldMatLoc: WebGLUniformLocation;
+  private posVecLoc: WebGLUniformLocation;
+  private radiusLoc: WebGLUniformLocation;
 
   // Camera controls
   private drag: boolean;
@@ -106,10 +109,10 @@ export class Renderer3D implements IRenderer {
 
     // Set WebGL settings
     this.gl.useProgram(this.program);
-    //this.gl.enable(this.gl.DEPTH_TEST);
-    //this.gl.enable(this.gl.CULL_FACE);
-    //this.gl.frontFace(this.gl.CCW);
-    //this.gl.cullFace(this.gl.BACK);
+    this.gl.enable(this.gl.DEPTH_TEST);
+    this.gl.enable(this.gl.CULL_FACE);
+    this.gl.frontFace(this.gl.CCW);
+    this.gl.cullFace(this.gl.BACK);
     this.gl.clearColor(1, 1, 1, 1);
 
     // Add event listeners
@@ -155,16 +158,18 @@ export class Renderer3D implements IRenderer {
     this.projMatLoc = this.gl.getUniformLocation(this.program, "projMat");
     this.viewMatLoc = this.gl.getUniformLocation(this.program, "viewMat");
     this.worldMatLoc = this.gl.getUniformLocation(this.program, "worldMat");
+    this.posVecLoc = this.gl.getUniformLocation(this.program, "position");
+    this.radiusLoc = this.gl.getUniformLocation(this.program, "radius");
 
     // Set up matrices
     const projectionMatrix = MatrixMath.getPerspectiveProjectionMatrix(
       45 * (Math.PI / 180), // 45deg y-axis FOV
       this.canvas.width / this.canvas.height,
       0.1,
-      1000
+      2000
     );
 
-    const viewMatrix = MatrixMath.getTranslationMatrix(0, 0, -20); // Move back on z axis
+    const viewMatrix = MatrixMath.getTranslationMatrix(0, 0, -800); // Move centre to centre and back on z axis
 
     // prettier-ignore
     const worldMatrix = MatrixMath.getXRotationMatrix(Math.PI / 2);
@@ -178,14 +183,23 @@ export class Renderer3D implements IRenderer {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
   }
 
-  drawAgents(_agents: IAgentCollection): void {
-    // TODO: render a mesh for each agent
-    this.gl.drawElements(
-      this.gl.TRIANGLES,
-      AgentMesh.indices.length,
-      this.gl.UNSIGNED_SHORT,
-      0
-    );
+  drawAgents(agents: IAgentCollection): void {
+    agents.forEach((agent) => {
+      let pos = agent.getPosition();
+      this.gl.uniform2f(
+        this.posVecLoc,
+        pos.x - this.canvas.width / 2,
+        pos.y - this.canvas.height / 2
+      );
+      this.gl.uniform1f(this.radiusLoc, agent.Radius);
+
+      this.gl.drawElements(
+        this.gl.TRIANGLES,
+        AgentMesh.indices.length,
+        this.gl.UNSIGNED_SHORT,
+        0
+      );
+    });
   }
 
   private mouseDown = (event: MouseEvent) => {
@@ -223,7 +237,6 @@ export class Renderer3D implements IRenderer {
     let xRotMat = MatrixMath.getYRotationMatrix(this.xRot);
     let yRotMat = MatrixMath.getXRotationMatrix(this.yRot);
     let worldMatrix = MatrixMath.multiplyMatrices(xRotMat, yRotMat);
-    console.log(worldMatrix);
     this.gl.uniformMatrix4fv(this.worldMatLoc, false, worldMatrix);
 
     event.preventDefault();
