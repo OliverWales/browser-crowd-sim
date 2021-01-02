@@ -1,4 +1,4 @@
-import { MatrixMath } from "../src/MatrixMath";
+import { Matrix } from "../src/Matrix";
 
 describe("Vector2f Operations Tests", function () {
   it("Matrix multiplication", function () {
@@ -18,7 +18,7 @@ describe("Vector2f Operations Tests", function () {
       5, 4, 8, 8
     ]);
 
-    const c = MatrixMath.multiplyMatrices(a, b);
+    const c = Matrix.multiplyMatrices(a, b);
 
     // prettier-ignore
     const expected = new Float32Array([

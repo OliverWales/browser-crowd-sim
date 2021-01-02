@@ -1,4 +1,4 @@
-export class MatrixMath {
+export class Matrix {
   static getIdentityMatrix(): Float32Array {
     // prettier-ignore
     return new Float32Array([
@@ -31,6 +31,19 @@ export class MatrixMath {
       c, 0,-s, 0,
       0, 1, 0, 0,
       s, 0, c, 0,
+      0, 0, 0, 1
+    ]);
+  }
+
+  static getZRotationMatrix(angle: number): Float32Array {
+    const s = Math.sin(angle);
+    const c = Math.cos(angle);
+
+    // prettier-ignore
+    return new Float32Array([
+      c, s, 0, 0,
+     -s, c, 0, 0,
+      0, 0, 1, 0,
       0, 0, 0, 1
     ]);
   }

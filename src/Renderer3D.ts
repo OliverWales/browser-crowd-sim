@@ -1,7 +1,8 @@
 import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
 import { AgentMesh } from "./AgentMesh";
-import { MatrixMath } from "./MatrixMath";
+import { Matrix } from "./Matrix";
+import { Vector2f } from "./Vector2f";
 
 const vertexShaderText = `
   precision mediump float;
@@ -10,10 +11,14 @@ const vertexShaderText = `
   uniform mat4 viewMat;
   uniform mat4 worldMat;
   uniform vec2 position;
+  uniform vec2 direction;
   uniform float radius;
   void main()
   {
-    gl_Position = projMat * viewMat * worldMat * vec4(vertPosition.x * radius + position.x, vertPosition.y * radius, vertPosition.z * radius + position.y, 1.0);
+    mediump vec3 rotatedVert = vec3(vertPosition.x * direction.x - vertPosition.y * direction.y,
+                                    vertPosition.x * direction.y + vertPosition.y * direction.x,
+                                    vertPosition.z);
+    gl_Position = projMat * viewMat * worldMat * vec4(rotatedVert.x * radius + position.x, rotatedVert.y * radius + position.y, rotatedVert.z * radius, 1.0);
   }
 `;
 
@@ -37,6 +42,7 @@ export class Renderer3D implements IRenderer {
   private viewMatLoc: WebGLUniformLocation;
   private worldMatLoc: WebGLUniformLocation;
   private posVecLoc: WebGLUniformLocation;
+  private dirVecLoc: WebGLUniformLocation;
   private radiusLoc: WebGLUniformLocation;
 
   // Camera controls
@@ -46,7 +52,7 @@ export class Renderer3D implements IRenderer {
   private dX: number;
   private dY: number;
   private xRot = 0;
-  private yRot = Math.PI / 2; // Start from top-down view
+  private yRot = 0;
   private cameraDist = 800; // Start camera 800 'px' away
 
   constructor(canvas: HTMLCanvasElement) {
@@ -161,20 +167,21 @@ export class Renderer3D implements IRenderer {
     this.viewMatLoc = this.gl.getUniformLocation(this.program, "viewMat");
     this.worldMatLoc = this.gl.getUniformLocation(this.program, "worldMat");
     this.posVecLoc = this.gl.getUniformLocation(this.program, "position");
+    this.dirVecLoc = this.gl.getUniformLocation(this.program, "direction");
     this.radiusLoc = this.gl.getUniformLocation(this.program, "radius");
 
     // Set up matrices
-    const projectionMatrix = MatrixMath.getPerspectiveProjectionMatrix(
+    const projectionMatrix = Matrix.getPerspectiveProjectionMatrix(
       45 * (Math.PI / 180), // 45deg y-axis FOV
       this.canvas.width / this.canvas.height,
       0.1,
       this.cameraDist + 2000
     );
 
-    const viewMatrix = MatrixMath.getTranslationMatrix(0, 0, -this.cameraDist); // Move camera back on z axis
+    const viewMatrix = Matrix.getTranslationMatrix(0, 0, -this.cameraDist); // Move camera back on z axis
 
     // prettier-ignore
-    const worldMatrix = MatrixMath.getXRotationMatrix(Math.PI / 2);
+    const worldMatrix = Matrix.getIdentityMatrix();
 
     this.gl.uniformMatrix4fv(this.projMatLoc, false, projectionMatrix);
     this.gl.uniformMatrix4fv(this.viewMatLoc, false, viewMatrix);
@@ -187,14 +194,25 @@ export class Renderer3D implements IRenderer {
 
   drawAgents(agents: IAgentCollection): void {
     agents.forEach((agent) => {
+      // Position
       let pos = agent.getPosition();
       this.gl.uniform2f(
         this.posVecLoc,
         pos.x - this.canvas.width / 2,
         pos.y - this.canvas.height / 2
       );
+
+      // Direction
+      let dir = agent.getDirection().normalise();
+      if (dir.x == 0 && dir.y == 0) {
+        dir = new Vector2f(1, 0);
+      }
+      this.gl.uniform2f(this.dirVecLoc, dir.x, dir.y);
+
+      // Radius
       this.gl.uniform1f(this.radiusLoc, agent.Radius);
 
+      // Draw mesh
       this.gl.drawElements(
         this.gl.TRIANGLES,
         AgentMesh.indices.length,
@@ -228,18 +246,20 @@ export class Renderer3D implements IRenderer {
     this.oldY = event.pageY;
 
     // Clamp Y rotation
-    if (this.yRot > Math.PI / 2) {
-      this.yRot = Math.PI / 2;
+    if (this.yRot > 0) {
+      this.yRot = 0;
     }
 
-    if (this.yRot < -Math.PI / 2) {
-      this.yRot = -Math.PI / 2;
+    if (this.yRot < -Math.PI) {
+      this.yRot = -Math.PI;
     }
 
-    let xRotMat = MatrixMath.getYRotationMatrix(this.xRot);
-    let yRotMat = MatrixMath.getXRotationMatrix(this.yRot);
-    let worldMatrix = MatrixMath.multiplyMatrices(xRotMat, yRotMat);
+    let xRotMat = Matrix.getZRotationMatrix(this.xRot);
+    let yRotMat = Matrix.getXRotationMatrix(this.yRot);
+    let worldMatrix = Matrix.multiplyMatrices(xRotMat, yRotMat);
     this.gl.uniformMatrix4fv(this.worldMatLoc, false, worldMatrix);
+
+    console.log(this.yRot);
 
     event.preventDefault();
     return false;
@@ -251,10 +271,10 @@ export class Renderer3D implements IRenderer {
       this.cameraDist = 0;
     }
 
-    const viewMatrix = MatrixMath.getTranslationMatrix(0, 0, -this.cameraDist);
+    const viewMatrix = Matrix.getTranslationMatrix(0, 0, -this.cameraDist);
     this.gl.uniformMatrix4fv(this.viewMatLoc, false, viewMatrix);
 
-    const projectionMatrix = MatrixMath.getPerspectiveProjectionMatrix(
+    const projectionMatrix = Matrix.getPerspectiveProjectionMatrix(
       45 * (Math.PI / 180), // 45deg y-axis FOV
       this.canvas.width / this.canvas.height,
       0.1,
