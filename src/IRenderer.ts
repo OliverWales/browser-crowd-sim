@@ -1,6 +1,6 @@
-import { IAgent } from "./IAgent";
+import { IAgentCollection } from "./IAgentCollection";
 
 export interface IRenderer {
   clear(): void;
-  drawAgent(agent: IAgent): void;
+  drawAgents(agents: IAgentCollection): void;
 }

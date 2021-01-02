@@ -1,25 +1,25 @@
-const path = require('path');
+const path = require("path");
 module.exports = {
-  entry: './src/main.ts',
-  devtool: 'inline-source-map',
+  entry: { demo2d: "./src/demo2d.ts", demo3d: "./src/demo3d.ts" },
+  devtool: "inline-source-map",
   devServer: {
-    contentBase: './build'
+    contentBase: "./build",
   },
   module: {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/
-      }
-    ]
+        use: "ts-loader",
+        exclude: /node_modules/,
+      },
+    ],
   },
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ]
+    extensions: [".tsx", ".ts", ".js"],
   },
   output: {
-    filename: 'bundle.js',
-    library: 'CrowdSimulator',
-    path: path.resolve(__dirname, 'build')
-  }
+    filename: "[name].js",
+    library: "CrowdSimulator",
+    path: path.resolve(__dirname, "build"),
+  },
 };

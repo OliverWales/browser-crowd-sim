@@ -1,6 +1,5 @@
 import { Simulation } from "./Simulation";
-import { Renderer2D } from "./Renderer2D";
-
+import { Renderer3D } from "./Renderer3D";
 import { BasicAgent } from "./BasicAgent";
 import { StopAgent } from "./StopAgent";
 import { Configurations } from "./Configurations";
@@ -22,7 +21,7 @@ const framerate = document.getElementById("framerate") as HTMLParagraphElement;
 const playButton = document.getElementById("playButton") as HTMLButtonElement;
 const stepButton = document.getElementById("stepButton") as HTMLButtonElement;
 
-const renderer = new Renderer2D(canvas);
+const renderer = new Renderer3D(canvas);
 const simulation = new Simulation(renderer, new AgentTree());
 var play = false;
 
@@ -88,7 +87,7 @@ export function reconfigure() {
   }
 
   const config = configSelect.value;
-  const agentType = agentTypeSelect.value; // TODO: wire this in
+  const agentType = agentTypeSelect.value;
   const n = parseInt(numberOfAgentsInput.value) ?? 0;
 
   // Select agent constructor
