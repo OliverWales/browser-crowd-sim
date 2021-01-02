@@ -47,6 +47,7 @@ export class Renderer3D implements IRenderer {
   private dY: number;
   private xRot = 0;
   private yRot = Math.PI / 2; // Start from top-down view
+  private cameraDist = 800; // Start camera 800 'px' away
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -120,6 +121,7 @@ export class Renderer3D implements IRenderer {
     this.canvas.addEventListener("mouseup", this.mouseUp, false);
     this.canvas.addEventListener("mouseout", this.mouseUp, false);
     this.canvas.addEventListener("mousemove", this.mouseMove, false);
+    this.canvas.addEventListener("wheel", this.mouseScroll, false);
 
     // Initialise vertex and index buffer
     this.VertexBuffer = this.gl.createBuffer();
@@ -166,10 +168,10 @@ export class Renderer3D implements IRenderer {
       45 * (Math.PI / 180), // 45deg y-axis FOV
       this.canvas.width / this.canvas.height,
       0.1,
-      2000
+      this.cameraDist + 2000
     );
 
-    const viewMatrix = MatrixMath.getTranslationMatrix(0, 0, -800); // Move centre to centre and back on z axis
+    const viewMatrix = MatrixMath.getTranslationMatrix(0, 0, -this.cameraDist); // Move camera back on z axis
 
     // prettier-ignore
     const worldMatrix = MatrixMath.getXRotationMatrix(Math.PI / 2);
@@ -238,6 +240,27 @@ export class Renderer3D implements IRenderer {
     let yRotMat = MatrixMath.getXRotationMatrix(this.yRot);
     let worldMatrix = MatrixMath.multiplyMatrices(xRotMat, yRotMat);
     this.gl.uniformMatrix4fv(this.worldMatLoc, false, worldMatrix);
+
+    event.preventDefault();
+    return false;
+  };
+
+  private mouseScroll = (event: WheelEvent) => {
+    this.cameraDist += event.deltaY;
+    if (this.cameraDist < 0) {
+      this.cameraDist = 0;
+    }
+
+    const viewMatrix = MatrixMath.getTranslationMatrix(0, 0, -this.cameraDist);
+    this.gl.uniformMatrix4fv(this.viewMatLoc, false, viewMatrix);
+
+    const projectionMatrix = MatrixMath.getPerspectiveProjectionMatrix(
+      45 * (Math.PI / 180), // 45deg y-axis FOV
+      this.canvas.width / this.canvas.height,
+      0.1,
+      this.cameraDist + 2000
+    );
+    this.gl.uniformMatrix4fv(this.projMatLoc, false, projectionMatrix);
 
     event.preventDefault();
     return false;
