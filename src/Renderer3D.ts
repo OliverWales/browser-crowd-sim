@@ -1,7 +1,7 @@
 import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
 import { AgentMesh } from "./AgentMesh";
-import { Mat4f } from "./Matrix";
+import { Mat4f } from "./Mat4f";
 import { Vector2f } from "./Vector2f";
 
 const vertexShaderText = `
@@ -20,12 +20,25 @@ const vertexShaderText = `
 
   void main()
   {
+    mediump vec3 ambient = vec3(0.3, 0.3, 0.4);
+    mediump vec3 lightColour = vec3(1.0, 1.0, 0.6);
+    mediump vec3 lightDirection = normalize(vec3(-0.2, -0.3, 1.0));
+
     mediump vec3 rotatedVert = vec3(vertPosition.x * direction.x - vertPosition.y * direction.y,
                                     vertPosition.x * direction.y + vertPosition.y * direction.x,
                                     vertPosition.z);
-    gl_Position = projMat * viewMat * worldMat * vec4(rotatedVert.x * radius + position.x, rotatedVert.y * radius + position.y, rotatedVert.z * radius, 1.0);
+                                    
+    gl_Position = projMat * viewMat * worldMat * vec4(rotatedVert.x * radius + position.x,
+                                                      rotatedVert.y * radius + position.y,
+                                                      rotatedVert.z * radius,
+                                                      1.0);
     
-    fragColor = 0.5 * vertNormal + 0.5;
+    mediump vec3 rotatedNormal = vec3(vertNormal.x * direction.x - vertNormal.y * direction.y,
+                                      vertNormal.x * direction.y + vertNormal.y * direction.x,
+                                      vertNormal.z);
+    
+    mediump vec3 directional = lightColour * max(dot(rotatedNormal, lightDirection), 0.0);
+    fragColor = ambient + directional;
   }
 `;
 
@@ -130,7 +143,7 @@ export class Renderer3D implements IRenderer {
     this.gl.enable(this.gl.CULL_FACE);
     this.gl.frontFace(this.gl.CCW);
     this.gl.cullFace(this.gl.BACK);
-    this.gl.clearColor(1, 1, 1, 1);
+    this.gl.clearColor(0.5, 0.5, 1.0, 1.0);
 
     // Add event listeners
     this.canvas.addEventListener("mousedown", this.mouseDown, false);
