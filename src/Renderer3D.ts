@@ -8,7 +8,7 @@ const vertexShaderText = `
   precision mediump float;
   attribute vec3 vertPosition;
   attribute vec3 vertNormal;
-  varying vec3 fragColor;
+  varying vec3 fragColour;
 
   uniform mat4 projMat;
   uniform mat4 viewMat;
@@ -17,11 +17,12 @@ const vertexShaderText = `
   uniform vec2 position;
   uniform vec2 direction;
   uniform float radius;
+  uniform vec3 baseColour;
 
   void main()
   {
-    mediump vec3 ambient = vec3(0.3, 0.3, 0.4);
-    mediump vec3 lightColour = vec3(1.0, 1.0, 0.6);
+    mediump vec3 ambient = vec3(0.26, 0.38, 0.49);
+    mediump vec3 lightColour = vec3(1.0, 1.0, 0.8);
     mediump vec3 lightDirection = normalize(vec3(-0.2, -0.3, 1.0));
 
     mediump vec3 rotatedVert = vec3(vertPosition.x * direction.x - vertPosition.y * direction.y,
@@ -38,17 +39,17 @@ const vertexShaderText = `
                                       vertNormal.z);
     
     mediump vec3 directional = lightColour * max(dot(rotatedNormal, lightDirection), 0.0);
-    fragColor = ambient + directional;
+    fragColour = (ambient + directional) * baseColour;
   }
 `;
 
 const fragmentShaderText = `
   precision mediump float;
-  varying vec3 fragColor;
+  varying vec3 fragColour;
 
   void main()
   {
-    gl_FragColor = vec4(fragColor, 1);
+    gl_FragColor = vec4(fragColour, 1);
   }
 `;
 
@@ -67,6 +68,7 @@ export class Renderer3D implements IRenderer {
   private posVecLoc: WebGLUniformLocation;
   private dirVecLoc: WebGLUniformLocation;
   private radiusLoc: WebGLUniformLocation;
+  private baseColourLoc: WebGLUniformLocation;
 
   // Camera controls
   private drag: boolean;
@@ -143,7 +145,7 @@ export class Renderer3D implements IRenderer {
     this.gl.enable(this.gl.CULL_FACE);
     this.gl.frontFace(this.gl.CCW);
     this.gl.cullFace(this.gl.BACK);
-    this.gl.clearColor(0.5, 0.5, 1.0, 1.0);
+    this.gl.clearColor(0.53, 0.76, 1.0, 0.98);
 
     // Add event listeners
     this.canvas.addEventListener("mousedown", this.mouseDown, false);
@@ -207,6 +209,7 @@ export class Renderer3D implements IRenderer {
     this.posVecLoc = this.gl.getUniformLocation(this.program, "position");
     this.dirVecLoc = this.gl.getUniformLocation(this.program, "direction");
     this.radiusLoc = this.gl.getUniformLocation(this.program, "radius");
+    this.baseColourLoc = this.gl.getUniformLocation(this.program, "baseColour");
 
     // Set up matrices
     const projectionMatrix = Mat4f.getPerspectiveProjectionMatrix(
@@ -249,6 +252,9 @@ export class Renderer3D implements IRenderer {
 
       // Radius
       this.gl.uniform1f(this.radiusLoc, agent.Radius);
+
+      // Base colour
+      this.gl.uniform3f(this.baseColourLoc, 1, 0, 0);
 
       // Draw mesh
       this.gl.drawElements(

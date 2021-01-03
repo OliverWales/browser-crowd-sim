@@ -1,5 +1,4 @@
-# inputFile = input("Input file: ")
-inputFile = "Agent.obj"
+inputFile = input("Input file: ")
 
 vertexPositions = []
 normals = []
@@ -30,14 +29,14 @@ for face in faces:
 
 print("// prettier-ignore")
 print("static vertices = [")
-print("  // position           // normal")
+print("  // position + normal")
 for i in range(len(vertexPositions)):
     vertexPosition = vertexPositions[i]
     normalIndex = vertexNormals[i]
 
     vertexNormal = normals[normalIndex]
 
-    print("  {0}, {1}, {2},\t{3}, {4}, {5},".format(
+    print("  {0}, {1}, {2}, {3}, {4}, {5},".format(
         float(vertexPosition[0]),
         float(vertexPosition[1]),
         float(vertexPosition[2]),
