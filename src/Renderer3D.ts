@@ -7,26 +7,35 @@ import { Vector2f } from "./Vector2f";
 const vertexShaderText = `
   precision mediump float;
   attribute vec3 vertPosition;
+  attribute vec3 vertNormal;
+  varying vec3 fragColor;
+
   uniform mat4 projMat;
   uniform mat4 viewMat;
   uniform mat4 worldMat;
+
   uniform vec2 position;
   uniform vec2 direction;
   uniform float radius;
+
   void main()
   {
     mediump vec3 rotatedVert = vec3(vertPosition.x * direction.x - vertPosition.y * direction.y,
                                     vertPosition.x * direction.y + vertPosition.y * direction.x,
                                     vertPosition.z);
     gl_Position = projMat * viewMat * worldMat * vec4(rotatedVert.x * radius + position.x, rotatedVert.y * radius + position.y, rotatedVert.z * radius, 1.0);
+    
+    fragColor = 0.5 * vertNormal + 0.5;
   }
 `;
 
 const fragmentShaderText = `
   precision mediump float;
+  varying vec3 fragColor;
+
   void main()
   {
-    gl_FragColor = vec4(1, 0, 0, 1);
+    gl_FragColor = vec4(fragColor, 1);
   }
 `;
 
@@ -38,6 +47,7 @@ export class Renderer3D implements IRenderer {
   private VertexBuffer: WebGLBuffer;
   private IndexBuffer: WebGLBuffer;
   private positionAttribute: number;
+  private normalAttribute: number;
   private projMatLoc: WebGLUniformLocation;
   private viewMatLoc: WebGLUniformLocation;
   private worldMatLoc: WebGLUniformLocation;
@@ -157,10 +167,25 @@ export class Renderer3D implements IRenderer {
       3,
       this.gl.FLOAT,
       false,
-      3 * Float32Array.BYTES_PER_ELEMENT,
+      6 * Float32Array.BYTES_PER_ELEMENT,
       0
     );
     this.gl.enableVertexAttribArray(this.positionAttribute);
+
+    this.normalAttribute = this.gl.getAttribLocation(
+      this.program,
+      "vertNormal"
+    );
+
+    this.gl.vertexAttribPointer(
+      this.normalAttribute,
+      3,
+      this.gl.FLOAT,
+      false,
+      6 * Float32Array.BYTES_PER_ELEMENT,
+      3 * Float32Array.BYTES_PER_ELEMENT
+    );
+    this.gl.enableVertexAttribArray(this.normalAttribute);
 
     // Get uniform locations
     this.projMatLoc = this.gl.getUniformLocation(this.program, "projMat");
@@ -258,8 +283,6 @@ export class Renderer3D implements IRenderer {
     let yRotMat = Matrix.getXRotationMatrix(this.yRot);
     let worldMatrix = Matrix.multiplyMatrices(xRotMat, yRotMat);
     this.gl.uniformMatrix4fv(this.worldMatLoc, false, worldMatrix);
-
-    console.log(this.yRot);
 
     event.preventDefault();
     return false;
