@@ -1,6 +1,7 @@
 inputFile = input("Input file: ")
 
-verts = []
+vertexPositions = []
+normals = []
 faces = []
 
 with open(inputFile, "r") as f:
@@ -8,20 +9,45 @@ with open(inputFile, "r") as f:
         tokens = line.rstrip().split(" ")
 
         if(tokens[0] == "v"):
-            verts.append([tokens[1], tokens[2], tokens[3]])
+            vertexPositions.append([tokens[1], tokens[2], tokens[3]])
+        if(tokens[0] == "vn"):
+            normals.append([tokens[1], tokens[2], tokens[3]])
         elif(tokens[0] == "f"):
             faces.append([tokens[1], tokens[2], tokens[3]])
 
+vertexNormals = {}
+faceVertices = []
+
+for face in faces:
+    for faceVertex in face:
+        faceVertex = faceVertex.split("//")
+        vertexIndex = int(faceVertex[0]) - 1
+        normalIndex = int(faceVertex[1]) - 1
+
+        faceVertices.append(vertexIndex)
+        vertexNormals[vertexIndex] = normalIndex
+
 print("// prettier-ignore")
 print("static vertices = [")
-for vert in verts:
-    print("  {0}, {1}, {2},".format(
-        float(vert[0]), float(vert[1]), float(vert[2])))
+print("  // position + normal")
+for i in range(len(vertexPositions)):
+    vertexPosition = vertexPositions[i]
+    normalIndex = vertexNormals[i]
+
+    vertexNormal = normals[normalIndex]
+
+    print("  {0}, {1}, {2}, {3}, {4}, {5},".format(
+        float(vertexPosition[0]),
+        float(vertexPosition[1]),
+        float(vertexPosition[2]),
+        float(vertexNormal[0]),
+        float(vertexNormal[1]),
+        float(vertexNormal[2])))
 print("];\n")
 
 print("// prettier-ignore")
 print("static indices = [")
-for face in faces:
+for i in range(0, len(faceVertices), 3):
     print("  {0}, {1}, {2},".format(
-        int(face[0])-1, int(face[1])-1, int(face[2])-1))
+        faceVertices[i], faceVertices[i + 1], faceVertices[i + 2]))
 print("];\n")

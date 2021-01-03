@@ -1,32 +1,56 @@
 import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
 import { AgentMesh } from "./AgentMesh";
-import { Matrix } from "./Matrix";
+import { Mat4f } from "./Mat4f";
 import { Vector2f } from "./Vector2f";
+import { FloorMesh } from "./FloorMesh";
 
 const vertexShaderText = `
   precision mediump float;
   attribute vec3 vertPosition;
+  attribute vec3 vertNormal;
+  varying vec3 fragColour;
+
   uniform mat4 projMat;
   uniform mat4 viewMat;
   uniform mat4 worldMat;
+
   uniform vec2 position;
   uniform vec2 direction;
   uniform float radius;
+  uniform vec3 baseColour;
+
   void main()
   {
+    mediump vec3 ambient = vec3(0.26, 0.38, 0.49);
+    mediump vec3 lightColour = vec3(1.0, 1.0, 0.8);
+    mediump vec3 lightDirection = normalize(vec3(-0.2, -0.3, 1.0));
+
     mediump vec3 rotatedVert = vec3(vertPosition.x * direction.x - vertPosition.y * direction.y,
                                     vertPosition.x * direction.y + vertPosition.y * direction.x,
                                     vertPosition.z);
-    gl_Position = projMat * viewMat * worldMat * vec4(rotatedVert.x * radius + position.x, rotatedVert.y * radius + position.y, rotatedVert.z * radius, 1.0);
+                                    
+    gl_Position = projMat * viewMat * worldMat * vec4(rotatedVert.x * radius + position.x,
+                                                      rotatedVert.y * radius + position.y,
+                                                      rotatedVert.z * radius,
+                                                      1.0);
+    
+    mediump vec3 rotatedNormal = vec3(vertNormal.x * direction.x - vertNormal.y * direction.y,
+                                      vertNormal.x * direction.y + vertNormal.y * direction.x,
+                                      vertNormal.z);
+    
+    mediump vec3 directional = lightColour * max(dot(rotatedNormal, lightDirection), 0.0);
+    fragColour = (ambient + directional) * baseColour;
   }
 `;
 
 const fragmentShaderText = `
   precision mediump float;
+  varying vec3 fragColour;
+
   void main()
   {
-    gl_FragColor = vec4(1, 0, 0, 1);
+    gl_FragColor = vec4(fragColour, 1);
   }
 `;
 
@@ -38,12 +62,14 @@ export class Renderer3D implements IRenderer {
   private VertexBuffer: WebGLBuffer;
   private IndexBuffer: WebGLBuffer;
   private positionAttribute: number;
+  private normalAttribute: number;
   private projMatLoc: WebGLUniformLocation;
   private viewMatLoc: WebGLUniformLocation;
   private worldMatLoc: WebGLUniformLocation;
   private posVecLoc: WebGLUniformLocation;
   private dirVecLoc: WebGLUniformLocation;
   private radiusLoc: WebGLUniformLocation;
+  private baseColourLoc: WebGLUniformLocation;
 
   // Camera controls
   private drag: boolean;
@@ -120,7 +146,7 @@ export class Renderer3D implements IRenderer {
     this.gl.enable(this.gl.CULL_FACE);
     this.gl.frontFace(this.gl.CCW);
     this.gl.cullFace(this.gl.BACK);
-    this.gl.clearColor(1, 1, 1, 1);
+    this.gl.clearColor(0.53, 0.76, 1.0, 0.98);
 
     // Add event listeners
     this.canvas.addEventListener("mousedown", this.mouseDown, false);
@@ -130,19 +156,25 @@ export class Renderer3D implements IRenderer {
     this.canvas.addEventListener("wheel", this.mouseScroll, false);
 
     // Initialise vertex and index buffer
+    const vertices = new Float32Array(
+      AgentMesh.vertices.concat(
+        FloorMesh.getVertices(canvas.width * 1.1, canvas.height * 1.1)
+      )
+    );
     this.VertexBuffer = this.gl.createBuffer();
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.VertexBuffer);
-    this.gl.bufferData(
-      this.gl.ARRAY_BUFFER,
-      new Float32Array(AgentMesh.vertices),
-      this.gl.STATIC_DRAW
-    );
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
 
+    const indices = new Uint16Array(
+      AgentMesh.indices.concat(
+        FloorMesh.getIndices(AgentMesh.vertices.length / 6)
+      )
+    );
     this.IndexBuffer = this.gl.createBuffer();
     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.IndexBuffer);
     this.gl.bufferData(
       this.gl.ELEMENT_ARRAY_BUFFER,
-      new Uint16Array(AgentMesh.indices),
+      indices,
       this.gl.STATIC_DRAW
     );
 
@@ -157,10 +189,25 @@ export class Renderer3D implements IRenderer {
       3,
       this.gl.FLOAT,
       false,
-      3 * Float32Array.BYTES_PER_ELEMENT,
+      6 * Float32Array.BYTES_PER_ELEMENT,
       0
     );
     this.gl.enableVertexAttribArray(this.positionAttribute);
+
+    this.normalAttribute = this.gl.getAttribLocation(
+      this.program,
+      "vertNormal"
+    );
+
+    this.gl.vertexAttribPointer(
+      this.normalAttribute,
+      3,
+      this.gl.FLOAT,
+      false,
+      6 * Float32Array.BYTES_PER_ELEMENT,
+      3 * Float32Array.BYTES_PER_ELEMENT
+    );
+    this.gl.enableVertexAttribArray(this.normalAttribute);
 
     // Get uniform locations
     this.projMatLoc = this.gl.getUniformLocation(this.program, "projMat");
@@ -169,19 +216,20 @@ export class Renderer3D implements IRenderer {
     this.posVecLoc = this.gl.getUniformLocation(this.program, "position");
     this.dirVecLoc = this.gl.getUniformLocation(this.program, "direction");
     this.radiusLoc = this.gl.getUniformLocation(this.program, "radius");
+    this.baseColourLoc = this.gl.getUniformLocation(this.program, "baseColour");
 
     // Set up matrices
-    const projectionMatrix = Matrix.getPerspectiveProjectionMatrix(
+    const projectionMatrix = Mat4f.getPerspectiveProjectionMatrix(
       45 * (Math.PI / 180), // 45deg y-axis FOV
       this.canvas.width / this.canvas.height,
       0.1,
       this.cameraDist + 2000
     );
 
-    const viewMatrix = Matrix.getTranslationMatrix(0, 0, -this.cameraDist); // Move camera back on z axis
+    const viewMatrix = Mat4f.getTranslationMatrix(0, 0, -this.cameraDist); // Move camera back on z axis
 
     // prettier-ignore
-    const worldMatrix = Matrix.getIdentityMatrix();
+    const worldMatrix = Mat4f.getIdentityMatrix();
 
     this.gl.uniformMatrix4fv(this.projMatLoc, false, projectionMatrix);
     this.gl.uniformMatrix4fv(this.viewMatLoc, false, viewMatrix);
@@ -193,6 +241,7 @@ export class Renderer3D implements IRenderer {
   }
 
   drawAgents(agents: IAgentCollection): void {
+    // Draw agents
     agents.forEach((agent) => {
       // Position
       let pos = agent.getPosition();
@@ -212,6 +261,9 @@ export class Renderer3D implements IRenderer {
       // Radius
       this.gl.uniform1f(this.radiusLoc, agent.Radius);
 
+      // Base colour
+      this.gl.uniform3f(this.baseColourLoc, 1, 0, 0);
+
       // Draw mesh
       this.gl.drawElements(
         this.gl.TRIANGLES,
@@ -220,6 +272,19 @@ export class Renderer3D implements IRenderer {
         0
       );
     });
+
+    // Draw floor
+    this.gl.uniform2f(this.posVecLoc, 0, 0);
+    this.gl.uniform2f(this.dirVecLoc, 1, 0);
+    this.gl.uniform1f(this.radiusLoc, 1);
+    this.gl.uniform3f(this.baseColourLoc, 1, 1, 1);
+
+    this.gl.drawElements(
+      this.gl.TRIANGLES,
+      6,
+      this.gl.UNSIGNED_SHORT,
+      AgentMesh.indices.length * Uint16Array.BYTES_PER_ELEMENT
+    );
   }
 
   private mouseDown = (event: MouseEvent) => {
@@ -254,12 +319,10 @@ export class Renderer3D implements IRenderer {
       this.yRot = -Math.PI;
     }
 
-    let xRotMat = Matrix.getZRotationMatrix(this.xRot);
-    let yRotMat = Matrix.getXRotationMatrix(this.yRot);
-    let worldMatrix = Matrix.multiplyMatrices(xRotMat, yRotMat);
+    let xRotMat = Mat4f.getZRotationMatrix(this.xRot);
+    let yRotMat = Mat4f.getXRotationMatrix(this.yRot);
+    let worldMatrix = Mat4f.multiplyMatrices(xRotMat, yRotMat);
     this.gl.uniformMatrix4fv(this.worldMatLoc, false, worldMatrix);
-
-    console.log(this.yRot);
 
     event.preventDefault();
     return false;
@@ -271,10 +334,10 @@ export class Renderer3D implements IRenderer {
       this.cameraDist = 0;
     }
 
-    const viewMatrix = Matrix.getTranslationMatrix(0, 0, -this.cameraDist);
+    const viewMatrix = Mat4f.getTranslationMatrix(0, 0, -this.cameraDist);
     this.gl.uniformMatrix4fv(this.viewMatLoc, false, viewMatrix);
 
-    const projectionMatrix = Matrix.getPerspectiveProjectionMatrix(
+    const projectionMatrix = Mat4f.getPerspectiveProjectionMatrix(
       45 * (Math.PI / 180), // 45deg y-axis FOV
       this.canvas.width / this.canvas.height,
       0.1,
