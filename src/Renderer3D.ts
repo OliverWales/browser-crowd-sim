@@ -1,7 +1,7 @@
 import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
 import { AgentMesh } from "./AgentMesh";
-import { Matrix } from "./Matrix";
+import { Mat4f } from "./Matrix";
 import { Vector2f } from "./Vector2f";
 
 const vertexShaderText = `
@@ -196,17 +196,17 @@ export class Renderer3D implements IRenderer {
     this.radiusLoc = this.gl.getUniformLocation(this.program, "radius");
 
     // Set up matrices
-    const projectionMatrix = Matrix.getPerspectiveProjectionMatrix(
+    const projectionMatrix = Mat4f.getPerspectiveProjectionMatrix(
       45 * (Math.PI / 180), // 45deg y-axis FOV
       this.canvas.width / this.canvas.height,
       0.1,
       this.cameraDist + 2000
     );
 
-    const viewMatrix = Matrix.getTranslationMatrix(0, 0, -this.cameraDist); // Move camera back on z axis
+    const viewMatrix = Mat4f.getTranslationMatrix(0, 0, -this.cameraDist); // Move camera back on z axis
 
     // prettier-ignore
-    const worldMatrix = Matrix.getIdentityMatrix();
+    const worldMatrix = Mat4f.getIdentityMatrix();
 
     this.gl.uniformMatrix4fv(this.projMatLoc, false, projectionMatrix);
     this.gl.uniformMatrix4fv(this.viewMatLoc, false, viewMatrix);
@@ -279,9 +279,9 @@ export class Renderer3D implements IRenderer {
       this.yRot = -Math.PI;
     }
 
-    let xRotMat = Matrix.getZRotationMatrix(this.xRot);
-    let yRotMat = Matrix.getXRotationMatrix(this.yRot);
-    let worldMatrix = Matrix.multiplyMatrices(xRotMat, yRotMat);
+    let xRotMat = Mat4f.getZRotationMatrix(this.xRot);
+    let yRotMat = Mat4f.getXRotationMatrix(this.yRot);
+    let worldMatrix = Mat4f.multiplyMatrices(xRotMat, yRotMat);
     this.gl.uniformMatrix4fv(this.worldMatLoc, false, worldMatrix);
 
     event.preventDefault();
@@ -294,10 +294,10 @@ export class Renderer3D implements IRenderer {
       this.cameraDist = 0;
     }
 
-    const viewMatrix = Matrix.getTranslationMatrix(0, 0, -this.cameraDist);
+    const viewMatrix = Mat4f.getTranslationMatrix(0, 0, -this.cameraDist);
     this.gl.uniformMatrix4fv(this.viewMatLoc, false, viewMatrix);
 
-    const projectionMatrix = Matrix.getPerspectiveProjectionMatrix(
+    const projectionMatrix = Mat4f.getPerspectiveProjectionMatrix(
       45 * (Math.PI / 180), // 45deg y-axis FOV
       this.canvas.width / this.canvas.height,
       0.1,
