@@ -3,6 +3,7 @@ import { IRenderer } from "./IRenderer";
 import { AgentMesh } from "./AgentMesh";
 import { Mat4f } from "./Mat4f";
 import { Vector2f } from "./Vector2f";
+import { FloorMesh } from "./FloorMesh";
 
 const vertexShaderText = `
   precision mediump float;
@@ -155,19 +156,25 @@ export class Renderer3D implements IRenderer {
     this.canvas.addEventListener("wheel", this.mouseScroll, false);
 
     // Initialise vertex and index buffer
+    const vertices = new Float32Array(
+      AgentMesh.vertices.concat(
+        FloorMesh.getVertices(canvas.width * 1.1, canvas.height * 1.1)
+      )
+    );
     this.VertexBuffer = this.gl.createBuffer();
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.VertexBuffer);
-    this.gl.bufferData(
-      this.gl.ARRAY_BUFFER,
-      new Float32Array(AgentMesh.vertices),
-      this.gl.STATIC_DRAW
-    );
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
 
+    const indices = new Uint16Array(
+      AgentMesh.indices.concat(
+        FloorMesh.getIndices(AgentMesh.vertices.length / 6)
+      )
+    );
     this.IndexBuffer = this.gl.createBuffer();
     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.IndexBuffer);
     this.gl.bufferData(
       this.gl.ELEMENT_ARRAY_BUFFER,
-      new Uint16Array(AgentMesh.indices),
+      indices,
       this.gl.STATIC_DRAW
     );
 
@@ -234,6 +241,7 @@ export class Renderer3D implements IRenderer {
   }
 
   drawAgents(agents: IAgentCollection): void {
+    // Draw agents
     agents.forEach((agent) => {
       // Position
       let pos = agent.getPosition();
@@ -264,6 +272,19 @@ export class Renderer3D implements IRenderer {
         0
       );
     });
+
+    // Draw floor
+    this.gl.uniform2f(this.posVecLoc, 0, 0);
+    this.gl.uniform2f(this.dirVecLoc, 1, 0);
+    this.gl.uniform1f(this.radiusLoc, 1);
+    this.gl.uniform3f(this.baseColourLoc, 1, 1, 1);
+
+    this.gl.drawElements(
+      this.gl.TRIANGLES,
+      6,
+      this.gl.UNSIGNED_SHORT,
+      AgentMesh.indices.length * Uint16Array.BYTES_PER_ELEMENT
+    );
   }
 
   private mouseDown = (event: MouseEvent) => {
