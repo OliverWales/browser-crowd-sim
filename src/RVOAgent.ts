@@ -67,6 +67,17 @@ export class RVOAgent implements IAgent {
     let collision;
     let agent;
     for (var i = 0; i < neighbours.length; i++) {
+      // Skip agents further away than goal
+      if (
+        neighbours[i]
+          .getPosition()
+          .subtract(this.getPosition())
+          .magnitudeSqrd() >
+        this._goalPosition.subtract(this.getPosition()).magnitudeSqrd()
+      ) {
+        continue;
+      }
+
       let velocityObstacle = this.getReciprocalVelocityObstacle(neighbours[i]);
       if (
         velocityObstacle != null &&
