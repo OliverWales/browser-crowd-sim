@@ -1,3 +1,4 @@
+import { Colour } from "./Colour";
 import { Vector2f } from "./Vector2f";
 
 export interface IAgent {
@@ -6,8 +7,8 @@ export interface IAgent {
 
   getPosition(): Vector2f;
   getDirection(): Vector2f;
-  getIsDone(): boolean;
-  getIsStuck(): boolean;
+  getColour(): Colour;
 
   update(deltaT: number, agents: IAgent[]): void;
+  isDone(): boolean;
 }

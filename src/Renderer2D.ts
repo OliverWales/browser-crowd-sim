@@ -26,23 +26,15 @@ export class Renderer2D implements IRenderer {
   }
 
   private drawAgent(agent: IAgent): void {
-    let position = agent.getPosition();
-    let direction = agent.getDirection();
+    const position = agent.getPosition();
+    const direction = agent.getDirection();
+    const colour = agent.getColour();
 
     this._context.beginPath();
-
-    // draw agent
-    if (agent.getIsDone()) {
-      this._context.strokeStyle = "#00FF00";
-    } else if (agent.getIsStuck()) {
-      this._context.strokeStyle = "#FF0000";
-    } else {
-      this._context.strokeStyle = "#000000";
-    }
+    this._context.strokeStyle = `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
 
     this._context.arc(position.x, position.y, agent.Radius, 0, 2 * Math.PI);
 
-    // draw direction
     let magnitude = direction.magnitude();
     if (magnitude !== 0) {
       this._context.moveTo(position.x, position.y);

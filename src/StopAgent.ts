@@ -1,3 +1,4 @@
+import { Colour } from "./Colour";
 import { IAgent } from "./IAgent";
 import { Vector2f } from "./Vector2f";
 
@@ -36,12 +37,14 @@ export class StopAgent implements IAgent {
     return this._direction;
   }
 
-  getIsDone(): boolean {
-    return this._isDone;
-  }
-
-  getIsStuck(): boolean {
-    return this._isStuck;
+  getColour(): Colour {
+    if (this._isDone) {
+      return Colour.White;
+    } else if (this._isStuck) {
+      return Colour.Red;
+    } else {
+      return Colour.Green;
+    }
   }
 
   update(deltaT: number, agents: IAgent[]): void {
@@ -72,6 +75,10 @@ export class StopAgent implements IAgent {
       this._position = this._goalPosition;
       this._isDone = true;
     }
+  }
+
+  isDone(): boolean {
+    return this._isDone;
   }
 
   collides(agent: IAgent, position: Vector2f): boolean {

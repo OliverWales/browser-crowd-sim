@@ -244,7 +244,7 @@ export class Renderer3D implements IRenderer {
     // Draw agents
     agents.forEach((agent) => {
       // Position
-      let pos = agent.getPosition();
+      const pos = agent.getPosition();
       this.gl.uniform2f(
         this.posVecLoc,
         pos.x - this.canvas.width / 2,
@@ -262,7 +262,13 @@ export class Renderer3D implements IRenderer {
       this.gl.uniform1f(this.radiusLoc, agent.Radius);
 
       // Base colour
-      this.gl.uniform3f(this.baseColourLoc, 1, 0, 0);
+      const color = agent.getColour();
+      this.gl.uniform3f(
+        this.baseColourLoc,
+        color.r / 255,
+        color.g / 255,
+        color.b / 255
+      );
 
       // Draw mesh
       this.gl.drawElements(
