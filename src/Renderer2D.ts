@@ -31,7 +31,8 @@ export class Renderer2D implements IRenderer {
     const colour = agent.getColour();
 
     this._context.beginPath();
-    this._context.strokeStyle = `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
+    this._context.strokeStyle = "#000000"; // Must set strokeStyle before fillStyle
+    this._context.fillStyle = `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
 
     this._context.arc(position.x, position.y, agent.Radius, 0, 2 * Math.PI);
 
@@ -43,7 +44,8 @@ export class Renderer2D implements IRenderer {
       );
       this._context.lineTo(newPos.x, newPos.y);
     }
-
+    this._context.closePath();
+    this._context.fill();
     this._context.stroke();
   }
 }
