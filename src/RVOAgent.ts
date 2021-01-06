@@ -59,10 +59,13 @@ export class RVOAgent implements IAgent {
       return;
     }
 
-    this._isStuck = false;
-    let speed = 0.5;
-    let preferredVelocity = this.getPreferredVelocity(speed);
+    const speed = 0.5;
+    const preferredVelocity = this.getPreferredVelocity(speed);
+    const goalDistSqrd = this._goalPosition
+      .subtract(this.getPosition())
+      .magnitudeSqrd();
 
+    this._isStuck = false;
     let safe = true;
     let collision;
     let agent;
@@ -72,13 +75,15 @@ export class RVOAgent implements IAgent {
         neighbours[i]
           .getPosition()
           .subtract(this.getPosition())
-          .magnitudeSqrd() >
-        this._goalPosition.subtract(this.getPosition()).magnitudeSqrd()
+          .magnitudeSqrd() > goalDistSqrd
       ) {
         continue;
       }
 
-      let velocityObstacle = this.getReciprocalVelocityObstacle(neighbours[i]);
+      // Check whether preferred velocity is safe
+      const velocityObstacle = this.getReciprocalVelocityObstacle(
+        neighbours[i]
+      );
       if (
         velocityObstacle != null &&
         this.isInside(preferredVelocity, velocityObstacle)
@@ -100,7 +105,7 @@ export class RVOAgent implements IAgent {
 
     if (collision != null) {
       // Else, consider closest point on first half-plane
-      let halfplane1 = this.getClosestPointOnLine(
+      const halfplane1 = this.getClosestPointOnLine(
         collision.vertex,
         collision.tangent1,
         preferredVelocity
@@ -110,7 +115,7 @@ export class RVOAgent implements IAgent {
         safe = true;
         for (var i = 0; i < neighbours.length; i++) {
           if (i != agent) {
-            let velocityObstacle = this.getReciprocalVelocityObstacle(
+            const velocityObstacle = this.getReciprocalVelocityObstacle(
               neighbours[i]
             );
             if (
@@ -132,7 +137,7 @@ export class RVOAgent implements IAgent {
       }
 
       // Else, consider closest point on second half-plane
-      let halfPlane2 = this.getClosestPointOnLine(
+      const halfPlane2 = this.getClosestPointOnLine(
         collision.vertex,
         collision.tangent2,
         preferredVelocity
@@ -142,7 +147,7 @@ export class RVOAgent implements IAgent {
         safe = true;
         for (var i = 0; i < neighbours.length; i++) {
           if (i != agent) {
-            let velocityObstacle = this.getReciprocalVelocityObstacle(
+            const velocityObstacle = this.getReciprocalVelocityObstacle(
               neighbours[i]
             );
             if (
@@ -165,25 +170,26 @@ export class RVOAgent implements IAgent {
     }
 
     // Else, sample random velocities and select the one with the least penalty
-    let samples = 100; // number of velocities to try
-    let w = 100; // parameter for penalty
+    const samples = 100; // number of velocities to try
+    const w = 100; // parameter for penalty
+    const goalDist = Math.sqrt(goalDistSqrd);
     let minPenalty = Infinity;
     let bestVelocity = new Vector2f(0, 0);
 
     for (var i = 0; i < samples; i++) {
       // Sample velocity from entire allowed velocity space
-      let sample = new Vector2f(0, 0).sample(speed);
+      const sample = new Vector2f(0, 0).sample(speed);
       let minTimeToCollision = Infinity;
 
       // Find time to first collision
       for (var j = 0; j < neighbours.length; j++) {
-        let b = neighbours[j];
-        let velocityObstacle = this.getReciprocalVelocityObstacle(b);
+        const b = neighbours[j];
+        const velocityObstacle = this.getReciprocalVelocityObstacle(b);
         if (
           velocityObstacle != null &&
           this.isInside(sample, velocityObstacle)
         ) {
-          let timeToCollision = this.getFirstRayCircleIntersection(
+          const timeToCollision = this.getFirstRayCircleIntersection(
             b.getPosition().add(b.getDirection()),
             this.Radius + b.Radius,
             this._position,
@@ -204,8 +210,15 @@ export class RVOAgent implements IAgent {
       }
 
       // Calculate penalty
-      let penalty =
-        w / minTimeToCollision + preferredVelocity.subtract(sample).magnitude(); // TS correctly handles divide by zero or infinity
+      let penalty;
+      if (minTimeToCollision < goalDist) {
+        penalty =
+          w / minTimeToCollision +
+          preferredVelocity.subtract(sample).magnitude(); // TS correctly handles divide by zero or infinity
+      } else {
+        penalty = preferredVelocity.subtract(sample).magnitude();
+      }
+
       if (penalty < minPenalty) {
         minPenalty = penalty;
         bestVelocity = sample;
@@ -223,8 +236,8 @@ export class RVOAgent implements IAgent {
   }
 
   private getPreferredVelocity(maxSpeed: number): Vector2f {
-    let goalDirection = this._goalPosition.subtract(this._position);
-    let goalDistance = goalDirection.magnitude();
+    const goalDirection = this._goalPosition.subtract(this._position);
+    const goalDistance = goalDirection.magnitude();
 
     if (goalDistance > maxSpeed) {
       return goalDirection.divide(goalDistance / maxSpeed);
@@ -233,36 +246,36 @@ export class RVOAgent implements IAgent {
   }
 
   private getReciprocalVelocityObstacle(b: IAgent): VelocityObstacle | null {
-    let velocityA = this.getDirection();
-    let velocityB = b.getDirection();
-    let vertex = velocityA.add(velocityB).divide(2);
+    const velocityA = this.getDirection();
+    const velocityB = b.getDirection();
+    const vertex = velocityA.add(velocityB).divide(2);
 
     // Translate origin to this agent's position
-    let positionB = b.getPosition().subtract(this._position);
+    const positionB = b.getPosition().subtract(this._position);
 
     // Find Minkowski sum of agents
-    let centre = positionB.add(velocityB);
-    let radius = b.Radius + this.Radius;
+    const centre = positionB.add(velocityB);
+    const radius = b.Radius + this.Radius;
 
     // Calculate angles
-    let diff = velocityB.subtract(centre);
-    let dist = diff.magnitude();
+    const diff = velocityB.subtract(centre);
+    const dist = diff.magnitude();
     if (dist < radius) {
       return null;
     }
 
-    let theta = Math.acos(radius / dist);
-    let phi = Math.atan2(diff.y, diff.x);
+    const theta = Math.acos(radius / dist);
+    const phi = Math.atan2(diff.y, diff.x);
 
     // Calculate tangent vectors
-    let angle1 = phi + theta;
-    let tangent1 = new Vector2f(
+    const angle1 = phi + theta;
+    const tangent1 = new Vector2f(
       centre.x + radius * Math.cos(angle1),
       centre.y + radius * Math.sin(angle1)
     );
 
-    let angle2 = phi - theta;
-    let tangent2 = new Vector2f(
+    const angle2 = phi - theta;
+    const tangent2 = new Vector2f(
       centre.x + radius * Math.cos(angle2),
       centre.y + radius * Math.sin(angle2)
     );
@@ -276,14 +289,14 @@ export class RVOAgent implements IAgent {
     velocityObstacle: VelocityObstacle
   ): boolean {
     // First half-plane
-    let determinant1 =
+    const determinant1 =
       (velocityObstacle.tangent1.x - velocityObstacle.vertex.x) *
         (velocity.y - velocityObstacle.vertex.y) -
       (velocityObstacle.tangent1.y - velocityObstacle.vertex.y) *
         (velocity.x - velocityObstacle.vertex.x);
 
     // Second half-plane
-    let determinant2 =
+    const determinant2 =
       (velocityObstacle.tangent2.x - velocityObstacle.vertex.x) *
         (velocity.y - velocityObstacle.vertex.y) -
       (velocityObstacle.tangent2.y - velocityObstacle.vertex.y) *
@@ -297,9 +310,9 @@ export class RVOAgent implements IAgent {
     lineDirection: Vector2f,
     point: Vector2f
   ): Vector2f {
-    let direction = lineDirection.normalise();
-    let vector = point.subtract(linePoint);
-    let distance = vector.dot(direction);
+    const direction = lineDirection.normalise();
+    const vector = point.subtract(linePoint);
+    const distance = vector.dot(direction);
     return linePoint.add(direction.multiply(distance));
   }
 
@@ -309,20 +322,20 @@ export class RVOAgent implements IAgent {
     origin: Vector2f,
     direction: Vector2f
   ): number {
-    let delta = origin.subtract(centre);
+    const delta = origin.subtract(centre);
 
-    let a = direction.dot(direction);
-    let b = 2 * direction.dot(delta);
-    let c = delta.dot(delta) - radius ** 2;
+    const a = direction.dot(direction);
+    const b = 2 * direction.dot(delta);
+    const c = delta.dot(delta) - radius ** 2;
 
-    let discrim = b ** 2 - 4 * a * c;
+    const discrim = b ** 2 - 4 * a * c;
 
     if (discrim < 0) {
       // No intersection
       return Infinity;
     }
 
-    let distance = ((-b - Math.sqrt(discrim)) / 2) * a;
+    const distance = ((-b - Math.sqrt(discrim)) / 2) * a;
 
     if (distance < 0) {
       // Intersection behind
@@ -333,7 +346,7 @@ export class RVOAgent implements IAgent {
   }
 
   private checkIfDone() {
-    let finishThreshold = 1.0;
+    const finishThreshold = 1.0;
 
     if (
       this._position.subtract(this._goalPosition).magnitudeSqrd() <
