@@ -89,6 +89,7 @@ export class RVOAgent implements IAgent {
     if (safe) {
       this._direction = preferredVelocity;
       this._position = this._position.add(preferredVelocity);
+      this._colour = Colour.Green;
       this.checkIfDone();
       return;
     }
@@ -121,6 +122,7 @@ export class RVOAgent implements IAgent {
         if (safe) {
           this._direction = halfplane1;
           this._position = this._position.add(halfplane1);
+          this.setColour(preferredVelocity);
           this.checkIfDone();
           return;
         }
@@ -153,6 +155,7 @@ export class RVOAgent implements IAgent {
         if (safe) {
           this._direction = halfPlane2;
           this._position = this._position.add(halfPlane2);
+          this.setColour(preferredVelocity);
           this.checkIfDone();
           return;
         }
@@ -192,6 +195,7 @@ export class RVOAgent implements IAgent {
           if (timeToCollision < minTimeToCollision) {
             minTimeToCollision = timeToCollision;
             if (minTimeToCollision == 0) {
+              this.setColour(preferredVelocity);
               this.checkIfDone();
               return;
             }
@@ -217,6 +221,7 @@ export class RVOAgent implements IAgent {
 
     this._direction = bestVelocity;
     this._position = this._position.add(bestVelocity);
+    this.setColour(preferredVelocity);
     this.checkIfDone();
     return;
   }
@@ -335,6 +340,11 @@ export class RVOAgent implements IAgent {
     return distance;
   }
 
+  private setColour(preferredVelocity: Vector2f) {
+    const stress = preferredVelocity.subtract(this._direction).magnitude();
+    this._colour = Colour.FromHsv((1 - stress) / 3, 1, 1);
+  }
+
   private checkIfDone() {
     const finishThreshold = 1.0;
 
@@ -345,6 +355,7 @@ export class RVOAgent implements IAgent {
       this._isDone = true;
       this._position = this._goalPosition;
       this._direction = new Vector2f(0, 0);
+      this._colour = Colour.White;
     }
   }
 }
