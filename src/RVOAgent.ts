@@ -1,12 +1,7 @@
+import { Colour } from "./Colour";
 import { IAgent } from "./IAgent";
 import { Vector2f } from "./Vector2f";
-
-interface VelocityObstacle {
-  // Velocity object defined by a point and two direction vectors
-  vertex: Vector2f;
-  tangent1: Vector2f;
-  tangent2: Vector2f;
-}
+import { VelocityObstacle } from "./VelocityObstacle";
 
 export class RVOAgent implements IAgent {
   Radius: number;
@@ -20,7 +15,7 @@ export class RVOAgent implements IAgent {
   private _direction: Vector2f;
 
   private _isDone: boolean;
-  private _isStuck: boolean;
+  private _colour: Colour;
 
   constructor(
     id: number,
@@ -35,7 +30,7 @@ export class RVOAgent implements IAgent {
     this._direction = new Vector2f(0, 0);
 
     this._isDone = false;
-    this._isStuck = false;
+    this._colour = Colour.White;
   }
 
   getPosition(): Vector2f {
@@ -46,12 +41,8 @@ export class RVOAgent implements IAgent {
     return this._direction;
   }
 
-  getIsDone(): boolean {
-    return this._isDone;
-  }
-
-  getIsStuck(): boolean {
-    return this._isStuck;
+  getColour(): Colour {
+    return this._colour;
   }
 
   update(deltaT: number, neighbours: IAgent[]): void {
@@ -65,7 +56,6 @@ export class RVOAgent implements IAgent {
       .subtract(this.getPosition())
       .magnitudeSqrd();
 
-    this._isStuck = false;
     let safe = true;
     let collision;
     let agent;
@@ -99,6 +89,7 @@ export class RVOAgent implements IAgent {
     if (safe) {
       this._direction = preferredVelocity;
       this._position = this._position.add(preferredVelocity);
+      this._colour = Colour.Green;
       this.checkIfDone();
       return;
     }
@@ -131,6 +122,7 @@ export class RVOAgent implements IAgent {
         if (safe) {
           this._direction = halfplane1;
           this._position = this._position.add(halfplane1);
+          this.setColour(preferredVelocity);
           this.checkIfDone();
           return;
         }
@@ -163,6 +155,7 @@ export class RVOAgent implements IAgent {
         if (safe) {
           this._direction = halfPlane2;
           this._position = this._position.add(halfPlane2);
+          this.setColour(preferredVelocity);
           this.checkIfDone();
           return;
         }
@@ -202,6 +195,7 @@ export class RVOAgent implements IAgent {
           if (timeToCollision < minTimeToCollision) {
             minTimeToCollision = timeToCollision;
             if (minTimeToCollision == 0) {
+              this.setColour(preferredVelocity);
               this.checkIfDone();
               return;
             }
@@ -225,14 +219,15 @@ export class RVOAgent implements IAgent {
       }
     }
 
-    if (bestVelocity.magnitude() == 0) {
-      this._isStuck = true;
-    }
-
     this._direction = bestVelocity;
     this._position = this._position.add(bestVelocity);
+    this.setColour(preferredVelocity);
     this.checkIfDone();
     return;
+  }
+
+  isDone(): boolean {
+    return this._isDone;
   }
 
   private getPreferredVelocity(maxSpeed: number): Vector2f {
@@ -345,6 +340,11 @@ export class RVOAgent implements IAgent {
     return distance;
   }
 
+  private setColour(preferredVelocity: Vector2f) {
+    const stress = preferredVelocity.subtract(this._direction).magnitude();
+    this._colour = Colour.FromHsv((1 - stress) / 3, 1, 1);
+  }
+
   private checkIfDone() {
     const finishThreshold = 1.0;
 
@@ -355,6 +355,7 @@ export class RVOAgent implements IAgent {
       this._isDone = true;
       this._position = this._goalPosition;
       this._direction = new Vector2f(0, 0);
+      this._colour = Colour.White;
     }
   }
 }

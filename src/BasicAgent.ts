@@ -1,3 +1,4 @@
+import { Colour } from "./Colour";
 import { IAgent } from "./IAgent";
 import { Vector2f } from "./Vector2f";
 
@@ -34,13 +35,12 @@ export class BasicAgent implements IAgent {
     return this._direction;
   }
 
-  getIsDone(): boolean {
-    return this._isDone;
-  }
-
-  getIsStuck(): boolean {
-    // This agent cannot get stuck
-    return false;
+  getColour() {
+    if (this._isDone) {
+      return Colour.White;
+    } else {
+      return Colour.Green;
+    }
   }
 
   update(deltaT: number, _agents: IAgent[]): void {
@@ -60,5 +60,9 @@ export class BasicAgent implements IAgent {
       this._position = this._goalPosition;
       this._isDone = true;
     }
+  }
+
+  isDone(): boolean {
+    return this._isDone;
   }
 }
