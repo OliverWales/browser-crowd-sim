@@ -30,7 +30,7 @@ export class RVOAgent implements IAgent {
     this._direction = new Vector2f(0, 0);
 
     this._isDone = false;
-    this._colour = Colour.White;
+    this._colour = Colour.Green;
   }
 
   getPosition(): Vector2f {
