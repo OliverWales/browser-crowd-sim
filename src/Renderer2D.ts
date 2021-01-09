@@ -10,13 +10,15 @@ export class Renderer2D implements IRenderer {
   private drag: boolean;
   private oldX: number;
   private oldY: number;
-  private xPan = 0;
-  private yPan = 0;
+  private xPan: number;
+  private yPan: number;
   private cameraDist = 800; // Start camera 800 'px' away
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.context = this.canvas.getContext("2d");
+    this.xPan = this.canvas.width / 2;
+    this.yPan = this.canvas.height / 2;
 
     // Add event listeners
     this.canvas.addEventListener("mousedown", this.mouseDown, false);
@@ -27,9 +29,9 @@ export class Renderer2D implements IRenderer {
   }
 
   clear(): void {
+    // Clear background
     this.context.setTransform(1, 0, 0, 1, 0, 0);
-
-    this.context.fillStyle = "rgb(51, 51, 51)";
+    this.context.fillStyle = "rgb(135, 194, 250)";
     this.context.fillRect(
       0,
       0,
@@ -46,6 +48,16 @@ export class Renderer2D implements IRenderer {
     this.context.translate(this.xPan, this.yPan);
     this.context.scale(scaleFactor, scaleFactor);
 
+    // Draw floor
+    this.context.fillStyle = "rgb(51, 51, 51)";
+    this.context.fillRect(
+      -this.context.canvas.width * 0.55,
+      -this.context.canvas.height * 0.55,
+      this.context.canvas.width * 1.1,
+      this.context.canvas.height * 1.1
+    );
+
+    // Draw agents
     agents.forEach((agent) => {
       this.drawAgent(agent);
     });
