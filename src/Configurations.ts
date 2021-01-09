@@ -1,3 +1,4 @@
+import { off } from "process";
 import { IAgent } from "./IAgent";
 import { Vector2f } from "./Vector2f";
 
@@ -19,14 +20,15 @@ export class Configurations {
   ) {
     // Random start position to random goal position
     let agents: IAgent[] = [];
-    let startPositions = this.poissonDiskSample(width, height, n, 50);
-    let goalPositions = this.poissonDiskSample(width, height, n, 50);
+    const startPositions = this.poissonDiskSample(width, height, n, 50);
+    const goalPositions = this.poissonDiskSample(width, height, n, 50);
+    const centre = new Vector2f(width / 2, height / 2);
 
     for (let i = 0; i < n; i++) {
       const agent = agentConstructor(
         i,
-        startPositions[i],
-        goalPositions[i],
+        startPositions[i].subtract(centre),
+        goalPositions[i].subtract(centre),
         20
       );
       agents.push(agent);
@@ -49,12 +51,13 @@ export class Configurations {
     // Random start position to fixed position on line
     let agents: IAgent[] = [];
     let startPositions = this.poissonDiskSample(width, height, n, 50);
+    const centre = new Vector2f(width / 2, height / 2);
 
     for (let i = 0; i < n; i++) {
       const agent = agentConstructor(
         i,
-        startPositions[i],
-        new Vector2f(((i + 1) / (n + 1)) * width, height / 2),
+        startPositions[i].subtract(centre),
+        new Vector2f(((i + 1) / (n + 1) - 1 / 2) * width, 0),
         20
       );
       agents.push(agent);
@@ -76,21 +79,16 @@ export class Configurations {
   ) {
     // Position on radius of circle to opposite point
     let agents: IAgent[] = [];
-    const centreX = width / 2;
-    const centreY = height / 2;
     const radius = height / 2 - 25;
 
     for (let i = 0; i < n; i++) {
       const angle = (2 * Math.PI * i) / n;
       const agent = agentConstructor(
         i,
+        new Vector2f(radius * Math.cos(angle), radius * Math.sin(angle)),
         new Vector2f(
-          centreX + radius * Math.cos(angle),
-          centreY + radius * Math.sin(angle)
-        ),
-        new Vector2f(
-          centreX + radius * Math.cos(angle + Math.PI),
-          centreY + radius * Math.sin(angle + Math.PI)
+          radius * Math.cos(angle + Math.PI),
+          radius * Math.sin(angle + Math.PI)
         ),
         20
       );
@@ -113,36 +111,34 @@ export class Configurations {
   ) {
     // Two opposing grids of agents passing through eachother
     let agents: IAgent[] = [];
-    let rows = 4;
-    let cols = Math.ceil(n / (2 * rows));
-    let spacing = 90;
-    let left = 50;
-    let right = width - left - spacing * (cols - 1);
-    let top = height / 2 - (spacing / 2) * (rows - 1);
+    const gridSize = Math.ceil(Math.sqrt(n / 2));
+    const offset = 90;
+    let x = 30 - width / 2;
+    let y = -((gridSize - 1) / 2) * offset;
 
-    let id = 0;
-    for (let i = 0; i < cols; i++) {
-      for (let j = 0; j < rows; j++) {
-        let a = new Vector2f(left + spacing * i, top + spacing * j);
-        let b = new Vector2f(right + spacing * i, top + spacing * j);
+    for (let i = 0; i < n; i++) {
+      const idx = Math.floor(i / 2);
+      const row = Math.floor(idx / gridSize);
+      const col = idx % gridSize;
 
-        // Left grid
-        agents.push(agentConstructor(id, a, b, 20));
-        id++;
-        if (id >= n) {
-          break;
-        }
-
-        // Right grid
-        agents.push(agentConstructor(id, b, a, 20));
-        id++;
-
-        if (id >= n) {
-          break;
-        }
-      }
-      if (id >= n) {
-        break;
+      if (i % 2 == 0) {
+        // LHS
+        const agent = agentConstructor(
+          i,
+          new Vector2f(x + (gridSize - 1 - col) * offset, y + row * offset),
+          new Vector2f(-x - col * offset, y + row * offset),
+          20
+        );
+        agents.push(agent);
+      } else {
+        // RHS
+        const agent = agentConstructor(
+          i,
+          new Vector2f(-x - (gridSize - 1 - col) * offset, y + row * offset),
+          new Vector2f(x + col * offset, y + row * offset),
+          20
+        );
+        agents.push(agent);
       }
     }
 
