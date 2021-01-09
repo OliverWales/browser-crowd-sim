@@ -75,8 +75,6 @@ export class Renderer3D implements IRenderer {
   private drag: boolean;
   private oldX: number;
   private oldY: number;
-  private dX: number;
-  private dY: number;
   private xRot = 0;
   private yRot = 0;
   private cameraDist = 800; // Start camera 800 'px' away
@@ -146,7 +144,7 @@ export class Renderer3D implements IRenderer {
     this.gl.enable(this.gl.CULL_FACE);
     this.gl.frontFace(this.gl.CCW);
     this.gl.cullFace(this.gl.BACK);
-    this.gl.clearColor(0.53, 0.76, 1.0, 0.98);
+    this.gl.clearColor(0.53, 0.76, 0.98, 1.0);
 
     // Add event listeners
     this.canvas.addEventListener("mousedown", this.mouseDown, false);
@@ -245,11 +243,7 @@ export class Renderer3D implements IRenderer {
     agents.forEach((agent) => {
       // Position
       const pos = agent.getPosition();
-      this.gl.uniform2f(
-        this.posVecLoc,
-        pos.x - this.canvas.width / 2,
-        pos.y - this.canvas.height / 2
-      );
+      this.gl.uniform2f(this.posVecLoc, pos.x, pos.y);
 
       // Direction
       let dir = agent.getDirection().normalise();
@@ -283,7 +277,7 @@ export class Renderer3D implements IRenderer {
     this.gl.uniform2f(this.posVecLoc, 0, 0);
     this.gl.uniform2f(this.dirVecLoc, 1, 0);
     this.gl.uniform1f(this.radiusLoc, 1);
-    this.gl.uniform3f(this.baseColourLoc, 1, 1, 1);
+    this.gl.uniform3f(this.baseColourLoc, 0.2, 0.2, 0.2);
 
     this.gl.drawElements(
       this.gl.TRIANGLES,
@@ -309,10 +303,9 @@ export class Renderer3D implements IRenderer {
 
   private mouseMove = (event: MouseEvent) => {
     if (!this.drag) return false;
-    this.dX = ((event.pageX - this.oldX) * 2 * Math.PI) / this.canvas.width;
-    this.dY = ((event.pageY - this.oldY) * 2 * Math.PI) / this.canvas.height;
-    this.xRot += this.dX;
-    this.yRot += this.dY;
+
+    this.xRot += ((event.pageX - this.oldX) * 2 * Math.PI) / this.canvas.width;
+    this.yRot += ((event.pageY - this.oldY) * 2 * Math.PI) / this.canvas.height;
     this.oldX = event.pageX;
     this.oldY = event.pageY;
 
@@ -325,9 +318,9 @@ export class Renderer3D implements IRenderer {
       this.yRot = -Math.PI;
     }
 
-    let xRotMat = Mat4f.getZRotationMatrix(this.xRot);
-    let yRotMat = Mat4f.getXRotationMatrix(this.yRot);
-    let worldMatrix = Mat4f.multiplyMatrices(xRotMat, yRotMat);
+    const xRotMat = Mat4f.getZRotationMatrix(this.xRot);
+    const yRotMat = Mat4f.getXRotationMatrix(this.yRot);
+    const worldMatrix = Mat4f.multiplyMatrices(xRotMat, yRotMat);
     this.gl.uniformMatrix4fv(this.worldMatLoc, false, worldMatrix);
 
     event.preventDefault();
