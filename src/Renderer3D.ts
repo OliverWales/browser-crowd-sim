@@ -144,7 +144,7 @@ export class Renderer3D implements IRenderer {
     this.gl.enable(this.gl.CULL_FACE);
     this.gl.frontFace(this.gl.CCW);
     this.gl.cullFace(this.gl.BACK);
-    this.gl.clearColor(0.53, 0.76, 1.0, 0.98);
+    this.gl.clearColor(0.53, 0.76, 0.98, 1.0);
 
     // Add event listeners
     this.canvas.addEventListener("mousedown", this.mouseDown, false);
@@ -243,11 +243,7 @@ export class Renderer3D implements IRenderer {
     agents.forEach((agent) => {
       // Position
       const pos = agent.getPosition();
-      this.gl.uniform2f(
-        this.posVecLoc,
-        pos.x - this.canvas.width / 2,
-        pos.y - this.canvas.height / 2
-      );
+      this.gl.uniform2f(this.posVecLoc, pos.x, pos.y);
 
       // Direction
       let dir = agent.getDirection().normalise();
