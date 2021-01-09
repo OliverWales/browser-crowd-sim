@@ -27,6 +27,8 @@ export class Renderer2D implements IRenderer {
   }
 
   clear(): void {
+    this.context.setTransform(1, 0, 0, 1, 0, 0);
+
     this.context.fillStyle = "rgb(51, 51, 51)";
     this.context.fillRect(
       0,
@@ -40,9 +42,9 @@ export class Renderer2D implements IRenderer {
     const scaleFactor = 800 / this.cameraDist;
 
     // TODO: replace with single setTransform
-    this.context.resetTransform();
-    this.context.scale(scaleFactor, scaleFactor);
+    this.context.setTransform(1, 0, 0, 1, 0, 0);
     this.context.translate(this.xPan, this.yPan);
+    this.context.scale(scaleFactor, scaleFactor);
 
     agents.forEach((agent) => {
       this.drawAgent(agent);
@@ -76,25 +78,18 @@ export class Renderer2D implements IRenderer {
     this.drag = true;
     this.oldX = event.pageX;
     this.oldY = event.pageY;
-    console.log("Down");
   };
 
   private mouseUp = (event: MouseEvent) => {
     this.drag = false;
     event.preventDefault();
-    console.log("Up");
   };
 
   private mouseMove = (event: MouseEvent) => {
-    if (!this.drag) {
-      return false;
-    }
+    if (!this.drag) return false;
+
     this.xPan += event.pageX - this.oldX;
     this.yPan += event.pageY - this.oldY;
-
-    console.log(
-      `Move - oldX: ${this.oldX} oldY: ${this.oldY} pageX: ${event.pageX} pageY: ${event.pageY}`
-    );
 
     this.oldX = event.pageX;
     this.oldY = event.pageY;
