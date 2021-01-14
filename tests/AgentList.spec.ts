@@ -1,5 +1,5 @@
 import { AgentList } from "../src/AgentList";
-import { BasicAgent } from "../src/BasicAgent";
+import { BasicAgent } from "../src/agents/BasicAgent";
 import { IAgent } from "../src/IAgent";
 import { Vector2f } from "../src/Vector2f";
 

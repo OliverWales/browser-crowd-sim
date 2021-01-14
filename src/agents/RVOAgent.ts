@@ -1,9 +1,9 @@
-import { Colour } from "./Colour";
-import { IAgent } from "./IAgent";
-import { Vector2f } from "./Vector2f";
-import { VelocityObstacle } from "./VelocityObstacle";
+import { Colour } from "../Colour";
+import { IAgent } from "../IAgent";
+import { Vector2f } from "../Vector2f";
+import { VelocityObstacle } from "../VelocityObstacle";
 
-export class VOAgent implements IAgent {
+export class RVOAgent implements IAgent {
   Radius: number;
   Id: number;
 
@@ -45,7 +45,7 @@ export class VOAgent implements IAgent {
     return this._colour;
   }
 
-  update(deltaT: number, neighbours: IAgent[]): void {
+  update(_deltaT: number, neighbours: IAgent[]): void {
     if (this._isDone) {
       return;
     }
@@ -71,10 +71,12 @@ export class VOAgent implements IAgent {
       }
 
       // Check whether preferred velocity is safe
-      const velocityObstacle = this.getVelocityObstacle(neighbours[i]);
+      const velocityObstacle = this.getReciprocalVelocityObstacle(
+        neighbours[i]
+      );
       if (
         velocityObstacle != null &&
-        this.isInside(preferredVelocity, velocityObstacle)
+        velocityObstacle.contains(preferredVelocity)
       ) {
         safe = false;
         collision = velocityObstacle;
@@ -94,20 +96,22 @@ export class VOAgent implements IAgent {
 
     if (collision != null) {
       // Else, consider closest point on first half-plane
-      const halfplane1 = this.getClosestPointOnLine(
+      const halfPlane1 = this.getClosestPointOnLine(
         collision.vertex,
         collision.tangent1,
         preferredVelocity
       );
 
-      if (halfplane1.magnitude() <= speed) {
+      if (halfPlane1.magnitude() <= speed) {
         safe = true;
         for (var i = 0; i < neighbours.length; i++) {
           if (i != agent) {
-            const velocityObstacle = this.getVelocityObstacle(neighbours[i]);
+            const velocityObstacle = this.getReciprocalVelocityObstacle(
+              neighbours[i]
+            );
             if (
               velocityObstacle != null &&
-              this.isInside(halfplane1, velocityObstacle)
+              velocityObstacle.contains(halfPlane1)
             ) {
               safe = false;
               break;
@@ -116,8 +120,8 @@ export class VOAgent implements IAgent {
         }
 
         if (safe) {
-          this._direction = halfplane1;
-          this._position = this._position.add(halfplane1);
+          this._direction = halfPlane1;
+          this._position = this._position.add(halfPlane1);
           this.setColour(preferredVelocity);
           this.checkIfDone();
           return;
@@ -131,14 +135,16 @@ export class VOAgent implements IAgent {
         preferredVelocity
       );
 
-      if (halfplane1.magnitude() <= speed) {
+      if (halfPlane1.magnitude() <= speed) {
         safe = true;
         for (var i = 0; i < neighbours.length; i++) {
           if (i != agent) {
-            const velocityObstacle = this.getVelocityObstacle(neighbours[i]);
+            const velocityObstacle = this.getReciprocalVelocityObstacle(
+              neighbours[i]
+            );
             if (
               velocityObstacle != null &&
-              this.isInside(halfPlane2, velocityObstacle)
+              velocityObstacle.contains(halfPlane2)
             ) {
               safe = false;
               break;
@@ -171,16 +177,16 @@ export class VOAgent implements IAgent {
       // Find time to first collision
       for (var j = 0; j < neighbours.length; j++) {
         const b = neighbours[j];
-        const velocityObstacle = this.getVelocityObstacle(b);
-        if (
-          velocityObstacle == null ||
-          this.isInside(sample, velocityObstacle)
-        ) {
+        const velocityObstacle = this.getReciprocalVelocityObstacle(b);
+        if (velocityObstacle != null && velocityObstacle.contains(sample)) {
           const timeToCollision = this.getFirstRayCircleIntersection(
             b.getPosition().add(b.getDirection()),
             this.Radius + b.Radius,
             this._position,
-            sample.subtract(b.getDirection())
+            sample
+              .multiply(2)
+              .subtract(this.getDirection())
+              .subtract(b.getDirection())
           );
 
           if (timeToCollision < minTimeToCollision) {
@@ -231,8 +237,10 @@ export class VOAgent implements IAgent {
     return goalDirection;
   }
 
-  private getVelocityObstacle(b: IAgent): VelocityObstacle | null {
+  private getReciprocalVelocityObstacle(b: IAgent): VelocityObstacle | null {
+    const velocityA = this.getDirection();
     const velocityB = b.getDirection();
+    const vertex = velocityA.add(velocityB).divide(2);
 
     // Translate origin to this agent's position
     const positionB = b.getPosition().subtract(this._position);
@@ -265,28 +273,7 @@ export class VOAgent implements IAgent {
     );
 
     // Return velocity obstacle
-    return { vertex: velocityB, tangent1: tangent1, tangent2: tangent2 };
-  }
-
-  private isInside(
-    velocity: Vector2f,
-    velocityObstacle: VelocityObstacle
-  ): boolean {
-    // First half-plane
-    const determinant1 =
-      (velocityObstacle.tangent1.x - velocityObstacle.vertex.x) *
-        (velocity.y - velocityObstacle.vertex.y) -
-      (velocityObstacle.tangent1.y - velocityObstacle.vertex.y) *
-        (velocity.x - velocityObstacle.vertex.x);
-
-    // Second half-plane
-    const determinant2 =
-      (velocityObstacle.tangent2.x - velocityObstacle.vertex.x) *
-        (velocity.y - velocityObstacle.vertex.y) -
-      (velocityObstacle.tangent2.y - velocityObstacle.vertex.y) *
-        (velocity.x - velocityObstacle.vertex.x);
-
-    return determinant1 > 0 && determinant2 < 0;
+    new VelocityObstacle(vertex, tangent1, tangent2);
   }
 
   private getClosestPointOnLine(
