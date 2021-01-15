@@ -1,8 +1,8 @@
-import { Colour } from "./Colour";
-import { IAgent } from "./IAgent";
-import { Vector2f } from "./Vector2f";
+import { Colour } from "../Colour";
+import { IAgent } from "../IAgent";
+import { Vector2f } from "../Vector2f";
 
-export class BasicAgent implements IAgent {
+export class StopAgent implements IAgent {
   public readonly Id: number;
   public readonly Radius: number;
 
@@ -11,6 +11,7 @@ export class BasicAgent implements IAgent {
   private _direction: Vector2f;
 
   private _isDone: boolean;
+  private _isStuck: boolean;
 
   constructor(
     id: number,
@@ -25,6 +26,7 @@ export class BasicAgent implements IAgent {
     this._direction = new Vector2f(0, 0);
 
     this._isDone = false;
+    this._isStuck = false;
   }
 
   getPosition(): Vector2f {
@@ -35,15 +37,17 @@ export class BasicAgent implements IAgent {
     return this._direction;
   }
 
-  getColour() {
+  getColour(): Colour {
     if (this._isDone) {
       return Colour.White;
+    } else if (this._isStuck) {
+      return Colour.Red;
     } else {
       return Colour.Green;
     }
   }
 
-  update(deltaT: number, _agents: IAgent[]): void {
+  update(deltaT: number, agents: IAgent[]): void {
     if (this._isDone) {
       return;
     }
@@ -53,9 +57,20 @@ export class BasicAgent implements IAgent {
 
     if (goalDistance > (deltaT * 60) / 1000) {
       this._direction = goalDirection.normalise();
-      this._position = this._position.add(
-        this._direction.multiply((deltaT * 60) / 1000)
-      );
+      let heading = this._position.add(this._direction.multiply(20));
+
+      this._isStuck = false;
+      agents.forEach((agent) => {
+        if (agent.Id != this.Id && this.collides(agent, heading)) {
+          this._isStuck = true;
+        }
+      });
+
+      if (!this._isStuck) {
+        this._position = this._position.add(
+          this._direction.multiply((deltaT * 60) / 1000)
+        );
+      }
     } else {
       this._position = this._goalPosition;
       this._isDone = true;
@@ -64,5 +79,12 @@ export class BasicAgent implements IAgent {
 
   isDone(): boolean {
     return this._isDone;
+  }
+
+  collides(agent: IAgent, position: Vector2f): boolean {
+    return (
+      agent.getPosition().subtract(position).magnitude() <
+      agent.Radius + this.Radius
+    );
   }
 }

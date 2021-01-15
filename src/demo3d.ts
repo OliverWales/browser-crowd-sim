@@ -1,12 +1,13 @@
 import { Simulation } from "./Simulation";
 import { Renderer3D } from "./Renderer3D";
-import { BasicAgent } from "./BasicAgent";
-import { StopAgent } from "./StopAgent";
 import { Configurations } from "./Configurations";
 import { AgentTree } from "./AgentTree";
 import { Vector2f } from "./Vector2f";
-import { VOAgent } from "./VOAgent";
-import { RVOAgent } from "./RVOAgent";
+import { BasicAgent } from "./agents/BasicAgent";
+import { StopAgent } from "./agents/StopAgent";
+import { VOAgent } from "./agents/VOAgent";
+import { RVOAgent } from "./agents/RVOAgent";
+import { HRVOAgent } from "./agents/HRVOAgent";
 
 const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
@@ -124,6 +125,14 @@ export function reconfigure() {
         goalPosition: Vector2f,
         radius: number
       ) => new RVOAgent(id, position, goalPosition, radius);
+      break;
+    case "HRVOAgent":
+      agentConstructor = (
+        id: number,
+        position: Vector2f,
+        goalPosition: Vector2f,
+        radius: number
+      ) => new HRVOAgent(id, position, goalPosition, radius);
       break;
     default: {
       throw new Error("Agent not implemented");
