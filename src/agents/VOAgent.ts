@@ -263,7 +263,7 @@ export class VOAgent implements IAgent {
     );
 
     // Return velocity obstacle
-    new VelocityObstacle(velocityB, tangent1, tangent2);
+    return new VelocityObstacle(velocityB, tangent1, tangent2);
   }
 
   private getClosestPointOnLine(

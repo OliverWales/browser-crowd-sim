@@ -273,7 +273,7 @@ export class RVOAgent implements IAgent {
     );
 
     // Return velocity obstacle
-    new VelocityObstacle(vertex, tangent1, tangent2);
+    return new VelocityObstacle(vertex, tangent1, tangent2);
   }
 
   private getClosestPointOnLine(

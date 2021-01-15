@@ -50,7 +50,177 @@ export class HRVOAgent implements IAgent {
       return;
     }
 
-    // TODO: Implement HRVO algorithm
+    const speed = 0.5;
+    const preferredVelocity = this.getPreferredVelocity(speed);
+    const goalDistSqrd = this._goalPosition
+      .subtract(this.getPosition())
+      .magnitudeSqrd();
+
+    let safe = true;
+    let collision;
+    let agent;
+    for (var i = 0; i < neighbours.length; i++) {
+      // Skip agents further away than goal
+      if (
+        neighbours[i]
+          .getPosition()
+          .subtract(this.getPosition())
+          .magnitudeSqrd() > goalDistSqrd
+      ) {
+        continue;
+      }
+
+      // Check whether preferred velocity is safe
+      const velocityObstacle = this.getHybridReciprocalVelocityObstacle(
+        neighbours[i]
+      );
+      if (
+        velocityObstacle != null &&
+        velocityObstacle.contains(preferredVelocity)
+      ) {
+        safe = false;
+        collision = velocityObstacle;
+        agent = i;
+        break;
+      }
+    }
+
+    // If preferred velocity is safe, go in that direction
+    if (safe) {
+      this._direction = preferredVelocity;
+      this._position = this._position.add(preferredVelocity);
+      this._colour = Colour.Green;
+      this.checkIfDone();
+      return;
+    }
+
+    if (collision != null) {
+      // Else, consider closest point on first half-plane
+      const halfPlane1 = this.getClosestPointOnLine(
+        collision.vertex,
+        collision.tangent1,
+        preferredVelocity
+      );
+
+      if (halfPlane1.magnitude() <= speed) {
+        safe = true;
+        for (var i = 0; i < neighbours.length; i++) {
+          if (i != agent) {
+            const velocityObstacle = this.getHybridReciprocalVelocityObstacle(
+              neighbours[i]
+            );
+            if (
+              velocityObstacle != null &&
+              velocityObstacle.contains(halfPlane1)
+            ) {
+              safe = false;
+              break;
+            }
+          }
+        }
+
+        if (safe) {
+          this._direction = halfPlane1;
+          this._position = this._position.add(halfPlane1);
+          this.setColour(preferredVelocity);
+          this.checkIfDone();
+          return;
+        }
+      }
+
+      // Else, consider closest point on second half-plane
+      const halfPlane2 = this.getClosestPointOnLine(
+        collision.vertex,
+        collision.tangent2,
+        preferredVelocity
+      );
+
+      if (halfPlane1.magnitude() <= speed) {
+        safe = true;
+        for (var i = 0; i < neighbours.length; i++) {
+          if (i != agent) {
+            const velocityObstacle = this.getHybridReciprocalVelocityObstacle(
+              neighbours[i]
+            );
+            if (
+              velocityObstacle != null &&
+              velocityObstacle.contains(halfPlane2)
+            ) {
+              safe = false;
+              break;
+            }
+          }
+        }
+
+        if (safe) {
+          this._direction = halfPlane2;
+          this._position = this._position.add(halfPlane2);
+          this.setColour(preferredVelocity);
+          this.checkIfDone();
+          return;
+        }
+      }
+    }
+
+    // Else, sample random velocities and select the one with the least penalty
+    const samples = 100; // number of velocities to try
+    const w = 100; // parameter for penalty
+    const goalDist = Math.sqrt(goalDistSqrd);
+    let minPenalty = Infinity;
+    let bestVelocity = new Vector2f(0, 0);
+
+    for (var i = 0; i < samples; i++) {
+      // Sample velocity from entire allowed velocity space
+      const sample = new Vector2f(0, 0).sample(speed);
+      let minTimeToCollision = Infinity;
+
+      // Find time to first collision
+      for (var j = 0; j < neighbours.length; j++) {
+        const b = neighbours[j];
+        const velocityObstacle = this.getHybridReciprocalVelocityObstacle(b);
+        if (velocityObstacle != null && velocityObstacle.contains(sample)) {
+          const timeToCollision = this.getFirstRayCircleIntersection(
+            b.getPosition().add(b.getDirection()),
+            this.Radius + b.Radius,
+            this._position,
+            sample
+              .multiply(2)
+              .subtract(this.getDirection())
+              .subtract(b.getDirection())
+          );
+
+          if (timeToCollision < minTimeToCollision) {
+            minTimeToCollision = timeToCollision;
+            if (minTimeToCollision == 0) {
+              this.setColour(preferredVelocity);
+              this.checkIfDone();
+              return;
+            }
+          }
+        }
+      }
+
+      // Calculate penalty
+      let penalty;
+      if (minTimeToCollision < goalDist) {
+        penalty =
+          w / minTimeToCollision +
+          preferredVelocity.subtract(sample).magnitude(); // TS correctly handles divide by zero or infinity
+      } else {
+        penalty = preferredVelocity.subtract(sample).magnitude();
+      }
+
+      if (penalty < minPenalty) {
+        minPenalty = penalty;
+        bestVelocity = sample;
+      }
+    }
+
+    this._direction = bestVelocity;
+    this._position = this._position.add(bestVelocity);
+    this.setColour(preferredVelocity);
+    this.checkIfDone();
+    return;
   }
 
   isDone(): boolean {
@@ -70,28 +240,87 @@ export class HRVOAgent implements IAgent {
   private getHybridReciprocalVelocityObstacle(
     b: IAgent
   ): VelocityObstacle | null {
-    throw new Error("Method not implemented.");
+    const velocityA = this.getDirection();
+    const velocityB = b.getDirection();
+
+    // Get respective vertices
+    const voVertex = velocityB;
+    const rvoVertex = velocityA.add(velocityB).divide(2);
+
+    // Translate origin to this agent's position
+    const positionB = b.getPosition().subtract(this._position);
+
+    // Find Minkowski sum of agents
+    const centre = positionB.add(velocityB);
+    const radius = b.Radius + this.Radius;
+
+    // Calculate angles
+    const diff = velocityB.subtract(centre);
+    const dist = diff.magnitude();
+    if (dist < radius) {
+      return null;
+    }
+
+    const theta = Math.acos(radius / dist);
+    const phi = Math.atan2(diff.y, diff.x);
+
+    // Calculate tangent vectors
+    const angle1 = phi + theta;
+    const tangent1 = new Vector2f(
+      centre.x + radius * Math.cos(angle1),
+      centre.y + radius * Math.sin(angle1)
+    );
+
+    const angle2 = phi - theta;
+    const tangent2 = new Vector2f(
+      centre.x + radius * Math.cos(angle2),
+      centre.y + radius * Math.sin(angle2)
+    );
+
+    // Check which side to pass on
+    const side =
+      (positionB.x - velocityB.x) * (velocityA.y - velocityB.y) -
+      (positionB.y - velocityB.y) * (velocityA.x - velocityB.x);
+
+    // TODO:
+    // Calculate vertex as intersection
+    // One edge origin at VO
+    // Other edge origin at RVO
+
+    let vertex;
+    if (side > 0) {
+      // "Left"
+      vertex = this.getLineIntersection(
+        voVertex,
+        tangent1,
+        rvoVertex,
+        tangent2
+      );
+    } else {
+      // "Right"
+      vertex = this.getLineIntersection(
+        voVertex,
+        tangent2,
+        rvoVertex,
+        tangent1
+      );
+    }
+
+    // Return hybrid recipricol velocity obstacle
+    return new VelocityObstacle(vertex, tangent1, tangent2);
   }
 
-  private isInside(
-    velocity: Vector2f,
-    velocityObstacle: VelocityObstacle
-  ): boolean {
-    // First half-plane
-    const determinant1 =
-      (velocityObstacle.tangent1.x - velocityObstacle.vertex.x) *
-        (velocity.y - velocityObstacle.vertex.y) -
-      (velocityObstacle.tangent1.y - velocityObstacle.vertex.y) *
-        (velocity.x - velocityObstacle.vertex.x);
+  private getLineIntersection(
+    point1: Vector2f,
+    direction1: Vector2f,
+    point2: Vector2f,
+    direction2: Vector2f
+  ): Vector2f {
+    const diff = point2.subtract(point1);
+    const det = direction2.x * direction1.y - direction2.y * direction1.x;
+    const t = (diff.y * direction2.x - diff.y * direction2.y) / det;
 
-    // Second half-plane
-    const determinant2 =
-      (velocityObstacle.tangent2.x - velocityObstacle.vertex.x) *
-        (velocity.y - velocityObstacle.vertex.y) -
-      (velocityObstacle.tangent2.y - velocityObstacle.vertex.y) *
-        (velocity.x - velocityObstacle.vertex.x);
-
-    return determinant1 > 0 && determinant2 < 0;
+    return point1.add(direction1.multiply(t));
   }
 
   private getClosestPointOnLine(
