@@ -1,18 +1,18 @@
 import { IAgentCollection } from "./IAgentCollection";
-import { IAgent } from "./IAgent";
+import { Agent } from "./Agent";
 
 export class AgentList implements IAgentCollection {
-  private _agents: IAgent[];
+  private _agents: Agent[];
 
-  init(agents: IAgent[]) {
+  init(agents: Agent[]) {
     this._agents = agents;
   }
 
-  getAll(): IAgent[] {
+  getAll(): Agent[] {
     return this._agents;
   }
 
-  getNeighboursInRangeRectilinear(agent: IAgent, range: number): IAgent[] {
+  getNeighboursInRangeRectilinear(agent: Agent, range: number): Agent[] {
     return this._agents.filter(
       (other) =>
         other.Id !== agent.Id &&
@@ -21,7 +21,7 @@ export class AgentList implements IAgentCollection {
     );
   }
 
-  getNeighboursInRangeEuclidean(agent: IAgent, range: number): IAgent[] {
+  getNeighboursInRangeEuclidean(agent: Agent, range: number): Agent[] {
     return this._agents.filter(
       (other) =>
         other.Id !== agent.Id &&
@@ -30,7 +30,7 @@ export class AgentList implements IAgentCollection {
     );
   }
 
-  forEach(fun: (agent: IAgent) => void): void {
+  forEach(fun: (agent: Agent) => void): void {
     this._agents.forEach(fun);
   }
 }

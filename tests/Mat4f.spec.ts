@@ -30,44 +30,4 @@ describe("Vector2f Operations Tests", function () {
 
     expect(c).toEqual(expected);
   });
-
-  it("Matrix transpose", function () {
-    // prettier-ignore
-    const a = new Float32Array([
-      1, 9, 7, 8,
-      4, 2, 5, 0,
-      2, 5, 5, 4,
-      2, 8, 8, 3
-    ]);
-
-    // prettier-ignore
-    const expected = new Float32Array([
-      1, 4, 2, 2,
-      9, 2, 5, 8,
-      7, 5, 5, 8,
-      8, 0, 4, 3
-    ])
-
-    expect(Mat4f.transpose(a)).toEqual(expected);
-  });
-
-  it("Matrix inverse", function () {
-    // prettier-ignore
-    const a = new Float32Array([
-      -11,  -29, -151, -321, 
-      -1,   -3,  -15,  -32, 
-      -3,  -11,  -54, -115, 
-       4,   11,   57,  121
-    ]);
-
-    // prettier-ignore
-    const expected = new Float32Array([
-      3, -18,  4,  7,
-      6, -29,  5, 13,
-      5,  -8,  3, 14,
-     -3,   7, -2, -8
-    ])
-
-    expect(Mat4f.invert(a)).toEqual(expected);
-  });
 });

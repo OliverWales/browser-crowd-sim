@@ -1,8 +1,8 @@
-import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
-import { AgentMesh } from "./AgentMesh";
-import { Mat4f } from "./Mat4f";
+import { Simulation } from "./Simulation";
 import { Vector2f } from "./Vector2f";
+import { Mat4f } from "./Mat4f";
+import { AgentMesh } from "./AgentMesh";
 import { FloorMesh } from "./FloorMesh";
 
 const vertexShaderText = `
@@ -151,7 +151,7 @@ export class Renderer3D implements IRenderer {
     this.canvas.addEventListener("mouseup", this.mouseUp, false);
     this.canvas.addEventListener("mouseout", this.mouseUp, false);
     this.canvas.addEventListener("mousemove", this.mouseMove, false);
-    this.canvas.addEventListener("wheel", this.mouseScroll, false);
+    this.canvas.addEventListener("wheel", this.mouseScroll, { passive: false });
 
     // Initialise vertex and index buffer
     const vertices = new Float32Array(
@@ -234,11 +234,12 @@ export class Renderer3D implements IRenderer {
     this.gl.uniformMatrix4fv(this.worldMatLoc, false, worldMatrix);
   }
 
-  clear(): void {
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-  }
+  render(simulation: Simulation): void {
+    const agents = simulation.getAgents();
 
-  drawAgents(agents: IAgentCollection): void {
+    // Clear background
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+
     // Draw agents
     agents.forEach((agent) => {
       // Position

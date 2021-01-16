@@ -2,12 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Crowd Sim | 3D Demo</title>
+    <title>Crowd Simulation Demo</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body onload="CrowdSimulator.init()">
     <div class="container">
-      <div class="settings">
+      <div class="configuration">
         <label for="config">Configuration:</label>
         <select id="config">
           <option value="RandomToRandom">Random to Random</option>
@@ -29,9 +29,34 @@
           Initialise
         </button>
       </div>
+      <div class="view">
+        <button
+          type="button"
+          id="view2d"
+          class="selected"
+          onclick="CrowdSimulator.switchView('2D')"
+        >
+          2D
+        </button>
+        <button
+          type="button"
+          id="view3d"
+          onclick="CrowdSimulator.switchView('3D')"
+        >
+          3D
+        </button>
+      </div>
     </div>
 
-    <canvas id="canvas" width="1280" height="640"></canvas>
+    <!-- HTML Canvases may not have more than one drawing context, so we are
+    forced to overlay them to allow switching between a 2D and 3D view -->
+    <canvas id="canvas2d" width="1280" height="640"></canvas>
+    <canvas
+      id="canvas3d"
+      style="display: none"
+      width="1280"
+      height="640"
+    ></canvas>
 
     <div class="container">
       <p id="framerate">FPS: -</p>
@@ -42,12 +67,6 @@
         <button id="stepButton" onclick="CrowdSimulator.step()">Step</button>
       </div>
     </div>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
-      integrity="sha512-zhHQR0/H5SEBL3Wn6yYSaTTZej12z0hVZKOv3TwCUXT1z5qeqGcXJLLrbERYRScEDDpYIJhPC1fk31gqR783iQ=="
-      crossorigin="anonymous"
-      defer
-    ></script>
-    <script src="demo3d.js"></script>
+    <script src="demo.js"></script>
   </body>
 </html>

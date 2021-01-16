@@ -1,26 +1,26 @@
 import { IAgentCollection } from "./IAgentCollection";
-import { IAgent } from "./IAgent";
+import { Agent } from "./Agent";
 
 interface Node {
-  agent: IAgent;
+  agent: Agent;
   left: Node;
   right: Node;
 }
 
 export class AgentTree implements IAgentCollection {
-  private _agents: IAgent[];
+  private _agents: Agent[];
   private _root: Node;
 
-  init(agents: IAgent[]): void {
+  init(agents: Agent[]): void {
     this._agents = agents;
     this._root = this.constructTree(this._agents, true);
   }
 
-  getAll(): IAgent[] {
+  getAll(): Agent[] {
     return this._agents;
   }
 
-  getNeighboursInRangeRectilinear(agent: IAgent, range: number): IAgent[] {
+  getNeighboursInRangeRectilinear(agent: Agent, range: number): Agent[] {
     let minX = agent.getPosition().x - range;
     let minY = agent.getPosition().y - range;
     let maxX = agent.getPosition().x + range;
@@ -30,7 +30,7 @@ export class AgentTree implements IAgentCollection {
     return candidates.filter((other) => other.Id !== agent.Id);
   }
 
-  getNeighboursInRangeEuclidean(agent: IAgent, range: number): IAgent[] {
+  getNeighboursInRangeEuclidean(agent: Agent, range: number): Agent[] {
     let candidates = this.getNeighboursInRangeRectilinear(agent, range);
     return candidates.filter(
       (other) =>
@@ -39,11 +39,11 @@ export class AgentTree implements IAgentCollection {
     );
   }
 
-  forEach(fun: (agent: IAgent) => void): void {
+  forEach(fun: (agent: Agent) => void): void {
     this._agents.forEach(fun);
   }
 
-  private constructTree(agents: IAgent[], xAxis: boolean): Node {
+  private constructTree(agents: Agent[], xAxis: boolean): Node {
     if (agents.length === 0) {
       return null;
     }
@@ -70,12 +70,12 @@ export class AgentTree implements IAgentCollection {
     maxX: number,
     maxY: number,
     xAxis: boolean
-  ): IAgent[] {
+  ): Agent[] {
     if (root == null) {
       return [];
     }
 
-    let res: IAgent[] = [];
+    let res: Agent[] = [];
     if (xAxis) {
       // If x <= maxX need to check right subtree
       if (root.agent.getPosition().x <= maxX) {

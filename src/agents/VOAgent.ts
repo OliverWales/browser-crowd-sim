@@ -1,75 +1,46 @@
+import { Agent } from "../Agent";
 import { Colour } from "../Colour";
-import { IAgent } from "../IAgent";
+import { Geometry } from "../Geometry";
 import { Vector2f } from "../Vector2f";
 import { VelocityObstacle } from "../VelocityObstacle";
 
-export class VOAgent implements IAgent {
-  Radius: number;
-  Id: number;
-
-  MAX_VELOCITY = 1.0;
-  MAX_ACCELERATION = 0.5;
-
-  private _position: Vector2f;
-  private _goalPosition: Vector2f;
-  private _direction: Vector2f;
-
-  private _isDone: boolean;
+export class VOAgent extends Agent {
   private _colour: Colour;
 
   constructor(
     id: number,
     startPosition: Vector2f,
-    goalPosition: Vector2f,
-    radius: number
+    getPreferredVelocity: (position: Vector2f) => Vector2f
   ) {
-    this.Id = id;
-    this._position = startPosition;
-    this._goalPosition = goalPosition;
-    this.Radius = radius;
-    this._direction = new Vector2f(0, 0);
-
-    this._isDone = false;
+    super(id, startPosition, getPreferredVelocity);
     this._colour = Colour.Green;
-  }
-
-  getPosition(): Vector2f {
-    return this._position;
-  }
-
-  getDirection(): Vector2f {
-    return this._direction;
   }
 
   getColour(): Colour {
     return this._colour;
   }
 
-  update(_deltaT: number, neighbours: IAgent[]): void {
+  update(deltaT: number, neighbours: Agent[]): void {
     if (this._isDone) {
       return;
     }
 
-    const speed = 0.5;
-    const preferredVelocity = this.getPreferredVelocity(speed);
-    const goalDistSqrd = this._goalPosition
-      .subtract(this.getPosition())
-      .magnitudeSqrd();
+    const preferredVelocity = this._getPreferredVelocity(this._position);
+    const stepSize = (deltaT * 60) / 4000;
+
+    // Check if done
+    if (preferredVelocity.magnitudeSqrd() < 0.1) {
+      this._isDone = true;
+      this._direction = new Vector2f(0, 0);
+      this._colour = Colour.White;
+      return;
+    }
 
     let safe = true;
     let collision;
     let agent;
-    for (var i = 0; i < neighbours.length; i++) {
-      // Skip agents further away than goal
-      if (
-        neighbours[i]
-          .getPosition()
-          .subtract(this.getPosition())
-          .magnitudeSqrd() > goalDistSqrd
-      ) {
-        continue;
-      }
 
+    for (var i = 0; i < neighbours.length; i++) {
       // Check whether preferred velocity is safe
       const velocityObstacle = this.getVelocityObstacle(neighbours[i]);
       if (
@@ -86,86 +57,72 @@ export class VOAgent implements IAgent {
     // If preferred velocity is safe, go in that direction
     if (safe) {
       this._direction = preferredVelocity;
-      this._position = this._position.add(preferredVelocity);
+      this._position = this._position.add(this._direction.multiply(stepSize));
       this._colour = Colour.Green;
-      this.checkIfDone();
       return;
     }
 
+    // If not, try closest point on left and right edge of cone
     if (collision != null) {
-      // Else, consider closest point on first half-plane
-      const halfPlane1 = this.getClosestPointOnLine(
+      const left = Geometry.getClosestPointOnLine(
         collision.vertex,
         collision.tangent1,
         preferredVelocity
       );
 
-      if (halfPlane1.magnitude() <= speed) {
-        safe = true;
-        for (var i = 0; i < neighbours.length; i++) {
-          if (i != agent) {
-            const velocityObstacle = this.getVelocityObstacle(neighbours[i]);
-            if (
-              velocityObstacle != null &&
-              velocityObstacle.contains(halfPlane1)
-            ) {
-              safe = false;
-              break;
-            }
-          }
-        }
-
-        if (safe) {
-          this._direction = halfPlane1;
-          this._position = this._position.add(halfPlane1);
-          this.setColour(preferredVelocity);
-          this.checkIfDone();
-          return;
-        }
-      }
-
-      // Else, consider closest point on second half-plane
-      const halfPlane2 = this.getClosestPointOnLine(
+      const right = Geometry.getClosestPointOnLine(
         collision.vertex,
         collision.tangent2,
         preferredVelocity
       );
 
-      if (halfPlane1.magnitude() <= speed) {
-        safe = true;
-        for (var i = 0; i < neighbours.length; i++) {
-          if (i != agent) {
-            const velocityObstacle = this.getVelocityObstacle(neighbours[i]);
-            if (
-              velocityObstacle != null &&
-              velocityObstacle.contains(halfPlane2)
-            ) {
-              safe = false;
-              break;
-            }
+      let leftSafe = true;
+      let rightSafe = true;
+
+      for (var i = 0; i < neighbours.length; i++) {
+        if (i != agent) {
+          const velocityObstacle = this.getVelocityObstacle(neighbours[i]);
+          if (velocityObstacle != null && velocityObstacle.contains(left)) {
+            leftSafe = false;
+          }
+          if (velocityObstacle != null && velocityObstacle.contains(left)) {
+            rightSafe = false;
           }
         }
+      }
 
-        if (safe) {
-          this._direction = halfPlane2;
-          this._position = this._position.add(halfPlane2);
-          this.setColour(preferredVelocity);
-          this.checkIfDone();
-          return;
+      if (leftSafe && rightSafe) {
+        // If both are safe take closest to preferred velocity
+        if (
+          left.subtract(preferredVelocity).magnitudeSqrd() <
+          right.subtract(preferredVelocity).magnitudeSqrd()
+        ) {
+          this._direction = left;
+        } else {
+          this._direction = right;
         }
+      } else if (leftSafe) {
+        this._direction = left;
+      } else if (rightSafe) {
+        this._direction = right;
+      }
+
+      if (leftSafe || rightSafe) {
+        this._position = this._position.add(this._direction.multiply(stepSize));
+        this.setColour(preferredVelocity);
+        return;
       }
     }
 
     // Else, sample random velocities and select the one with the least penalty
     const samples = 100; // number of velocities to try
     const w = 100; // parameter for penalty
-    const goalDist = Math.sqrt(goalDistSqrd);
     let minPenalty = Infinity;
     let bestVelocity = new Vector2f(0, 0);
 
     for (var i = 0; i < samples; i++) {
       // Sample velocity from entire allowed velocity space
-      const sample = new Vector2f(0, 0).sample(speed);
+      const sample = new Vector2f(0, 0).sample(1);
       let minTimeToCollision = Infinity;
 
       // Find time to first collision
@@ -174,7 +131,7 @@ export class VOAgent implements IAgent {
         const velocityObstacle = this.getVelocityObstacle(b);
 
         if (velocityObstacle == null || velocityObstacle.contains(sample)) {
-          const timeToCollision = this.getFirstRayCircleIntersection(
+          const timeToCollision = Geometry.getFirstRayCircleIntersection(
             b.getPosition().add(b.getDirection()),
             this.Radius + b.Radius,
             this._position,
@@ -183,24 +140,13 @@ export class VOAgent implements IAgent {
 
           if (timeToCollision < minTimeToCollision) {
             minTimeToCollision = timeToCollision;
-            if (minTimeToCollision == 0) {
-              this.setColour(preferredVelocity);
-              this.checkIfDone();
-              return;
-            }
           }
         }
       }
 
       // Calculate penalty
-      let penalty;
-      if (minTimeToCollision < goalDist) {
-        penalty =
-          w / minTimeToCollision +
-          preferredVelocity.subtract(sample).magnitude(); // TS correctly handles divide by zero or infinity
-      } else {
-        penalty = preferredVelocity.subtract(sample).magnitude();
-      }
+      const penalty =
+        w / minTimeToCollision + preferredVelocity.subtract(sample).magnitude(); // TS correctly handles divide by zero or infinity
 
       if (penalty < minPenalty) {
         minPenalty = penalty;
@@ -209,27 +155,12 @@ export class VOAgent implements IAgent {
     }
 
     this._direction = bestVelocity;
-    this._position = this._position.add(bestVelocity);
+    this._position = this._position.add(this._direction.multiply(stepSize));
     this.setColour(preferredVelocity);
-    this.checkIfDone();
     return;
   }
 
-  isDone(): boolean {
-    return this._isDone;
-  }
-
-  private getPreferredVelocity(maxSpeed: number): Vector2f {
-    const goalDirection = this._goalPosition.subtract(this._position);
-    const goalDistance = goalDirection.magnitude();
-
-    if (goalDistance > maxSpeed) {
-      return goalDirection.divide(goalDistance / maxSpeed);
-    }
-    return goalDirection;
-  }
-
-  private getVelocityObstacle(b: IAgent): VelocityObstacle | null {
+  protected getVelocityObstacle(b: Agent): VelocityObstacle | null {
     const velocityB = b.getDirection();
 
     // Translate origin to this agent's position
@@ -266,62 +197,9 @@ export class VOAgent implements IAgent {
     return new VelocityObstacle(velocityB, tangent1, tangent2);
   }
 
-  private getClosestPointOnLine(
-    linePoint: Vector2f,
-    lineDirection: Vector2f,
-    point: Vector2f
-  ): Vector2f {
-    const direction = lineDirection.normalise();
-    const vector = point.subtract(linePoint);
-    const distance = vector.dot(direction);
-    return linePoint.add(direction.multiply(distance));
-  }
-
-  private getFirstRayCircleIntersection(
-    centre: Vector2f,
-    radius: number,
-    origin: Vector2f,
-    direction: Vector2f
-  ): number {
-    const delta = origin.subtract(centre);
-
-    const a = direction.dot(direction);
-    const b = 2 * direction.dot(delta);
-    const c = delta.dot(delta) - radius ** 2;
-
-    const discrim = b ** 2 - 4 * a * c;
-
-    if (discrim < 0) {
-      // No intersection
-      return Infinity;
-    }
-
-    const distance = ((-b - Math.sqrt(discrim)) / 2) * a;
-
-    if (distance < 0) {
-      // Intersection behind
-      return Infinity;
-    }
-
-    return distance;
-  }
-
-  private setColour(preferredVelocity: Vector2f) {
+  protected setColour(preferredVelocity: Vector2f) {
     const stress = preferredVelocity.subtract(this._direction).magnitude();
-    this._colour = Colour.FromHsv((1 - stress) / 3, 1, 1);
-  }
-
-  private checkIfDone() {
-    const finishThreshold = 1.0;
-
-    if (
-      this._position.subtract(this._goalPosition).magnitudeSqrd() <
-      finishThreshold
-    ) {
-      this._isDone = true;
-      this._position = this._goalPosition;
-      this._direction = new Vector2f(0, 0);
-      this._colour = Colour.White;
-    }
+    const hue = stress > 1 ? 0 : (1 - stress) / 3;
+    this._colour = Colour.FromHsv(hue, 1, 1);
   }
 }

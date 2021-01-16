@@ -1,6 +1,6 @@
-import { IAgent } from "./IAgent";
-import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
+import { Simulation } from "./Simulation";
+import { Agent } from "./Agent";
 
 export class Renderer2D implements IRenderer {
   private canvas: HTMLCanvasElement;
@@ -25,10 +25,13 @@ export class Renderer2D implements IRenderer {
     this.canvas.addEventListener("mouseup", this.mouseUp, false);
     this.canvas.addEventListener("mouseout", this.mouseUp, false);
     this.canvas.addEventListener("mousemove", this.mouseMove, false);
-    this.canvas.addEventListener("wheel", this.mouseScroll, false);
+    this.canvas.addEventListener("wheel", this.mouseScroll, { passive: false });
   }
 
-  clear(): void {
+  render(simulation: Simulation) {
+    const scaleFactor = 800 / this.cameraDist;
+    const agents = simulation.getAgents();
+
     // Clear background
     this.context.setTransform(1, 0, 0, 1, 0, 0);
     this.context.fillStyle = "rgb(135, 194, 250)";
@@ -38,15 +41,15 @@ export class Renderer2D implements IRenderer {
       this.context.canvas.width,
       this.context.canvas.height
     );
-  }
 
-  drawAgents(agents: IAgentCollection) {
-    const scaleFactor = 800 / this.cameraDist;
-
-    // TODO: replace with single setTransform
-    this.context.setTransform(1, 0, 0, 1, 0, 0);
-    this.context.translate(this.xPan, this.yPan);
-    this.context.scale(scaleFactor, scaleFactor);
+    this.context.setTransform(
+      scaleFactor,
+      0,
+      0,
+      scaleFactor,
+      this.xPan,
+      this.yPan
+    );
 
     // Draw floor
     this.context.fillStyle = "rgb(51, 51, 51)";
@@ -63,7 +66,7 @@ export class Renderer2D implements IRenderer {
     });
   }
 
-  private drawAgent(agent: IAgent): void {
+  private drawAgent(agent: Agent): void {
     const position = agent.getPosition();
     const direction = agent.getDirection();
     const colour = agent.getColour();
@@ -72,15 +75,16 @@ export class Renderer2D implements IRenderer {
     this.context.strokeStyle = `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
     this.context.lineWidth = 2;
 
-    this.context.arc(position.x, position.y, agent.Radius, 0, 2 * Math.PI);
+    // y position inverted to match 3D view
+    this.context.arc(position.x, -position.y, agent.Radius, 0, 2 * Math.PI);
 
     let magnitude = direction.magnitude();
     if (magnitude !== 0) {
-      this.context.moveTo(position.x, position.y);
+      this.context.moveTo(position.x, -position.y);
       let newPos = position.add(
         direction.divide(magnitude).multiply(agent.Radius)
       );
-      this.context.lineTo(newPos.x, newPos.y);
+      this.context.lineTo(newPos.x, -newPos.y);
     }
 
     this.context.stroke();
@@ -109,11 +113,10 @@ export class Renderer2D implements IRenderer {
 
   private mouseScroll = (event: WheelEvent) => {
     this.cameraDist += event.deltaY;
-    if (this.cameraDist < 0) {
-      this.cameraDist = 0;
+    if (this.cameraDist < 0.1) {
+      this.cameraDist = 0.1;
     }
 
     event.preventDefault();
-    console.log("Scroll");
   };
 }

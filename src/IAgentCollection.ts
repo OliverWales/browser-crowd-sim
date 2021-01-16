@@ -1,13 +1,13 @@
-import { IAgent } from "./IAgent";
+import { Agent } from "./Agent";
 
 export interface IAgentCollection {
-  init(agents: IAgent[]): void;
+  init(agents: Agent[]): void;
 
-  getAll(): IAgent[];
+  getAll(): Agent[];
 
-  getNeighboursInRangeRectilinear(agent: IAgent, range: number): IAgent[];
+  getNeighboursInRangeRectilinear(agent: Agent, range: number): Agent[];
 
-  getNeighboursInRangeEuclidean(agent: IAgent, range: number): IAgent[];
+  getNeighboursInRangeEuclidean(agent: Agent, range: number): Agent[];
 
-  forEach(fun: (agent: IAgent) => void): void;
+  forEach(fun: (agent: Agent) => void): void;
 }

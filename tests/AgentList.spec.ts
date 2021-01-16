@@ -1,16 +1,20 @@
 import { AgentList } from "../src/AgentList";
+import { Agent } from "../src/Agent";
 import { BasicAgent } from "../src/agents/BasicAgent";
-import { IAgent } from "../src/IAgent";
 import { Vector2f } from "../src/Vector2f";
 
 describe("AgentList Range Search Tests", function () {
   it("Rectilinear", function () {
     let tree = new AgentList();
-    let agents: IAgent[] = [];
+    let agents: Agent[] = [];
     for (var i = 0; i < 5; i++) {
       for (var j = 0; j < 5; j++) {
         agents.push(
-          new BasicAgent(5 * i + j, new Vector2f(i, j), new Vector2f(i, j), 2)
+          new BasicAgent(
+            5 * i + j,
+            new Vector2f(i, j),
+            (x) => new Vector2f(0, 0)
+          )
         );
       }
     }
@@ -46,11 +50,15 @@ describe("AgentList Range Search Tests", function () {
 
   it("Euclidean", function () {
     let tree = new AgentList();
-    let agents: IAgent[] = [];
+    let agents: Agent[] = [];
     for (var i = 0; i < 5; i++) {
       for (var j = 0; j < 5; j++) {
         agents.push(
-          new BasicAgent(5 * i + j, new Vector2f(i, j), new Vector2f(i, j), 2)
+          new BasicAgent(
+            5 * i + j,
+            new Vector2f(i, j),
+            (x) => new Vector2f(0, 0)
+          )
         );
       }
     }
