@@ -1,6 +1,6 @@
 import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
-import { IConfiguration } from "./Configurations";
+import { Agent } from "./Agent";
 
 export class Simulation {
   _renderer: IRenderer;
@@ -11,8 +11,8 @@ export class Simulation {
     this._agents = agents;
   }
 
-  init(config: IConfiguration) {
-    this._agents.init(config.agents);
+  init(agents: Agent[]) {
+    this._agents.init(agents);
   }
 
   update(deltaT: number) {

@@ -1,5 +1,5 @@
-import { Colour } from "../Colour";
-import { Vector2f } from "../Vector2f";
+import { Colour } from "./Colour";
+import { Vector2f } from "./Vector2f";
 
 export abstract class Agent {
   readonly Radius: number;

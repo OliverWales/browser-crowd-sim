@@ -1,4 +1,4 @@
-import { Agent } from "./Agent";
+import { Agent } from "../Agent";
 import { Colour } from "../Colour";
 
 export class BasicAgent extends Agent {

@@ -1,13 +1,7 @@
 import { Simulation } from "./Simulation";
 import { Renderer2D } from "./Renderer2D";
-import { Configurations } from "./Configurations";
 import { AgentTree } from "./AgentTree";
-import { Vector2f } from "./Vector2f";
-import { BasicAgent } from "./agents/BasicAgent";
-import { StopAgent } from "./agents/StopAgent";
-import { VOAgent } from "./agents/VOAgent";
-import { RVOAgent } from "./agents/RVOAgent";
-import { HRVOAgent } from "./agents/HRVOAgent";
+import { ConfigurationFactory } from "./ConfigurationFactory";
 
 const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
@@ -88,105 +82,16 @@ export function reconfigure() {
   }
 
   const config = configSelect.value;
-  const agentType = agentTypeSelect.value; // TODO: wire this in
-  const n = parseInt(numberOfAgentsInput.value) ?? 0;
+  const agentType = agentTypeSelect.value;
+  const numberOfAgents = parseInt(numberOfAgentsInput.value) ?? 0;
 
-  // Select agent constructor
-  let agentConstructor;
-  switch (agentType) {
-    case "BasicAgent":
-      agentConstructor = (
-        id: number,
-        position: Vector2f,
-        goalPosition: Vector2f,
-        radius: number
-      ) => new BasicAgent(id, position, goalPosition, radius);
-      break;
-    case "StopAgent":
-      agentConstructor = (
-        id: number,
-        position: Vector2f,
-        goalPosition: Vector2f,
-        radius: number
-      ) => new StopAgent(id, position, goalPosition, radius);
-      break;
-    case "VOAgent":
-      agentConstructor = (
-        id: number,
-        position: Vector2f,
-        goalPosition: Vector2f,
-        radius: number
-      ) => new VOAgent(id, position, goalPosition, radius);
-      break;
-    case "RVOAgent":
-      agentConstructor = (
-        id: number,
-        position: Vector2f,
-        goalPosition: Vector2f,
-        radius: number
-      ) => new RVOAgent(id, position, goalPosition, radius);
-      break;
-    case "HRVOAgent":
-      agentConstructor = (
-        id: number,
-        position: Vector2f,
-        goalPosition: Vector2f,
-        radius: number
-      ) => new HRVOAgent(id, position, goalPosition, radius);
-      break;
-    default: {
-      throw new Error("Agent not implemented");
-    }
-  }
-
-  // Select configuration
-  switch (config) {
-    case "RandomToRandom": {
-      simulation.init(
-        Configurations.RandomToRandom(
-          n,
-          canvas.width,
-          canvas.height,
-          agentConstructor
-        )
-      );
-      break;
-    }
-    case "RandomToLine": {
-      simulation.init(
-        Configurations.RandomToLine(
-          n,
-          canvas.width,
-          canvas.height,
-          agentConstructor
-        )
-      );
-      break;
-    }
-    case "CircleToCircle": {
-      simulation.init(
-        Configurations.CircleToCircle(
-          n,
-          canvas.width,
-          canvas.height,
-          agentConstructor
-        )
-      );
-      break;
-    }
-    case "GridToGrid": {
-      simulation.init(
-        Configurations.GridToGrid(
-          n,
-          canvas.width,
-          canvas.height,
-          agentConstructor
-        )
-      );
-      break;
-    }
-    default: {
-      throw new Error("Configuration not implemented");
-    }
-  }
+  simulation.init(
+    ConfigurationFactory.getConfiguration(
+      config,
+      agentType,
+      canvas.width,
+      canvas.height,
+      numberOfAgents
+    )
+  );
 }

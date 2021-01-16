@@ -1,4 +1,4 @@
-import { Agent } from "./Agent";
+import { Agent } from "../Agent";
 import { Vector2f } from "../Vector2f";
 import { Colour } from "../Colour";
 

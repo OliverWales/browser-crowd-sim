@@ -1,4 +1,4 @@
-import { IAgent } from "./IAgent";
+import { Agent } from "./Agent";
 import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
 
@@ -63,7 +63,7 @@ export class Renderer2D implements IRenderer {
     });
   }
 
-  private drawAgent(agent: IAgent): void {
+  private drawAgent(agent: Agent): void {
     const position = agent.getPosition();
     const direction = agent.getDirection();
     const colour = agent.getColour();

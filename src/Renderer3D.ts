@@ -1,8 +1,8 @@
 import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
-import { AgentMesh } from "./AgentMesh";
-import { Mat4f } from "./Mat4f";
 import { Vector2f } from "./Vector2f";
+import { Mat4f } from "./Mat4f";
+import { AgentMesh } from "./AgentMesh";
 import { FloorMesh } from "./FloorMesh";
 
 const vertexShaderText = `
