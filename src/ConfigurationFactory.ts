@@ -129,7 +129,7 @@ export class ConfigurationFactory {
     const gridSize = Math.ceil(Math.sqrt(numberOfAgents / 2));
     const offset = 90;
     let x = 30 - width / 2;
-    let y = -((gridSize - 1) / 2) * offset;
+    let y = ((gridSize - 1) / 2) * offset;
 
     for (let i = 0; i < numberOfAgents; i++) {
       const idx = Math.floor(i / 2);
@@ -141,9 +141,9 @@ export class ConfigurationFactory {
         const agent = AgentFactory.getAgent(
           agentType,
           i,
-          new Vector2f(x + (gridSize - 1 - col) * offset, y + row * offset),
+          new Vector2f(x + (gridSize - 1 - col) * offset, y - row * offset),
           this.preferredVelocityFromGoalPosition(
-            new Vector2f(-x - col * offset, y + row * offset)
+            new Vector2f(-x - col * offset, y - row * offset)
           )
         );
         agents.push(agent);
@@ -152,9 +152,9 @@ export class ConfigurationFactory {
         const agent = AgentFactory.getAgent(
           agentType,
           i,
-          new Vector2f(-x - (gridSize - 1 - col) * offset, y + row * offset),
+          new Vector2f(-x - (gridSize - 1 - col) * offset, y - row * offset),
           this.preferredVelocityFromGoalPosition(
-            new Vector2f(x + col * offset, y + row * offset)
+            new Vector2f(x + col * offset, y - row * offset)
           )
         );
         agents.push(agent);

@@ -1,6 +1,6 @@
 const path = require("path");
 module.exports = {
-  entry: { demo2d: "./src/demo2d.ts", demo3d: "./src/demo3d.ts" },
+  entry: { demo: "./src/demo.ts" },
   devtool: "inline-source-map",
   devServer: {
     contentBase: "./build",

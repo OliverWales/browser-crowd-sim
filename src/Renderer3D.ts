@@ -1,5 +1,5 @@
-import { IAgentCollection } from "./IAgentCollection";
 import { IRenderer } from "./IRenderer";
+import { Simulation } from "./Simulation";
 import { Vector2f } from "./Vector2f";
 import { Mat4f } from "./Mat4f";
 import { AgentMesh } from "./AgentMesh";
@@ -234,11 +234,12 @@ export class Renderer3D implements IRenderer {
     this.gl.uniformMatrix4fv(this.worldMatLoc, false, worldMatrix);
   }
 
-  clear(): void {
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-  }
+  render(simulation: Simulation): void {
+    const agents = simulation.getAgents();
 
-  drawAgents(agents: IAgentCollection): void {
+    // Clear background
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+
     // Draw agents
     agents.forEach((agent) => {
       // Position

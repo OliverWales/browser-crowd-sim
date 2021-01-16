@@ -1,5 +1,7 @@
 import { Simulation } from "./Simulation";
+import { IRenderer } from "./IRenderer";
 import { Renderer2D } from "./Renderer2D";
+import { Renderer3D } from "./Renderer3D";
 import { AgentTree } from "./AgentTree";
 import { ConfigurationFactory } from "./ConfigurationFactory";
 
@@ -11,16 +13,19 @@ const numberOfAgentsInput = document.getElementById(
   "numberOfAgents"
 ) as HTMLInputElement;
 
-const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+const canvas2d = document.getElementById("canvas2d") as HTMLCanvasElement;
+const canvas3d = document.getElementById("canvas3d") as HTMLCanvasElement;
 const framerate = document.getElementById("framerate") as HTMLParagraphElement;
 const playButton = document.getElementById("playButton") as HTMLButtonElement;
 const stepButton = document.getElementById("stepButton") as HTMLButtonElement;
 
-const renderer = new Renderer2D(canvas);
-const simulation = new Simulation(renderer, new AgentTree());
+const simulation = new Simulation(new AgentTree());
+const renderer2d = new Renderer2D(canvas2d);
+const renderer3d = new Renderer3D(canvas3d);
+var renderer: IRenderer = renderer2d;
 var play = false;
 
-// initialise simulation and begin update/render loop
+// Initialise simulation and begin update/render loop
 export function init() {
   this.reconfigure();
 
@@ -32,13 +37,13 @@ export function init() {
     let deltaT = timestamp - lastRender;
     lastRender = timestamp;
 
-    // update
+    // Update
     if (play) {
       simulation.update(deltaT);
     }
 
-    // render
-    simulation.draw();
+    // Render
+    renderer.render(simulation);
     frames++;
 
     // recalculate framerate every 250ms
@@ -58,7 +63,29 @@ export function init() {
   window.requestAnimationFrame(loop);
 }
 
-// toggle play/pause
+// Switch view
+export function switchView(view: string) {
+  switch (view) {
+    case "2D":
+      document.getElementById("view2d").classList.add("selected");
+      document.getElementById("view3d").classList.remove("selected");
+      renderer = renderer2d;
+      canvas2d.style.display = "block";
+      canvas3d.style.display = "none";
+      return;
+    case "3D":
+      document.getElementById("view2d").classList.remove("selected");
+      document.getElementById("view3d").classList.add("selected");
+      renderer = renderer3d;
+      canvas2d.style.display = "none";
+      canvas3d.style.display = "block";
+      return;
+    default:
+      throw new Error(`Unknown view \"${view}\"`);
+  }
+}
+
+// Toggle play/pause
 export function playPause() {
   play = !play;
 
@@ -89,8 +116,8 @@ export function reconfigure() {
     ConfigurationFactory.getConfiguration(
       config,
       agentType,
-      canvas.width,
-      canvas.height,
+      canvas2d.width,
+      canvas2d.height,
       numberOfAgents
     )
   );

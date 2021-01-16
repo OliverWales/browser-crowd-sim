@@ -1,8 +1,14 @@
+:root {
+  --sky-color: #87c2fa;
+  --sky-hover: #5aa8f2;
+  --floor-color: #3d433f;
+}
+
 canvas {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  border: 1px solid #000000;
+  background-color: var(--floor-color);
 }
 
 .container {
@@ -12,17 +18,46 @@ canvas {
   margin-right: auto;
 }
 
-.settings {
+.configuration {
+  float: left;
   padding: 5px 0;
 }
 
-.settings input {
+.configuration input {
   margin-right: 7px;
   width: 100px;
 }
 
-.settings select {
+.configuration select {
   margin-right: 10px;
+}
+
+.view {
+  float: right;
+  padding: 5px 5px;
+  background-color: var(--sky-color);
+  border-radius: 8px 8px 0 0;
+}
+
+.view button {
+  border: none;
+  border-radius: 5px;
+  outline: none;
+}
+
+.view button {
+  background-color: var(--sky-color);
+  color: white;
+}
+
+.view button:hover {
+  background-color: var(--sky-hover);
+  color: white;
+}
+
+.view button.selected {
+  background-color: white;
+  color: var(--sky-hover);
 }
 
 .controls {
