@@ -16,7 +16,7 @@ export class Simulation {
   }
 
   update(deltaT: number) {
-    let range = 300;
+    let range = 400;
     this._agents.forEach((agent) => {
       agent.update(
         deltaT,

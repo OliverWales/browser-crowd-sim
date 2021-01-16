@@ -26,9 +26,10 @@ export class VOAgent extends Agent {
     }
 
     const preferredVelocity = this._getPreferredVelocity(this._position);
+    const stepSize = (deltaT * 60) / 4000;
 
     // Check if done
-    if (preferredVelocity.x == 0 && preferredVelocity.y == 0) {
+    if (preferredVelocity.magnitudeSqrd() < 0.1) {
       this._isDone = true;
       this._direction = new Vector2f(0, 0);
       this._colour = Colour.White;
@@ -56,9 +57,7 @@ export class VOAgent extends Agent {
     // If preferred velocity is safe, go in that direction
     if (safe) {
       this._direction = preferredVelocity;
-      this._position = this._position.add(
-        this._direction.multiply((deltaT * 60) / 1000)
-      );
+      this._position = this._position.add(this._direction.multiply(stepSize));
       this._colour = Colour.Green;
       return;
     }
@@ -109,9 +108,7 @@ export class VOAgent extends Agent {
       }
 
       if (leftSafe || rightSafe) {
-        this._position = this._position.add(
-          this._direction.multiply((deltaT * 60) / 1000)
-        );
+        this._position = this._position.add(this._direction.multiply(stepSize));
         this.setColour(preferredVelocity);
         return;
       }
@@ -158,14 +155,12 @@ export class VOAgent extends Agent {
     }
 
     this._direction = bestVelocity;
-    this._position = this._position.add(
-      this._direction.multiply((deltaT * 60) / 1000)
-    );
+    this._position = this._position.add(this._direction.multiply(stepSize));
     this.setColour(preferredVelocity);
     return;
   }
 
-  private getVelocityObstacle(b: Agent): VelocityObstacle | null {
+  protected getVelocityObstacle(b: Agent): VelocityObstacle | null {
     const velocityB = b.getDirection();
 
     // Translate origin to this agent's position
@@ -202,8 +197,9 @@ export class VOAgent extends Agent {
     return new VelocityObstacle(velocityB, tangent1, tangent2);
   }
 
-  private setColour(preferredVelocity: Vector2f) {
+  protected setColour(preferredVelocity: Vector2f) {
     const stress = preferredVelocity.subtract(this._direction).magnitude();
-    this._colour = Colour.FromHsv((1 - stress) / 3, 1, 1);
+    const hue = stress > 1 ? 0 : (1 - stress) / 3;
+    this._colour = Colour.FromHsv(hue, 1, 1);
   }
 }

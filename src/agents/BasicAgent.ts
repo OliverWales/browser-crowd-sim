@@ -15,19 +15,17 @@ export class BasicAgent extends Agent {
       return;
     }
 
-    const goalDirection = this._getPreferredVelocity(this._position);
-    const goalDistance = goalDirection.magnitude();
+    const preferredVelocity = this._getPreferredVelocity(this._position);
+    const stepSize = (deltaT * 60) / 3000;
 
     // Check if done
-    if (goalDirection.x == 0 && goalDirection.y == 0) {
+    if (preferredVelocity.magnitudeSqrd() < 0.1) {
       this._isDone = true;
       return;
     }
 
     // Step towards goal
-    this._direction = goalDirection;
-    this._position = this._position.add(
-      goalDirection.multiply((deltaT * 60) / 1000)
-    );
+    this._direction = preferredVelocity;
+    this._position = this._position.add(preferredVelocity.multiply(stepSize));
   }
 }
