@@ -151,7 +151,7 @@ export class Renderer3D implements IRenderer {
     this.canvas.addEventListener("mouseup", this.mouseUp, false);
     this.canvas.addEventListener("mouseout", this.mouseUp, false);
     this.canvas.addEventListener("mousemove", this.mouseMove, false);
-    this.canvas.addEventListener("wheel", this.mouseScroll, false);
+    this.canvas.addEventListener("wheel", this.mouseScroll, { passive: false });
 
     // Initialise vertex and index buffer
     const vertices = new Float32Array(

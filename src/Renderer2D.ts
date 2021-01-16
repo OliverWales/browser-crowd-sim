@@ -25,7 +25,7 @@ export class Renderer2D implements IRenderer {
     this.canvas.addEventListener("mouseup", this.mouseUp, false);
     this.canvas.addEventListener("mouseout", this.mouseUp, false);
     this.canvas.addEventListener("mousemove", this.mouseMove, false);
-    this.canvas.addEventListener("wheel", this.mouseScroll, false);
+    this.canvas.addEventListener("wheel", this.mouseScroll, { passive: false });
   }
 
   render(simulation: Simulation) {
@@ -42,10 +42,14 @@ export class Renderer2D implements IRenderer {
       this.context.canvas.height
     );
 
-    // TODO: replace with single setTransform
-    this.context.setTransform(1, 0, 0, 1, 0, 0);
-    this.context.translate(this.xPan, this.yPan);
-    this.context.scale(scaleFactor, scaleFactor);
+    this.context.setTransform(
+      scaleFactor,
+      0,
+      0,
+      scaleFactor,
+      this.xPan,
+      this.yPan
+    );
 
     // Draw floor
     this.context.fillStyle = "rgb(51, 51, 51)";
@@ -109,11 +113,10 @@ export class Renderer2D implements IRenderer {
 
   private mouseScroll = (event: WheelEvent) => {
     this.cameraDist += event.deltaY;
-    if (this.cameraDist < 0) {
-      this.cameraDist = 0;
+    if (this.cameraDist < 0.1) {
+      this.cameraDist = 0.1;
     }
 
     event.preventDefault();
-    console.log("Scroll");
   };
 }
