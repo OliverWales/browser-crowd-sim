@@ -2,6 +2,8 @@
   --sky-color: #87c2fa;
   --sky-hover: #5aa8f2;
   --floor-color: #3d433f;
+  font-family: "Arial";
+  font-size: 13.3333px;
 }
 
 canvas {
