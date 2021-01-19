@@ -45,6 +45,13 @@
         >
           3D
         </button>
+        <button
+          type="button"
+          id="viewTrace"
+          onclick="CrowdSimulator.switchView('Trace')"
+        >
+          Trace
+        </button>
       </div>
     </div>
 
@@ -53,6 +60,12 @@
     <canvas id="canvas2d" width="1280" height="640"></canvas>
     <canvas
       id="canvas3d"
+      style="display: none"
+      width="1280"
+      height="640"
+    ></canvas>
+    <canvas
+      id="canvasTrace"
       style="display: none"
       width="1280"
       height="640"
