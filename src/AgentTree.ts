@@ -11,7 +11,12 @@ export class AgentTree implements IAgentCollection {
   private _agents: Agent[];
   private _root: Node;
 
-  init(agents: Agent[]): void {
+  constructor(agents: Agent[]) {
+    this._agents = agents;
+    this._root = this.constructTree(this._agents, true);
+  }
+
+  update(agents: Agent[]): void {
     this._agents = agents;
     this._root = this.constructTree(this._agents, true);
   }

@@ -4,7 +4,11 @@ import { Agent } from "./Agent";
 export class AgentList implements IAgentCollection {
   private _agents: Agent[];
 
-  init(agents: Agent[]) {
+  constructor(agents: Agent[]) {
+    this._agents = agents;
+  }
+
+  update(agents: Agent[]): void {
     this._agents = agents;
   }
 
@@ -26,7 +30,7 @@ export class AgentList implements IAgentCollection {
       (other) =>
         other.Id !== agent.Id &&
         agent.getPosition().subtract(other.getPosition()).magnitudeSqrd() <=
-          range ** 2
+          range * range
     );
   }
 

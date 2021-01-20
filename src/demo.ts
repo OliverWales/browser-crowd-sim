@@ -10,6 +10,7 @@ const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
   "agentType"
 ) as HTMLSelectElement;
+const rangeInput = document.getElementById("range") as HTMLSelectElement;
 const numberOfAgentsInput = document.getElementById(
   "numberOfAgents"
 ) as HTMLInputElement;
@@ -21,7 +22,7 @@ const framerate = document.getElementById("framerate") as HTMLParagraphElement;
 const playButton = document.getElementById("playButton") as HTMLButtonElement;
 const stepButton = document.getElementById("stepButton") as HTMLButtonElement;
 
-const simulation = new Simulation(new AgentTree());
+const simulation = new Simulation(new AgentTree([]));
 const renderer2d = new Renderer2D(canvas2d);
 const renderer3d = new Renderer3D(canvas3d);
 const rendererTrace = new TraceRenderer(canvasTrace);
@@ -126,6 +127,7 @@ export function reconfigure() {
 
   const config = configSelect.value;
   const agentType = agentTypeSelect.value;
+  const range = parseInt(rangeInput.value) ?? 0;
   const numberOfAgents = parseInt(numberOfAgentsInput.value) ?? 0;
 
   simulation.init(
@@ -135,7 +137,8 @@ export function reconfigure() {
       canvas2d.width,
       canvas2d.height,
       numberOfAgents
-    )
+    ),
+    range
   );
 
   rendererTrace.clear();

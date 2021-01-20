@@ -26,12 +26,12 @@ canvas {
 }
 
 .configuration input {
-  margin-right: 7px;
-  width: 100px;
+  margin-right: 8px;
+  width: 93px;
 }
 
 .configuration select {
-  margin-right: 10px;
+  margin-right: 8px;
 }
 
 .view {

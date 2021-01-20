@@ -23,7 +23,9 @@
           <option value="RVOAgent">RVO Agent</option>
           <option value="HRVOAgent">HRVO Agent</option>
         </select>
-        <label for="numberOfAgents">Number of Agents:</label>
+        <label for="range">Range:</label>
+        <input type="number" id="range" value="400" />
+        <label for="numberOfAgents">Agents:</label>
         <input type="number" id="numberOfAgents" value="25" />
         <button type="button" onclick="CrowdSimulator.init()">
           Initialise

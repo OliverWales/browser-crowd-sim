@@ -3,25 +3,26 @@ import { Agent } from "./Agent";
 
 export class Simulation {
   private _agents: IAgentCollection;
+  private _range: number;
 
   constructor(agents: IAgentCollection) {
     this._agents = agents;
   }
 
-  init(agents: Agent[]) {
-    this._agents.init(agents);
+  init(agents: Agent[], range: number) {
+    this._agents.update(agents);
+    this._range = range;
   }
 
   update(deltaT: number) {
-    let range = 400;
     this._agents.forEach((agent) => {
       agent.update(
         deltaT,
-        this._agents.getNeighboursInRangeEuclidean(agent, range)
+        this._agents.getNeighboursInRangeEuclidean(agent, this._range)
       );
     });
 
-    this._agents.init(this._agents.getAll());
+    this._agents.update(this._agents.getAll());
   }
 
   getAgents() {
