@@ -137,4 +137,6 @@ export function reconfigure() {
       numberOfAgents
     )
   );
+
+  rendererTrace.clear();
 }
