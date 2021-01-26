@@ -5,7 +5,7 @@ import { Vector2f } from "../src/Vector2f";
 
 describe("AgentTree Range Search Tests", function () {
   it("Rectilinear Range Search", function () {
-    let tree = new AgentTree();
+    let tree = new AgentTree([]);
     let agents: Agent[] = [];
     for (var i = 0; i < 5; i++) {
       for (var j = 0; j < 5; j++) {
@@ -19,15 +19,15 @@ describe("AgentTree Range Search Tests", function () {
       }
     }
 
-    tree.init(agents);
+    tree.update(agents);
     let neighbourIds = tree
       .getNeighboursInRangeRectilinear(agents[12], 1.2)
       .map((x) => x.Id);
 
-    // should not be neighbours with itself
+    // Agent should not be neighbours with itself
     expect(neighbourIds).not.toContain(12);
 
-    // neighbours in range
+    // Check neighbours in range
     expect(neighbourIds).toContain(6);
     expect(neighbourIds).toContain(7);
     expect(neighbourIds).toContain(8);
@@ -37,7 +37,7 @@ describe("AgentTree Range Search Tests", function () {
     expect(neighbourIds).toContain(17);
     expect(neighbourIds).toContain(18);
 
-    // neighbours not in range
+    // Check neighbours not in range
     expect(neighbourIds).not.toContain(0);
     expect(neighbourIds).not.toContain(2);
     expect(neighbourIds).not.toContain(4);
@@ -49,7 +49,7 @@ describe("AgentTree Range Search Tests", function () {
   });
 
   it("Euclidean Range Search", function () {
-    let tree = new AgentTree();
+    let tree = new AgentTree([]);
     let agents: Agent[] = [];
     for (var i = 0; i < 5; i++) {
       for (var j = 0; j < 5; j++) {
@@ -63,21 +63,21 @@ describe("AgentTree Range Search Tests", function () {
       }
     }
 
-    tree.init(agents);
+    tree.update(agents);
     let neighbourIds = tree
       .getNeighboursInRangeEuclidean(agents[12], 1.2)
       .map((x) => x.Id);
 
-    // should not be neighbours with itself
+    // Agent should not be neighbours with itself
     expect(neighbourIds).not.toContain(12);
 
-    // neighbours in range
+    // Check neighbours in range
     expect(neighbourIds).toContain(7);
     expect(neighbourIds).toContain(11);
     expect(neighbourIds).toContain(13);
     expect(neighbourIds).toContain(17);
 
-    // neighbours not in range
+    // Check neighbours not in range
     expect(neighbourIds).not.toContain(6);
     expect(neighbourIds).not.toContain(8);
     expect(neighbourIds).not.toContain(16);

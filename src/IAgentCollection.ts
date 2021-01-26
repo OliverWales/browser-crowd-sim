@@ -1,7 +1,7 @@
 import { Agent } from "./Agent";
 
 export interface IAgentCollection {
-  init(agents: Agent[]): void;
+  update(agents: Agent[]): void;
 
   getAll(): Agent[];
 

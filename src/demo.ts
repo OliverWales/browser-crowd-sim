@@ -4,24 +4,28 @@ import { Renderer2D } from "./Renderer2D";
 import { Renderer3D } from "./Renderer3D";
 import { AgentTree } from "./AgentTree";
 import { ConfigurationFactory } from "./ConfigurationFactory";
+import { TraceRenderer } from "./TraceRenderer";
 
 const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
   "agentType"
 ) as HTMLSelectElement;
+const rangeInput = document.getElementById("range") as HTMLSelectElement;
 const numberOfAgentsInput = document.getElementById(
   "numberOfAgents"
 ) as HTMLInputElement;
 
 const canvas2d = document.getElementById("canvas2d") as HTMLCanvasElement;
 const canvas3d = document.getElementById("canvas3d") as HTMLCanvasElement;
+const canvasTrace = document.getElementById("canvasTrace") as HTMLCanvasElement;
 const framerate = document.getElementById("framerate") as HTMLParagraphElement;
 const playButton = document.getElementById("playButton") as HTMLButtonElement;
 const stepButton = document.getElementById("stepButton") as HTMLButtonElement;
 
-const simulation = new Simulation(new AgentTree());
+const simulation = new Simulation(new AgentTree([]));
 const renderer2d = new Renderer2D(canvas2d);
 const renderer3d = new Renderer3D(canvas3d);
+const rendererTrace = new TraceRenderer(canvasTrace);
 var renderer: IRenderer = renderer2d;
 var play = false;
 
@@ -69,16 +73,29 @@ export function switchView(view: string) {
     case "2D":
       document.getElementById("view2d").classList.add("selected");
       document.getElementById("view3d").classList.remove("selected");
+      document.getElementById("viewTrace").classList.remove("selected");
       renderer = renderer2d;
       canvas2d.style.display = "block";
       canvas3d.style.display = "none";
+      canvasTrace.style.display = "none";
       return;
     case "3D":
       document.getElementById("view2d").classList.remove("selected");
       document.getElementById("view3d").classList.add("selected");
+      document.getElementById("viewTrace").classList.remove("selected");
       renderer = renderer3d;
       canvas2d.style.display = "none";
       canvas3d.style.display = "block";
+      canvasTrace.style.display = "none";
+      return;
+    case "Trace":
+      document.getElementById("view2d").classList.remove("selected");
+      document.getElementById("view3d").classList.remove("selected");
+      document.getElementById("viewTrace").classList.add("selected");
+      renderer = rendererTrace;
+      canvas2d.style.display = "none";
+      canvas3d.style.display = "none";
+      canvasTrace.style.display = "block";
       return;
     default:
       throw new Error(`Unknown view \"${view}\"`);
@@ -110,6 +127,7 @@ export function reconfigure() {
 
   const config = configSelect.value;
   const agentType = agentTypeSelect.value;
+  const range = parseInt(rangeInput.value) ?? 0;
   const numberOfAgents = parseInt(numberOfAgentsInput.value) ?? 0;
 
   simulation.init(
@@ -119,6 +137,9 @@ export function reconfigure() {
       canvas2d.width,
       canvas2d.height,
       numberOfAgents
-    )
+    ),
+    range
   );
+
+  rendererTrace.clear();
 }
