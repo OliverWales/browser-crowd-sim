@@ -13,12 +13,9 @@ export class FloorMesh {
     ];
   }
 
-  // Offset allows us to append these vertices to the end of an existing buffer
-  static getIndices(offset = 0) {
-    // prettier-ignore
-    return [
-      1, 2, 0,
-      1, 3, 2,
-    ].map((x) => x + offset);
-  }
+  // prettier-ignore
+  static indices = [
+    1, 2, 0,
+    1, 3, 2,
+  ]
 }
