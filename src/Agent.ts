@@ -19,7 +19,7 @@ export abstract class Agent {
     this.Radius = 20;
 
     this._position = startPosition;
-    this._direction = getPreferredVelocity(new Vector2f(0, 0));
+    this._direction = getPreferredVelocity(startPosition); // Start pointing in goal direction
     this._getPreferredVelocity = getPreferredVelocity;
     this._isDone = false;
   }

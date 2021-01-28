@@ -1,6 +1,12 @@
 import { Agent } from "./Agent";
 import { AgentFactory } from "./AgentFactory";
+import { IObstacle } from "./IObstacle";
 import { Vector2f } from "./Vector2f";
+
+export interface Configuration {
+  agents: Agent[];
+  obstacles: IObstacle[];
+}
 
 export class ConfigurationFactory {
   static getConfiguration(
@@ -9,7 +15,7 @@ export class ConfigurationFactory {
     width: number,
     height: number,
     numberOfAgents: number
-  ): Agent[] {
+  ): Configuration {
     switch (type) {
       case "RandomToRandom":
         return this.RandomToRandom(agentType, width, height, numberOfAgents);
@@ -29,7 +35,7 @@ export class ConfigurationFactory {
     width: number,
     height: number,
     numberOfAgents: number
-  ): Agent[] {
+  ): Configuration {
     // Random start position to random goal position
     let agents: Agent[] = [];
     const startPositions = this.poissonDiskSample(
@@ -56,7 +62,7 @@ export class ConfigurationFactory {
       agents.push(agent);
     }
 
-    return agents;
+    return { agents: agents, obstacles: [] };
   }
 
   static RandomToLine(
@@ -64,7 +70,7 @@ export class ConfigurationFactory {
     width: number,
     height: number,
     numberOfAgents: number
-  ) {
+  ): Configuration {
     // Random start position to fixed position on line
     let agents: Agent[] = [];
     let startPositions = this.poissonDiskSample(
@@ -86,7 +92,7 @@ export class ConfigurationFactory {
       agents.push(agent);
     }
 
-    return agents;
+    return { agents: agents, obstacles: [] };
   }
 
   static CircleToCircle(
@@ -94,7 +100,7 @@ export class ConfigurationFactory {
     _width: number,
     height: number,
     numberOfAgents: number
-  ) {
+  ): Configuration {
     // Position on radius of circle to opposite point
     let agents: Agent[] = [];
     const radius = height / 2 - 25;
@@ -115,7 +121,7 @@ export class ConfigurationFactory {
       agents.push(agent);
     }
 
-    return agents;
+    return { agents: agents, obstacles: [] };
   }
 
   static GridToGrid(
@@ -123,7 +129,7 @@ export class ConfigurationFactory {
     width: number,
     _height: number,
     numberOfAgents: number
-  ) {
+  ): Configuration {
     // Two opposing grids of agents passing through eachother
     let agents: Agent[] = [];
     const gridSize = Math.ceil(Math.sqrt(numberOfAgents / 2));
@@ -161,7 +167,7 @@ export class ConfigurationFactory {
       }
     }
 
-    return agents;
+    return { agents: agents, obstacles: [] };
   }
 
   private static preferredVelocityFromGoalPosition(
