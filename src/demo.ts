@@ -141,5 +141,5 @@ export function reconfigure() {
     )
   );
 
-  rendererTrace.clear();
+  rendererTrace.clear(simulation.getObstacles());
 }

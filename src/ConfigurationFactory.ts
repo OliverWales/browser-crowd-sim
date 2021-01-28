@@ -188,10 +188,10 @@ export class ConfigurationFactory {
     const agents: Agent[] = [];
     const startPositions = this.poissonDiskSample(
       width / 2 - 200,
-      height,
+      height - 40,
       numberOfAgents,
       80
-    ).map((x) => x.subtract(new Vector2f(width / 2, height / 2)));
+    ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
 
     for (let i = 0; i < numberOfAgents; i++) {
       const agent = AgentFactory.getAgent(
