@@ -325,7 +325,7 @@ export class Renderer3D implements IRenderer {
 
         // Radius + height
         this.gl.uniform1f(this.radiusLoc, obstacle.Radius);
-        this.gl.uniform1f(this.heightLoc, 20);
+        this.gl.uniform1f(this.heightLoc, 84);
 
         // Colour
         this.gl.uniform3f(this.baseColourLoc, 1.0, 1.0, 1.0);
