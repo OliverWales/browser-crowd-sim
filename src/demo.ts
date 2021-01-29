@@ -1,10 +1,10 @@
 import { Simulation } from "./Simulation";
 import { IRenderer } from "./IRenderer";
-import { Renderer2D } from "./Renderer2D";
-import { Renderer3D } from "./Renderer3D";
+import { Renderer2D } from "./renderers/Renderer2D";
+import { Renderer3D } from "./renderers/Renderer3D";
 import { AgentTree } from "./AgentTree";
 import { ConfigurationFactory } from "./ConfigurationFactory";
-import { TraceRenderer } from "./TraceRenderer";
+import { TraceRenderer } from "./renderers/TraceRenderer";
 
 const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
@@ -79,7 +79,7 @@ export function switchView(view: string) {
       canvas2d.style.display = "block";
       canvas3d.style.display = "none";
       canvasTrace.style.display = "none";
-      return;
+      break;
     case "3D":
       document.getElementById("view2d").classList.remove("selected");
       document.getElementById("view3d").classList.add("selected");
@@ -88,7 +88,7 @@ export function switchView(view: string) {
       canvas2d.style.display = "none";
       canvas3d.style.display = "block";
       canvasTrace.style.display = "none";
-      return;
+      break;
     case "Trace":
       document.getElementById("view2d").classList.remove("selected");
       document.getElementById("view3d").classList.remove("selected");
@@ -97,10 +97,11 @@ export function switchView(view: string) {
       canvas2d.style.display = "none";
       canvas3d.style.display = "none";
       canvasTrace.style.display = "block";
-      return;
+      break;
     default:
       throw new Error(`Unknown view \"${view}\"`);
   }
+  renderer.init(simulation);
 }
 
 // Toggle play/pause
@@ -141,5 +142,5 @@ export function reconfigure() {
     )
   );
 
-  rendererTrace.clear(simulation.getObstacles());
+  renderer.init(simulation);
 }

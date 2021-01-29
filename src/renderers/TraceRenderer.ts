@@ -1,9 +1,8 @@
-import { IRenderer } from "./IRenderer";
-import { Simulation } from "./Simulation";
-import { Agent } from "./Agent";
-import { LineObstacle } from "./obstacles/LineObstacle";
-import { CircleObstacle } from "./obstacles/CircleObstacle";
-import { IObstacle } from "./IObstacle";
+import { IRenderer } from "../IRenderer";
+import { Simulation } from "../Simulation";
+import { Agent } from "../Agent";
+import { LineObstacle } from "../obstacles/LineObstacle";
+import { CircleObstacle } from "../obstacles/CircleObstacle";
 
 export class TraceRenderer implements IRenderer {
   private canvas: HTMLCanvasElement;
@@ -14,7 +13,7 @@ export class TraceRenderer implements IRenderer {
     this.context = this.canvas.getContext("2d");
   }
 
-  clear(obstacles: IObstacle[]) {
+  init(simulation: Simulation) {
     // Clear background
     this.context.setTransform(1, 0, 0, 1, 0, 0);
     this.context.fillStyle = "rgb(135, 194, 250)";
@@ -41,7 +40,7 @@ export class TraceRenderer implements IRenderer {
     // Draw obstacles
     this.context.strokeStyle = "white";
     this.context.lineWidth = 2;
-    obstacles.forEach((obstacle) => {
+    simulation.getObstacles().forEach((obstacle) => {
       if (obstacle instanceof CircleObstacle) {
         this.drawCircleObstacle(obstacle);
       } else if (obstacle instanceof LineObstacle) {

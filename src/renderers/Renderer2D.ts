@@ -1,8 +1,8 @@
-import { IRenderer } from "./IRenderer";
-import { Simulation } from "./Simulation";
-import { Agent } from "./Agent";
-import { CircleObstacle } from "./obstacles/CircleObstacle";
-import { LineObstacle } from "./obstacles/LineObstacle";
+import { IRenderer } from "../IRenderer";
+import { Simulation } from "../Simulation";
+import { Agent } from "../Agent";
+import { CircleObstacle } from "../obstacles/CircleObstacle";
+import { LineObstacle } from "../obstacles/LineObstacle";
 
 export class Renderer2D implements IRenderer {
   private canvas: HTMLCanvasElement;
@@ -29,6 +29,8 @@ export class Renderer2D implements IRenderer {
     this.canvas.addEventListener("mousemove", this.mouseMove, false);
     this.canvas.addEventListener("wheel", this.mouseScroll, { passive: false });
   }
+
+  init(_simulation: Simulation) {}
 
   render(simulation: Simulation) {
     const scaleFactor = 800 / this.cameraDist;
