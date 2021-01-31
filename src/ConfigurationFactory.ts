@@ -27,13 +27,10 @@ export class ConfigurationFactory {
         return this.CircleToCircle(agentType, width, height, numberOfAgents);
       case "GridToGrid":
         return this.GridToGrid(agentType, width, height, numberOfAgents);
-      case "CrowdThroughBollards":
-        return this.CrowdThroughBollards(
-          agentType,
-          width,
-          height,
-          numberOfAgents
-        );
+      case "Bollards":
+        return this.Bollards(agentType, width, height, numberOfAgents);
+      case "Bottleneck":
+        return this.Bottleneck(agentType, width, height, numberOfAgents);
       default:
         throw new Error(`Unknown configuration type \"${type}\"`);
     }
@@ -179,7 +176,7 @@ export class ConfigurationFactory {
     return { agents: agents, obstacles: [] };
   }
 
-  private static CrowdThroughBollards(
+  private static Bollards(
     agentType: string,
     width: number,
     height: number,
@@ -207,23 +204,48 @@ export class ConfigurationFactory {
 
     const obstacles: IObstacle[] = [];
 
-    // Centre bollards
+    // Central line of bollards
     for (let i = 0; i < 5; i++) {
       obstacles.push(new CircleObstacle(new Vector2f(0, 120 * i - 240), 20));
     }
 
-    // Boundaries
+    return { agents: agents, obstacles: obstacles };
+  }
+
+  private static Bottleneck(
+    agentType: string,
+    width: number,
+    height: number,
+    numberOfAgents: number
+  ): Configuration {
+    const agents: Agent[] = [];
+    const startPositions = this.poissonDiskSample(
+      width / 2 - 200,
+      height - 40,
+      numberOfAgents,
+      80
+    ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+
+    for (let i = 0; i < numberOfAgents; i++) {
+      const agent = AgentFactory.getAgent(
+        agentType,
+        i,
+        startPositions[i],
+        this.preferredVelocityFromGoalPosition(
+          startPositions[i].add(new Vector2f(width / 2 + 200, 0))
+        )
+      );
+      agents.push(agent);
+    }
+
+    const obstacles: IObstacle[] = [];
+
+    // Central wall with narrow opening
     obstacles.push(
-      new LineObstacle(
-        new Vector2f(-width / 2, height / 2),
-        new Vector2f(width / 2, height / 2)
-      )
+      new LineObstacle(new Vector2f(-500, -1000), new Vector2f(0, -60))
     );
     obstacles.push(
-      new LineObstacle(
-        new Vector2f(-width / 2, -height / 2),
-        new Vector2f(width / 2, -height / 2)
-      )
+      new LineObstacle(new Vector2f(-500, 1000), new Vector2f(0, 60))
     );
 
     return { agents: agents, obstacles: obstacles };
