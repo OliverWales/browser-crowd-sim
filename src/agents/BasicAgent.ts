@@ -10,7 +10,7 @@ export class BasicAgent extends Agent {
     }
   }
 
-  update(deltaT: number, _neighbours: Agent[]): void {
+  update(deltaT: number): void {
     if (this._isDone) {
       return;
     }

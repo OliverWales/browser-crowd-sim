@@ -1,4 +1,5 @@
 import { Colour } from "./Colour";
+import { IObstacle } from "./IObstacle";
 import { Vector2f } from "./Vector2f";
 
 export abstract class Agent {
@@ -37,5 +38,9 @@ export abstract class Agent {
   }
 
   abstract getColour(): Colour;
-  abstract update(deltaT: number, neighbours: Agent[]): void;
+  abstract update(
+    deltaT: number,
+    neighbours: Agent[],
+    obstacles: IObstacle[]
+  ): void;
 }

@@ -5,7 +5,7 @@ import { VelocityObstacle } from "../VelocityObstacle";
 
 export class RVOAgent extends VOAgent {
   // Override getVelocityObstacle to produce Reciprocal Velocity Obstacle
-  protected getVelocityObstacle(b: Agent): VelocityObstacle | null {
+  protected getAgentVelocityObstacle(b: Agent): VelocityObstacle | null {
     const velocityA = this.getDirection();
     const velocityB = b.getDirection();
     const vertex = velocityA.add(velocityB).divide(2);

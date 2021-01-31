@@ -19,7 +19,8 @@ export class Simulation {
     this._agents.forEach((agent) => {
       agent.update(
         deltaT,
-        this._agents.getNeighboursInRangeEuclidean(agent, range)
+        this._agents.getNeighboursInRangeEuclidean(agent, range),
+        this._obstacles
       );
     });
 

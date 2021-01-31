@@ -1,6 +1,8 @@
 import { Agent } from "../Agent";
 import { Vector2f } from "../Vector2f";
 import { Colour } from "../Colour";
+import { IObstacle } from "../IObstacle";
+import { CircleObstacle } from "../obstacles/CircleObstacle";
 
 export class StopAgent extends Agent {
   private _isStuck: boolean;
@@ -24,7 +26,7 @@ export class StopAgent extends Agent {
     }
   }
 
-  update(deltaT: number, neighbours: Agent[]): void {
+  update(deltaT: number, neighbours: Agent[], obstacles: IObstacle[]): void {
     if (this._isDone) {
       return;
     }
@@ -41,10 +43,18 @@ export class StopAgent extends Agent {
     this._direction = preferredVelocity.normalise();
     const heading = this._position.add(this._direction.multiply(25));
 
-    // Check if stuck
+    // Check if blocked by another agent
     this._isStuck = false;
     for (var i = 0; i < neighbours.length; i++) {
-      if (this.collides(neighbours[i], heading)) {
+      if (this.collidesAgent(neighbours[i], heading)) {
+        this._isStuck = true;
+        return;
+      }
+    }
+
+    // Check if blocked by an obstacle
+    for (var i = 0; i < obstacles.length; i++) {
+      if (this.collidesObstacle(obstacles[i], heading)) {
         this._isStuck = true;
         return;
       }
@@ -55,10 +65,22 @@ export class StopAgent extends Agent {
     this._position = this._position.add(this._direction.multiply(stepSize));
   }
 
-  collides(agent: Agent, position: Vector2f): boolean {
+  collidesAgent(agent: Agent, position: Vector2f): boolean {
     return (
       agent.getPosition().subtract(position).magnitudeSqrd() <
       (agent.Radius + this.Radius) * (agent.Radius + this.Radius)
     );
+  }
+
+  collidesObstacle(obstacle: IObstacle, position: Vector2f): boolean {
+    if (obstacle instanceof CircleObstacle) {
+      return (
+        obstacle.Position.subtract(position).magnitudeSqrd() <
+        (obstacle.Radius + this.Radius) * (obstacle.Radius + this.Radius)
+      );
+    } else {
+      // TODO: Implement LineObstacle collision
+      return false;
+    }
   }
 }
