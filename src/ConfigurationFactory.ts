@@ -242,10 +242,10 @@ export class ConfigurationFactory {
 
     // Central wall with narrow opening
     obstacles.push(
-      new LineObstacle(new Vector2f(-500, -1000), new Vector2f(0, -60))
+      new LineObstacle(new Vector2f(-230, -500), new Vector2f(0, -60))
     );
     obstacles.push(
-      new LineObstacle(new Vector2f(-500, 1000), new Vector2f(0, 60))
+      new LineObstacle(new Vector2f(-230, 500), new Vector2f(0, 60))
     );
 
     return { agents: agents, obstacles: obstacles };

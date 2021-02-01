@@ -149,9 +149,9 @@ export class Renderer3D implements IRenderer {
     this.gl.enable(this.gl.DEPTH_TEST);
     this.gl.clearColor(0.53, 0.76, 0.98, 1.0);
 
-    //this.gl.enable(this.gl.CULL_FACE);
-    //this.gl.frontFace(this.gl.CCW);
-    //this.gl.cullFace(this.gl.BACK);
+    this.gl.enable(this.gl.CULL_FACE);
+    this.gl.frontFace(this.gl.CCW);
+    this.gl.cullFace(this.gl.BACK);
 
     // Add event listeners
     this.canvas.addEventListener("mousedown", this.mouseDown, false);
@@ -187,10 +187,7 @@ export class Renderer3D implements IRenderer {
   }
 
   init(simulation: Simulation): void {
-    const floorVerts = FloorMesh.getVertices(
-      this.canvas.width,
-      this.canvas.height
-    );
+    const floorVerts = FloorMesh.getVertices(2000, 1000);
 
     const walls: LineObstacle[] = simulation
       .getObstacles()
@@ -218,7 +215,7 @@ export class Renderer3D implements IRenderer {
     const wallsOffset = floorOffset + floorVerts.length / 6;
 
     const wallIndices = walls
-      .map((_wall, i) => WallMesh.indices.map((x) => x + wallsOffset + i * 4))
+      .map((_wall, i) => WallMesh.indices.map((x) => x + wallsOffset + i * 8))
       .reduce((acc, val) => acc.concat(val), []);
 
     const indices = new Uint16Array(

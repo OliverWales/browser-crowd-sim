@@ -8,11 +8,15 @@ export class WallMesh {
 
     // prettier-ignore
     return [
-      // position + normal
-      wall.Start.x, wall.Start.y, 0.0, normal.x, normal.y, 0.0,
-      wall.End.x,   wall.End.y,   0.0, normal.x, normal.y, 0.0,
-      wall.Start.x, wall.Start.y, 1.0, normal.x, normal.y, 0.0,
-      wall.End.x,   wall.End.y,   1.0, normal.x, normal.y, 0.0,
+      // Position + normal
+      wall.Start.x, wall.Start.y, 0.0,  normal.x,  normal.y, 0.0,
+      wall.End.x,   wall.End.y,   0.0,  normal.x,  normal.y, 0.0,
+      wall.Start.x, wall.Start.y, 1.0,  normal.x,  normal.y, 0.0,
+      wall.End.x,   wall.End.y,   1.0,  normal.x,  normal.y, 0.0,
+      wall.Start.x, wall.Start.y, 0.0, -normal.x, -normal.y, 0.0,
+      wall.End.x,   wall.End.y,   0.0, -normal.x, -normal.y, 0.0,
+      wall.Start.x, wall.Start.y, 1.0, -normal.x, -normal.y, 0.0,
+      wall.End.x,   wall.End.y,   1.0, -normal.x, -normal.y, 0.0,
     ];
   }
 
@@ -20,5 +24,7 @@ export class WallMesh {
   static indices = [
       1, 2, 0,
       1, 3, 2,
+      5, 4, 6,
+      5, 6, 7,
     ]
 }

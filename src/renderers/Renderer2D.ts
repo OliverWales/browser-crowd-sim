@@ -58,12 +58,7 @@ export class Renderer2D implements IRenderer {
 
     // Draw floor
     this.context.fillStyle = "rgb(51, 51, 51)";
-    this.context.fillRect(
-      -this.context.canvas.width * 0.55,
-      -this.context.canvas.height * 0.55,
-      this.context.canvas.width * 1.1,
-      this.context.canvas.height * 1.1
-    );
+    this.context.fillRect(-1000, -500, 2000, 1000);
 
     // Draw obstacles
     this.context.strokeStyle = "white";
