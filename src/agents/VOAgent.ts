@@ -3,6 +3,7 @@ import { Colour } from "../Colour";
 import { Geometry } from "../Geometry";
 import { IObstacle } from "../IObstacle";
 import { CircleObstacle } from "../obstacles/CircleObstacle";
+import { LineObstacle } from "../obstacles/LineObstacle";
 import { Vector2f } from "../Vector2f";
 import { VelocityObstacle } from "../VelocityObstacle";
 
@@ -58,7 +59,7 @@ export class VOAgent extends Agent {
 
     // Check for collision with obstacles
     for (var i = 0; i < obstacles.length; i++) {
-      const velocityObstacle = this.getObstacleVelocityObstacle(obstacles[i]);
+      const velocityObstacle = obstacles[i].getVelocityObstacle(this);
       if (
         velocityObstacle != null &&
         velocityObstacle.contains(preferredVelocity)
@@ -110,7 +111,7 @@ export class VOAgent extends Agent {
 
       // Check for collision with obstacles
       for (var i = 0; i < obstacles.length; i++) {
-        const velocityObstacle = this.getObstacleVelocityObstacle(obstacles[i]);
+        const velocityObstacle = obstacles[i].getVelocityObstacle(this);
         if (velocityObstacle != null && velocityObstacle.contains(left)) {
           leftSafe = false;
         }
@@ -176,7 +177,7 @@ export class VOAgent extends Agent {
       for (var j = 0; j < obstacles.length; j++) {
         const b = obstacles[j];
         if (b instanceof CircleObstacle) {
-          const velocityObstacle = this.getObstacleVelocityObstacle(b);
+          const velocityObstacle = b.getVelocityObstacle(this);
 
           if (velocityObstacle == null || velocityObstacle.contains(sample)) {
             const timeToCollision = Geometry.getFirstRayCircleIntersection(
@@ -190,8 +191,18 @@ export class VOAgent extends Agent {
               minTimeToCollision = timeToCollision;
             }
           }
-        } else {
-          // TODO: Implement LineObstacle collision
+        } else if (b instanceof LineObstacle) {
+          const timeToCollision = Geometry.getClosestPointOnLine(
+            b.Start,
+            b.End.subtract(b.Start),
+            sample
+          )
+            .subtract(sample)
+            .magnitude();
+
+          if (timeToCollision < minTimeToCollision) {
+            minTimeToCollision = timeToCollision;
+          }
         }
       }
 
@@ -246,51 +257,6 @@ export class VOAgent extends Agent {
 
     // Return velocity obstacle
     return new VelocityObstacle(velocityB, tangent1, tangent2);
-  }
-
-  protected getObstacleVelocityObstacle(
-    obstacle: IObstacle
-  ): VelocityObstacle | null {
-    if (obstacle instanceof CircleObstacle) {
-      // Represent circular obstacle as an agent with zero velocity
-      const velocityB = new Vector2f(0, 0);
-
-      // Translate origin to this agent's position
-      const positionB = obstacle.Position.subtract(this._position);
-
-      // Find Minkowski sum of agents
-      const centre = positionB; // .add(velocityB);
-      const radius = obstacle.Radius + this.Radius;
-
-      // Calculate angles
-      const diff = velocityB.subtract(centre);
-      const dist = diff.magnitude();
-      if (dist < radius) {
-        return null;
-      }
-
-      const theta = Math.acos(radius / dist);
-      const phi = Math.atan2(diff.y, diff.x);
-
-      // Calculate tangent vectors
-      const angle1 = phi + theta;
-      const tangent1 = new Vector2f(
-        centre.x + radius * Math.cos(angle1),
-        centre.y + radius * Math.sin(angle1)
-      );
-
-      const angle2 = phi - theta;
-      const tangent2 = new Vector2f(
-        centre.x + radius * Math.cos(angle2),
-        centre.y + radius * Math.sin(angle2)
-      );
-
-      // Return velocity obstacle
-      return new VelocityObstacle(velocityB, tangent1, tangent2);
-    } else {
-      // TODO: Implement LineObstacle collision
-      return null;
-    }
   }
 
   protected setColour(preferredVelocity: Vector2f) {
