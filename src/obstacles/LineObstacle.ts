@@ -15,29 +15,41 @@ export class LineObstacle implements IObstacle {
     const voStart = this.pointVelocityObstacle(agent, this.Start);
     const voEnd = this.pointVelocityObstacle(agent, this.End);
 
+    if (voStart == null && voEnd == null) {
+      return null;
+    } else if (voStart == null) {
+      return voEnd;
+    } else if (voEnd == null) {
+      return voStart;
+    }
+
     const determinant1 =
       voStart.tangent1.x * voEnd.tangent2.y -
       voStart.tangent1.y * voEnd.tangent2.x;
 
-    const determinant2 =
-      voStart.tangent2.x * voEnd.tangent1.y -
-      voStart.tangent2.y * voEnd.tangent1.x;
-
-    let tangent1: Vector2f;
-    if (determinant1 < 0) {
-      tangent1 = voStart.tangent1;
-    } else {
-      tangent1 = voEnd.tangent1;
+    let left = voStart.tangent1;
+    if (voStart.tangent2.isLeftOf(left)) {
+      left = voStart.tangent2;
+    }
+    if (voEnd.tangent1.isLeftOf(left)) {
+      left = voEnd.tangent1;
+    }
+    if (voEnd.tangent2.isLeftOf(left)) {
+      left = voEnd.tangent2;
     }
 
-    let tangent2: Vector2f;
-    if (determinant2 < 0) {
-      tangent2 = voStart.tangent2;
-    } else {
-      tangent2 = voEnd.tangent2;
+    let right = voStart.tangent1;
+    if (voStart.tangent2.isRightOf(right)) {
+      right = voStart.tangent2;
+    }
+    if (voEnd.tangent1.isRightOf(right)) {
+      right = voEnd.tangent1;
+    }
+    if (voEnd.tangent2.isRightOf(right)) {
+      right = voEnd.tangent2;
     }
 
-    return new VelocityObstacle(new Vector2f(0, 0), tangent1, tangent2);
+    return new VelocityObstacle(new Vector2f(0, 0), left, right);
   }
 
   private pointVelocityObstacle(
