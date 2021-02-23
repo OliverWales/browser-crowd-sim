@@ -34,11 +34,6 @@ export class Geometry {
 
     const distance = ((-b - Math.sqrt(discrim)) / 2) * a;
 
-    if (distance < 0) {
-      // Intersection behind
-      return Infinity;
-    }
-
     return distance;
   }
 

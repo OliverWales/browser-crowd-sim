@@ -145,7 +145,7 @@ export class VOAgent extends Agent {
 
     // Else, sample random velocities and select the one with the least penalty
     const samples = 100; // number of velocities to try
-    const w = 100; // parameter for penalty
+    const w = 200; // parameter for penalty
     let minPenalty = Infinity;
     let bestVelocity = new Vector2f(0, 0);
 
@@ -192,18 +192,25 @@ export class VOAgent extends Agent {
             }
           }
         } else if (b instanceof LineObstacle) {
-          const timeToCollision = Geometry.getClosestPointOnLine(
-            b.Start,
-            b.End.subtract(b.Start),
-            sample
-          )
-            .subtract(sample)
-            .magnitude();
+          const timeToCollision =
+            Geometry.getLineLineIntersection(
+              b.Start,
+              b.End.subtract(b.Start).normalise(),
+              this._position,
+              sample.normalise()
+            )
+              .subtract(this._position)
+              .magnitude() / sample.magnitude();
 
           if (timeToCollision < minTimeToCollision) {
             minTimeToCollision = timeToCollision;
           }
         }
+      }
+
+      // Attempt to prevent intersection
+      if (minTimeToCollision < 1) {
+        minTimeToCollision = 0;
       }
 
       // Calculate penalty
