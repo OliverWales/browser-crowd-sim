@@ -1,9 +1,13 @@
-import { IRenderer } from "./IRenderer";
-import { Simulation } from "./Simulation";
-import { Vector2f } from "./Vector2f";
-import { Mat4f } from "./Mat4f";
-import { AgentMesh } from "./AgentMesh";
-import { FloorMesh } from "./FloorMesh";
+import { IRenderer } from "../IRenderer";
+import { Simulation } from "../Simulation";
+import { Vector2f } from "../Vector2f";
+import { Mat4f } from "../Mat4f";
+import { AgentMesh } from "../meshes/AgentMesh";
+import { FloorMesh } from "../meshes/FloorMesh";
+import { CylinderMesh } from "../meshes/CylinderMesh";
+import { CircleObstacle } from "../obstacles/CircleObstacle";
+import { LineObstacle } from "../obstacles/LineObstacle";
+import { WallMesh } from "../meshes/WallMesh";
 
 const vertexShaderText = `
   precision mediump float;
@@ -18,6 +22,7 @@ const vertexShaderText = `
   uniform vec2 position;
   uniform vec2 direction;
   uniform float radius;
+  uniform float height;
   uniform vec3 baseColour;
 
   void main()
@@ -32,7 +37,7 @@ const vertexShaderText = `
                                     
     gl_Position = projMat * viewMat * worldMat * vec4(rotatedVert.x * radius + position.x,
                                                       rotatedVert.y * radius + position.y,
-                                                      rotatedVert.z * radius,
+                                                      rotatedVert.z * height,
                                                       1.0);
     
     mediump vec3 rotatedNormal = vec3(vertNormal.x * direction.x - vertNormal.y * direction.y,
@@ -69,6 +74,7 @@ export class Renderer3D implements IRenderer {
   private posVecLoc: WebGLUniformLocation;
   private dirVecLoc: WebGLUniformLocation;
   private radiusLoc: WebGLUniformLocation;
+  private heightLoc: WebGLUniformLocation;
   private baseColourLoc: WebGLUniformLocation;
 
   // Camera controls
@@ -141,10 +147,11 @@ export class Renderer3D implements IRenderer {
     // Set WebGL settings
     this.gl.useProgram(this.program);
     this.gl.enable(this.gl.DEPTH_TEST);
+    this.gl.clearColor(0.53, 0.76, 0.98, 1.0);
+
     this.gl.enable(this.gl.CULL_FACE);
     this.gl.frontFace(this.gl.CCW);
     this.gl.cullFace(this.gl.BACK);
-    this.gl.clearColor(0.53, 0.76, 0.98, 1.0);
 
     // Add event listeners
     this.canvas.addEventListener("mousedown", this.mouseDown, false);
@@ -153,20 +160,69 @@ export class Renderer3D implements IRenderer {
     this.canvas.addEventListener("mousemove", this.mouseMove, false);
     this.canvas.addEventListener("wheel", this.mouseScroll, { passive: false });
 
+    // Get uniform locations
+    this.projMatLoc = this.gl.getUniformLocation(this.program, "projMat");
+    this.viewMatLoc = this.gl.getUniformLocation(this.program, "viewMat");
+    this.worldMatLoc = this.gl.getUniformLocation(this.program, "worldMat");
+    this.posVecLoc = this.gl.getUniformLocation(this.program, "position");
+    this.dirVecLoc = this.gl.getUniformLocation(this.program, "direction");
+    this.radiusLoc = this.gl.getUniformLocation(this.program, "radius");
+    this.heightLoc = this.gl.getUniformLocation(this.program, "height");
+    this.baseColourLoc = this.gl.getUniformLocation(this.program, "baseColour");
+
+    // Set up matrices
+    const projectionMatrix = Mat4f.getPerspectiveProjectionMatrix(
+      45 * (Math.PI / 180), // 45deg y-axis FOV
+      this.canvas.width / this.canvas.height,
+      0.1,
+      this.cameraDist + 2000
+    );
+
+    const viewMatrix = Mat4f.getTranslationMatrix(0, 0, -this.cameraDist); // Move camera back on z axis
+    const worldMatrix = Mat4f.getIdentityMatrix();
+
+    this.gl.uniformMatrix4fv(this.projMatLoc, false, projectionMatrix);
+    this.gl.uniformMatrix4fv(this.viewMatLoc, false, viewMatrix);
+    this.gl.uniformMatrix4fv(this.worldMatLoc, false, worldMatrix);
+  }
+
+  init(simulation: Simulation): void {
+    const floorVerts = FloorMesh.getVertices(2000, 1000);
+
+    const walls: LineObstacle[] = simulation
+      .getObstacles()
+      .filter((x) => x instanceof LineObstacle)
+      .map((x) => x as LineObstacle); // kludge due to known issue with TS type inference
+
+    const wallVerts = walls
+      .map((wall) => WallMesh.getVertices(wall))
+      .reduce((acc, val) => acc.concat(val), []);
+
     // Initialise vertex and index buffer
     const vertices = new Float32Array(
-      AgentMesh.vertices.concat(
-        FloorMesh.getVertices(canvas.width * 1.1, canvas.height * 1.1)
-      )
+      AgentMesh.vertices
+        .concat(CylinderMesh.vertices)
+        .concat(floorVerts)
+        .concat(wallVerts)
     );
+
     this.VertexBuffer = this.gl.createBuffer();
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.VertexBuffer);
     this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
 
+    const cylinderOffset = AgentMesh.vertices.length / 6;
+    const floorOffset = cylinderOffset + CylinderMesh.vertices.length / 6;
+    const wallsOffset = floorOffset + floorVerts.length / 6;
+
+    const wallIndices = walls
+      .map((_wall, i) => WallMesh.indices.map((x) => x + wallsOffset + i * 8))
+      .reduce((acc, val) => acc.concat(val), []);
+
     const indices = new Uint16Array(
-      AgentMesh.indices.concat(
-        FloorMesh.getIndices(AgentMesh.vertices.length / 6)
-      )
+      AgentMesh.indices
+        .concat(CylinderMesh.indices.map((x) => x + cylinderOffset))
+        .concat(FloorMesh.indices.map((x) => x + floorOffset))
+        .concat(wallIndices)
     );
     this.IndexBuffer = this.gl.createBuffer();
     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.IndexBuffer);
@@ -206,36 +262,11 @@ export class Renderer3D implements IRenderer {
       3 * Float32Array.BYTES_PER_ELEMENT
     );
     this.gl.enableVertexAttribArray(this.normalAttribute);
-
-    // Get uniform locations
-    this.projMatLoc = this.gl.getUniformLocation(this.program, "projMat");
-    this.viewMatLoc = this.gl.getUniformLocation(this.program, "viewMat");
-    this.worldMatLoc = this.gl.getUniformLocation(this.program, "worldMat");
-    this.posVecLoc = this.gl.getUniformLocation(this.program, "position");
-    this.dirVecLoc = this.gl.getUniformLocation(this.program, "direction");
-    this.radiusLoc = this.gl.getUniformLocation(this.program, "radius");
-    this.baseColourLoc = this.gl.getUniformLocation(this.program, "baseColour");
-
-    // Set up matrices
-    const projectionMatrix = Mat4f.getPerspectiveProjectionMatrix(
-      45 * (Math.PI / 180), // 45deg y-axis FOV
-      this.canvas.width / this.canvas.height,
-      0.1,
-      this.cameraDist + 2000
-    );
-
-    const viewMatrix = Mat4f.getTranslationMatrix(0, 0, -this.cameraDist); // Move camera back on z axis
-
-    // prettier-ignore
-    const worldMatrix = Mat4f.getIdentityMatrix();
-
-    this.gl.uniformMatrix4fv(this.projMatLoc, false, projectionMatrix);
-    this.gl.uniformMatrix4fv(this.viewMatLoc, false, viewMatrix);
-    this.gl.uniformMatrix4fv(this.worldMatLoc, false, worldMatrix);
   }
 
   render(simulation: Simulation): void {
     const agents = simulation.getAgents();
+    const obstacles = simulation.getObstacles();
 
     // Clear background
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
@@ -253,8 +284,9 @@ export class Renderer3D implements IRenderer {
       }
       this.gl.uniform2f(this.dirVecLoc, dir.x, dir.y);
 
-      // Radius
+      // Radius + height
       this.gl.uniform1f(this.radiusLoc, agent.Radius);
+      this.gl.uniform1f(this.heightLoc, agent.Radius);
 
       // Base colour
       const color = agent.getColour();
@@ -274,17 +306,69 @@ export class Renderer3D implements IRenderer {
       );
     });
 
+    // Draw obstacles
+    let wallCount = 0;
+    obstacles.forEach((obstacle) => {
+      if (obstacle instanceof CircleObstacle) {
+        // Position
+        this.gl.uniform2f(
+          this.posVecLoc,
+          obstacle.Position.x,
+          obstacle.Position.y
+        );
+
+        // Direction
+        this.gl.uniform2f(this.dirVecLoc, 1, 0);
+
+        // Radius + height
+        this.gl.uniform1f(this.radiusLoc, obstacle.Radius);
+        this.gl.uniform1f(this.heightLoc, 84);
+
+        // Colour
+        this.gl.uniform3f(this.baseColourLoc, 1.0, 1.0, 1.0);
+
+        // Draw mesh
+        this.gl.drawElements(
+          this.gl.TRIANGLES,
+          CylinderMesh.indices.length,
+          this.gl.UNSIGNED_SHORT,
+          AgentMesh.indices.length * Uint16Array.BYTES_PER_ELEMENT
+        );
+      } else {
+        wallCount++;
+      }
+    });
+
     // Draw floor
     this.gl.uniform2f(this.posVecLoc, 0, 0);
     this.gl.uniform2f(this.dirVecLoc, 1, 0);
     this.gl.uniform1f(this.radiusLoc, 1);
+    this.gl.uniform1f(this.heightLoc, 1);
     this.gl.uniform3f(this.baseColourLoc, 0.2, 0.2, 0.2);
 
     this.gl.drawElements(
       this.gl.TRIANGLES,
-      6,
+      FloorMesh.indices.length,
       this.gl.UNSIGNED_SHORT,
-      AgentMesh.indices.length * Uint16Array.BYTES_PER_ELEMENT
+      (AgentMesh.indices.length + CylinderMesh.indices.length) *
+        Uint16Array.BYTES_PER_ELEMENT
+    );
+
+    // Draw walls
+    this.gl.uniform2f(this.posVecLoc, 0, 0);
+    this.gl.uniform2f(this.dirVecLoc, 1, 0);
+    this.gl.uniform1f(this.radiusLoc, 1);
+    this.gl.uniform1f(this.heightLoc, 84);
+    this.gl.uniform3f(this.baseColourLoc, 1.0, 1.0, 1.0);
+
+    this.gl.drawElements(
+      this.gl.TRIANGLES,
+      WallMesh.indices.length * wallCount,
+      this.gl.UNSIGNED_SHORT,
+      (AgentMesh.indices.length +
+        CylinderMesh.indices.length +
+        FloorMesh.indices.length) *
+        Uint16Array.BYTES_PER_ELEMENT
     );
   }
 

@@ -6,7 +6,7 @@ import { VelocityObstacle } from "../VelocityObstacle";
 
 export class HRVOAgent extends VOAgent {
   // Override getVelocityObstacle to produce Hybrid Reciprocal Velocity Obstacle
-  protected getVelocityObstacle(b: Agent): VelocityObstacle | null {
+  protected getAgentVelocityObstacle(b: Agent): VelocityObstacle | null {
     const velocityA = this.getDirection();
     const velocityB = b.getDirection();
 

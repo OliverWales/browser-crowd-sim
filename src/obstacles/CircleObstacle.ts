@@ -1,21 +1,27 @@
 import { Agent } from "../Agent";
-import { VOAgent } from "./VOAgent";
+import { IObstacle } from "../IObstacle";
 import { Vector2f } from "../Vector2f";
 import { VelocityObstacle } from "../VelocityObstacle";
 
-export class RVOAgent extends VOAgent {
-  // Override getVelocityObstacle to produce Reciprocal Velocity Obstacle
-  protected getAgentVelocityObstacle(b: Agent): VelocityObstacle | null {
-    const velocityA = this.getDirection();
-    const velocityB = b.getDirection();
-    const vertex = velocityA.add(velocityB).divide(2);
+export class CircleObstacle implements IObstacle {
+  readonly Position: Vector2f;
+  readonly Radius: number;
 
-    // Translate origin to this agent's position
-    const positionB = b.getPosition().subtract(this._position);
+  constructor(position: Vector2f, radius: number) {
+    this.Position = position;
+    this.Radius = radius;
+  }
+
+  getVelocityObstacle(agent: Agent): VelocityObstacle {
+    // Represent circular obstacle as an agent with zero velocity
+    const velocityB = new Vector2f(0, 0);
+
+    // Translate origin to the agent's position
+    const positionB = this.Position.subtract(agent.getPosition());
 
     // Find Minkowski sum of agents
-    const centre = positionB.add(velocityB);
-    const radius = b.Radius + this.Radius;
+    const centre = positionB;
+    const radius = this.Radius + agent.Radius;
 
     // Calculate angles
     const diff = velocityB.subtract(centre);
@@ -41,6 +47,6 @@ export class RVOAgent extends VOAgent {
     );
 
     // Return velocity obstacle
-    return new VelocityObstacle(vertex, tangent1, tangent2);
+    return new VelocityObstacle(velocityB, tangent1, tangent2);
   }
 }

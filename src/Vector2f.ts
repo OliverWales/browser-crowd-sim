@@ -53,4 +53,16 @@ export class Vector2f {
       this.y + radius * Math.sin(angle)
     );
   }
+
+  // Returns true if the given point lies to the left of the line from the
+  // origin to this vector, otherwise returns false
+  isLeftOf(point: Vector2f): boolean {
+    return this.x * (point.y - this.y) - this.y * (point.x - this.x) > 0;
+  }
+
+  // Returns true if the given point lies to the right of the line from the
+  // origin to this vector, otherwise returns false
+  isRightOf(point: Vector2f): boolean {
+    return this.x * (point.y - this.y) - this.y * (point.x - this.x) < 0;
+  }
 }

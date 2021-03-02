@@ -1,6 +1,8 @@
-import { IRenderer } from "./IRenderer";
-import { Simulation } from "./Simulation";
-import { Agent } from "./Agent";
+import { IRenderer } from "../IRenderer";
+import { Simulation } from "../Simulation";
+import { Agent } from "../Agent";
+import { CircleObstacle } from "../obstacles/CircleObstacle";
+import { LineObstacle } from "../obstacles/LineObstacle";
 
 export class Renderer2D implements IRenderer {
   private canvas: HTMLCanvasElement;
@@ -28,9 +30,12 @@ export class Renderer2D implements IRenderer {
     this.canvas.addEventListener("wheel", this.mouseScroll, { passive: false });
   }
 
+  init(_simulation: Simulation) {}
+
   render(simulation: Simulation) {
     const scaleFactor = 800 / this.cameraDist;
     const agents = simulation.getAgents();
+    const obstacles = simulation.getObstacles();
 
     // Clear background
     this.context.setTransform(1, 0, 0, 1, 0, 0);
@@ -53,12 +58,18 @@ export class Renderer2D implements IRenderer {
 
     // Draw floor
     this.context.fillStyle = "rgb(51, 51, 51)";
-    this.context.fillRect(
-      -this.context.canvas.width * 0.55,
-      -this.context.canvas.height * 0.55,
-      this.context.canvas.width * 1.1,
-      this.context.canvas.height * 1.1
-    );
+    this.context.fillRect(-1000, -500, 2000, 1000);
+
+    // Draw obstacles
+    this.context.strokeStyle = "white";
+    this.context.lineWidth = 2;
+    obstacles.forEach((obstacle) => {
+      if (obstacle instanceof CircleObstacle) {
+        this.drawCircleObstacle(obstacle);
+      } else if (obstacle instanceof LineObstacle) {
+        this.drawLineObstacle(obstacle);
+      }
+    });
 
     // Draw agents
     agents.forEach((agent) => {
@@ -73,7 +84,6 @@ export class Renderer2D implements IRenderer {
 
     this.context.beginPath();
     this.context.strokeStyle = `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
-    this.context.lineWidth = 2;
 
     // y position inverted to match 3D view
     this.context.arc(position.x, -position.y, agent.Radius, 0, 2 * Math.PI);
@@ -86,6 +96,37 @@ export class Renderer2D implements IRenderer {
       );
       this.context.lineTo(newPos.x, -newPos.y);
     }
+
+    this.context.stroke();
+  }
+
+  private drawCircleObstacle(obstacle: CircleObstacle) {
+    this.context.beginPath();
+
+    this.context.arc(
+      obstacle.Position.x,
+      -obstacle.Position.y, // y position inverted to match 3D view
+      obstacle.Radius,
+      0,
+      2 * Math.PI
+    );
+
+    const d = obstacle.Radius * Math.SQRT1_2;
+
+    this.context.moveTo(obstacle.Position.x - d, obstacle.Position.y - d);
+    this.context.lineTo(obstacle.Position.x + d, obstacle.Position.y + d);
+
+    this.context.moveTo(obstacle.Position.x + d, obstacle.Position.y - d);
+    this.context.lineTo(obstacle.Position.x - d, obstacle.Position.y + d);
+
+    this.context.stroke();
+  }
+
+  private drawLineObstacle(obstacle: LineObstacle) {
+    this.context.beginPath();
+
+    this.context.moveTo(obstacle.Start.x, obstacle.Start.y);
+    this.context.lineTo(obstacle.End.x, obstacle.End.y);
 
     this.context.stroke();
   }

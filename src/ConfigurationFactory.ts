@@ -1,6 +1,14 @@
 import { Agent } from "./Agent";
 import { AgentFactory } from "./AgentFactory";
+import { IObstacle } from "./IObstacle";
+import { CircleObstacle } from "./obstacles/CircleObstacle";
+import { LineObstacle } from "./obstacles/LineObstacle";
 import { Vector2f } from "./Vector2f";
+
+export interface Configuration {
+  agents: Agent[];
+  obstacles: IObstacle[];
+}
 
 export class ConfigurationFactory {
   static getConfiguration(
@@ -9,7 +17,7 @@ export class ConfigurationFactory {
     width: number,
     height: number,
     numberOfAgents: number
-  ): Agent[] {
+  ): Configuration {
     switch (type) {
       case "RandomToRandom":
         return this.RandomToRandom(agentType, width, height, numberOfAgents);
@@ -19,6 +27,10 @@ export class ConfigurationFactory {
         return this.CircleToCircle(agentType, width, height, numberOfAgents);
       case "GridToGrid":
         return this.GridToGrid(agentType, width, height, numberOfAgents);
+      case "Bollards":
+        return this.Bollards(agentType, width, height, numberOfAgents);
+      case "Bottleneck":
+        return this.Bottleneck(agentType, width, height, numberOfAgents);
       default:
         throw new Error(`Unknown configuration type \"${type}\"`);
     }
@@ -29,7 +41,7 @@ export class ConfigurationFactory {
     width: number,
     height: number,
     numberOfAgents: number
-  ): Agent[] {
+  ): Configuration {
     // Random start position to random goal position
     let agents: Agent[] = [];
     const startPositions = this.poissonDiskSample(
@@ -56,15 +68,15 @@ export class ConfigurationFactory {
       agents.push(agent);
     }
 
-    return agents;
+    return { agents: agents, obstacles: [] };
   }
 
-  static RandomToLine(
+  private static RandomToLine(
     agentType: string,
     width: number,
     height: number,
     numberOfAgents: number
-  ) {
+  ): Configuration {
     // Random start position to fixed position on line
     let agents: Agent[] = [];
     let startPositions = this.poissonDiskSample(
@@ -86,15 +98,15 @@ export class ConfigurationFactory {
       agents.push(agent);
     }
 
-    return agents;
+    return { agents: agents, obstacles: [] };
   }
 
-  static CircleToCircle(
+  private static CircleToCircle(
     agentType: string,
     _width: number,
     height: number,
     numberOfAgents: number
-  ) {
+  ): Configuration {
     // Position on radius of circle to opposite point
     let agents: Agent[] = [];
     const radius = height / 2 - 25;
@@ -115,15 +127,15 @@ export class ConfigurationFactory {
       agents.push(agent);
     }
 
-    return agents;
+    return { agents: agents, obstacles: [] };
   }
 
-  static GridToGrid(
+  private static GridToGrid(
     agentType: string,
     width: number,
     _height: number,
     numberOfAgents: number
-  ) {
+  ): Configuration {
     // Two opposing grids of agents passing through eachother
     let agents: Agent[] = [];
     const gridSize = Math.ceil(Math.sqrt(numberOfAgents / 2));
@@ -161,7 +173,80 @@ export class ConfigurationFactory {
       }
     }
 
-    return agents;
+    return { agents: agents, obstacles: [] };
+  }
+
+  private static Bollards(
+    agentType: string,
+    width: number,
+    height: number,
+    numberOfAgents: number
+  ): Configuration {
+    const agents: Agent[] = [];
+    const startPositions = this.poissonDiskSample(
+      width / 2 - 200,
+      height - 40,
+      numberOfAgents,
+      80
+    ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+
+    for (let i = 0; i < numberOfAgents; i++) {
+      const agent = AgentFactory.getAgent(
+        agentType,
+        i,
+        startPositions[i],
+        this.preferredVelocityFromGoalPosition(
+          startPositions[i].add(new Vector2f(width / 2 + 200, 0))
+        )
+      );
+      agents.push(agent);
+    }
+
+    const obstacles: IObstacle[] = [];
+
+    // Central line of bollards
+    for (let i = 0; i < 5; i++) {
+      obstacles.push(new CircleObstacle(new Vector2f(0, 120 * i - 240), 20));
+    }
+
+    return { agents: agents, obstacles: obstacles };
+  }
+
+  private static Bottleneck(
+    agentType: string,
+    width: number,
+    height: number,
+    numberOfAgents: number
+  ): Configuration {
+    const agents: Agent[] = [];
+    const startPositions = this.poissonDiskSample(
+      width / 2 - 200,
+      height - 40,
+      numberOfAgents,
+      80
+    ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+
+    for (let i = 0; i < numberOfAgents; i++) {
+      const agent = AgentFactory.getAgent(
+        agentType,
+        i,
+        startPositions[i],
+        this.preferredVelocityFromGoalPosition(
+          startPositions[i].add(new Vector2f(width / 2 + 200, 0))
+        )
+      );
+      agents.push(agent);
+    }
+
+    const obstacles: IObstacle[] = [];
+
+    // Central wall with narrow opening
+    obstacles.push(
+      new LineObstacle(new Vector2f(0, -500), new Vector2f(0, -80))
+    );
+    obstacles.push(new LineObstacle(new Vector2f(0, 500), new Vector2f(0, 80)));
+
+    return { agents: agents, obstacles: obstacles };
   }
 
   private static preferredVelocityFromGoalPosition(

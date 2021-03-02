@@ -1,6 +1,9 @@
 import { Agent } from "../Agent";
 import { Colour } from "../Colour";
 import { Geometry } from "../Geometry";
+import { IObstacle } from "../IObstacle";
+import { CircleObstacle } from "../obstacles/CircleObstacle";
+import { LineObstacle } from "../obstacles/LineObstacle";
 import { Vector2f } from "../Vector2f";
 import { VelocityObstacle } from "../VelocityObstacle";
 
@@ -20,7 +23,7 @@ export class VOAgent extends Agent {
     return this._colour;
   }
 
-  update(deltaT: number, neighbours: Agent[]): void {
+  update(deltaT: number, neighbours: Agent[], obstacles: IObstacle[]): void {
     if (this._isDone) {
       return;
     }
@@ -40,9 +43,9 @@ export class VOAgent extends Agent {
     let collision;
     let agent;
 
+    // Check for collision with neighbouring agents
     for (var i = 0; i < neighbours.length; i++) {
-      // Check whether preferred velocity is safe
-      const velocityObstacle = this.getVelocityObstacle(neighbours[i]);
+      const velocityObstacle = this.getAgentVelocityObstacle(neighbours[i]);
       if (
         velocityObstacle != null &&
         velocityObstacle.contains(preferredVelocity)
@@ -50,6 +53,20 @@ export class VOAgent extends Agent {
         safe = false;
         collision = velocityObstacle;
         agent = i;
+        break;
+      }
+    }
+
+    // Check for collision with obstacles
+    for (var i = 0; i < obstacles.length; i++) {
+      const velocityObstacle = obstacles[i].getVelocityObstacle(this);
+      if (
+        velocityObstacle != null &&
+        velocityObstacle.contains(preferredVelocity)
+      ) {
+        safe = false;
+        collision = velocityObstacle;
+        agent = -1; // not colliding with an agent
         break;
       }
     }
@@ -79,15 +96,27 @@ export class VOAgent extends Agent {
       let leftSafe = true;
       let rightSafe = true;
 
+      // Check for collision with neighbouring agents
       for (var i = 0; i < neighbours.length; i++) {
         if (i != agent) {
-          const velocityObstacle = this.getVelocityObstacle(neighbours[i]);
+          const velocityObstacle = this.getAgentVelocityObstacle(neighbours[i]);
           if (velocityObstacle != null && velocityObstacle.contains(left)) {
             leftSafe = false;
           }
           if (velocityObstacle != null && velocityObstacle.contains(left)) {
             rightSafe = false;
           }
+        }
+      }
+
+      // Check for collision with obstacles
+      for (var i = 0; i < obstacles.length; i++) {
+        const velocityObstacle = obstacles[i].getVelocityObstacle(this);
+        if (velocityObstacle != null && velocityObstacle.contains(left)) {
+          leftSafe = false;
+        }
+        if (velocityObstacle != null && velocityObstacle.contains(left)) {
+          rightSafe = false;
         }
       }
 
@@ -116,7 +145,7 @@ export class VOAgent extends Agent {
 
     // Else, sample random velocities and select the one with the least penalty
     const samples = 100; // number of velocities to try
-    const w = 100; // parameter for penalty
+    const w = 200; // parameter for penalty
     let minPenalty = Infinity;
     let bestVelocity = new Vector2f(0, 0);
 
@@ -125,10 +154,10 @@ export class VOAgent extends Agent {
       const sample = new Vector2f(0, 0).sample(1);
       let minTimeToCollision = Infinity;
 
-      // Find time to first collision
+      // Find time to first collision with another agent
       for (var j = 0; j < neighbours.length; j++) {
         const b = neighbours[j];
-        const velocityObstacle = this.getVelocityObstacle(b);
+        const velocityObstacle = this.getAgentVelocityObstacle(b);
 
         if (velocityObstacle == null || velocityObstacle.contains(sample)) {
           const timeToCollision = Geometry.getFirstRayCircleIntersection(
@@ -142,6 +171,46 @@ export class VOAgent extends Agent {
             minTimeToCollision = timeToCollision;
           }
         }
+      }
+
+      // Find time to first collision with an obstacle
+      for (var j = 0; j < obstacles.length; j++) {
+        const b = obstacles[j];
+        if (b instanceof CircleObstacle) {
+          const velocityObstacle = b.getVelocityObstacle(this);
+
+          if (velocityObstacle == null || velocityObstacle.contains(sample)) {
+            const timeToCollision = Geometry.getFirstRayCircleIntersection(
+              b.Position,
+              this.Radius + b.Radius,
+              this._position,
+              sample
+            );
+
+            if (timeToCollision < minTimeToCollision) {
+              minTimeToCollision = timeToCollision;
+            }
+          }
+        } else if (b instanceof LineObstacle) {
+          const timeToCollision =
+            Geometry.getLineLineIntersection(
+              b.Start,
+              b.End.subtract(b.Start).normalise(),
+              this._position,
+              sample.normalise()
+            )
+              .subtract(this._position)
+              .magnitude() / sample.magnitude();
+
+          if (timeToCollision < minTimeToCollision) {
+            minTimeToCollision = timeToCollision;
+          }
+        }
+      }
+
+      // Attempt to prevent intersection
+      if (minTimeToCollision < 10) {
+        minTimeToCollision = 0;
       }
 
       // Calculate penalty
@@ -160,7 +229,7 @@ export class VOAgent extends Agent {
     return;
   }
 
-  protected getVelocityObstacle(b: Agent): VelocityObstacle | null {
+  protected getAgentVelocityObstacle(b: Agent): VelocityObstacle | null {
     const velocityB = b.getDirection();
 
     // Translate origin to this agent's position
