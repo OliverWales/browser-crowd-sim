@@ -43,7 +43,7 @@ export class Geometry {
     point2: Vector2f,
     direction2: Vector2f
   ): Vector2f {
-    const diff = point2.subtract(point1);
+    const diff = point2.subtract(point1).normalise();
     const det = direction2.x * direction1.y - direction2.y * direction1.x;
     const t = (diff.y * direction2.x - diff.y * direction2.y) / det;
 

@@ -209,7 +209,7 @@ export class VOAgent extends Agent {
       }
 
       // Attempt to prevent intersection
-      if (minTimeToCollision < 1) {
+      if (minTimeToCollision < 10) {
         minTimeToCollision = 0;
       }
 
