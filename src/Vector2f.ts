@@ -7,6 +7,10 @@ export class Vector2f {
     this.y = y;
   }
 
+  toString(): string {
+    return `(${this.x}, ${this.y})`;
+  }
+
   copy(v: Vector2f): Vector2f {
     return new Vector2f(v.x, v.y);
   }

@@ -11,6 +11,7 @@ export class LineObstacle implements IObstacle {
     this.Start = start;
     this.End = end;
   }
+
   getVelocityObstacle(agent: Agent): VelocityObstacle {
     const voStart = this.pointVelocityObstacle(agent, this.Start);
     const voEnd = this.pointVelocityObstacle(agent, this.End);
@@ -22,10 +23,6 @@ export class LineObstacle implements IObstacle {
     } else if (voEnd == null) {
       return voStart;
     }
-
-    const determinant1 =
-      voStart.tangent1.x * voEnd.tangent2.y -
-      voStart.tangent1.y * voEnd.tangent2.x;
 
     let left = voStart.tangent1;
     if (voStart.tangent2.isLeftOf(left)) {
