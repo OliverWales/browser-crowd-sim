@@ -38,15 +38,15 @@ export class Geometry {
   }
 
   static getLineLineIntersection(
-    point1: Vector2f,
-    direction1: Vector2f,
-    point2: Vector2f,
-    direction2: Vector2f
+    a1: Vector2f,
+    a2: Vector2f,
+    b1: Vector2f,
+    b2: Vector2f
   ): Vector2f {
-    const diff = point2.subtract(point1).normalise();
-    const det = direction2.x * direction1.y - direction2.y * direction1.x;
-    const t = (diff.y * direction2.x - diff.y * direction2.y) / det;
+    const d = (a1.x - a2.x) * (b1.y - b2.y) - (a1.y - a2.y) * (b1.x - b2.x);
+    const u =
+      ((a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x)) / d;
 
-    return point1.add(direction1.multiply(t));
+    return new Vector2f(b1.x + u * (b2.x - b1.x), b1.y + u * (b2.y - b1.y));
   }
 }
