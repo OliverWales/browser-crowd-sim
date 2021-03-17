@@ -195,9 +195,9 @@ export class VOAgent extends Agent {
           const timeToCollision =
             Geometry.getLineLineIntersection(
               b.Start,
-              b.End.subtract(b.Start).normalise(),
+              b.End,
               this._position,
-              sample.normalise()
+              this._position.add(sample.normalise().multiply(this.Radius))
             )
               .subtract(this._position)
               .magnitude() / sample.magnitude();
