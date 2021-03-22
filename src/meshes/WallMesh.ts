@@ -9,14 +9,14 @@ export class WallMesh {
     // prettier-ignore
     return [
       // Position + normal
-      wall.Start.x, -wall.Start.y, 0.0,  normal.x,  normal.y, 0.0,
-      wall.End.x,   -wall.End.y,   0.0,  normal.x,  normal.y, 0.0,
-      wall.Start.x, -wall.Start.y, 1.0,  normal.x,  normal.y, 0.0,
-      wall.End.x,   -wall.End.y,   1.0,  normal.x,  normal.y, 0.0,
-      wall.Start.x, -wall.Start.y, 0.0, -normal.x, -normal.y, 0.0,
-      wall.End.x,   -wall.End.y,   0.0, -normal.x, -normal.y, 0.0,
-      wall.Start.x, -wall.Start.y, 1.0, -normal.x, -normal.y, 0.0,
-      wall.End.x,   -wall.End.y,   1.0, -normal.x, -normal.y, 0.0,
+      wall.Start.x, wall.Start.y, 0.0,  normal.x,  normal.y, 0.0,
+      wall.End.x,   wall.End.y,   0.0,  normal.x,  normal.y, 0.0,
+      wall.Start.x, wall.Start.y, 1.0,  normal.x,  normal.y, 0.0,
+      wall.End.x,   wall.End.y,   1.0,  normal.x,  normal.y, 0.0,
+      wall.Start.x, wall.Start.y, 0.0, -normal.x, -normal.y, 0.0,
+      wall.End.x,   wall.End.y,   0.0, -normal.x, -normal.y, 0.0,
+      wall.Start.x, wall.Start.y, 1.0, -normal.x, -normal.y, 0.0,
+      wall.End.x,   wall.End.y,   1.0, -normal.x, -normal.y, 0.0,
     ];
   }
 

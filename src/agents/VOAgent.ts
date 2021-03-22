@@ -193,14 +193,16 @@ export class VOAgent extends Agent {
           }
         } else if (b instanceof LineObstacle) {
           const timeToCollision =
-            Geometry.getLineLineIntersection(
+            (Geometry.getLineLineIntersection(
               b.Start,
               b.End,
               this._position,
               this._position.add(sample.normalise().multiply(this.Radius))
             )
               .subtract(this._position)
-              .magnitude() / sample.magnitude();
+              .magnitude() -
+              this.Radius) /
+            sample.magnitude();
 
           if (timeToCollision < minTimeToCollision) {
             minTimeToCollision = timeToCollision;

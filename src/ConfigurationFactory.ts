@@ -276,7 +276,7 @@ export class ConfigurationFactory {
     for (let i = 0; i < numberOfAgents; i++) {
       const prefVel = (pos: Vector2f) => {
         if (pos.x < 0) {
-          if (pos.magnitudeSqrd() > (gapWidth / 2) ** 2) {
+          if (pos.magnitudeSqrd() > ((gapWidth - 20) / 2) ** 2) {
             return this.preferredVelocityFromGoalPosition(new Vector2f(0, 0))(
               pos
             );
@@ -325,6 +325,9 @@ export class ConfigurationFactory {
       80
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
 
+    const gapHeight = 200;
+    const wallHeight = height / 2 - gapHeight;
+
     for (let i = 0; i < numberOfAgents; i++) {
       const agent = AgentFactory.getAgent(
         agentType,
@@ -341,19 +344,13 @@ export class ConfigurationFactory {
 
     // Slalom
     obstacles.push(
-      new LineObstacle(
-        new Vector2f(-200, -500),
-        new Vector2f(-200, height / 2 - 200)
-      )
+      new LineObstacle(new Vector2f(-200, 500), new Vector2f(-200, -wallHeight))
     );
     obstacles.push(
-      new LineObstacle(new Vector2f(0, 500), new Vector2f(0, 200 - height / 2))
+      new LineObstacle(new Vector2f(0, -500), new Vector2f(0, wallHeight))
     );
     obstacles.push(
-      new LineObstacle(
-        new Vector2f(200, -500),
-        new Vector2f(200, height / 2 - 200)
-      )
+      new LineObstacle(new Vector2f(200, 500), new Vector2f(200, -wallHeight))
     );
 
     return { agents: agents, obstacles: obstacles };
@@ -373,33 +370,51 @@ export class ConfigurationFactory {
       80
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
 
+    const gapHeight = 200;
+    const wallHeight = height / 2 - gapHeight;
+    const midGap = wallHeight + gapHeight / 2;
+
     for (let i = 0; i < numberOfAgents; i++) {
       const prefVel = (pos: Vector2f) => {
         if (pos.x <= -200) {
-          if (pos.y >= 200 - height / 2) {
-            return new Vector2f(0, -1);
+          if (
+            pos.subtract(new Vector2f(-200, -midGap)).magnitudeSqrd() <
+            (gapHeight - 20) ** 2 // Subtract agent radius
+          ) {
+            return new Vector2f(1, 0);
           } else {
-            return new Vector2f(Math.SQRT2, -Math.SQRT2);
+            return this.preferredVelocityFromGoalPosition(
+              new Vector2f(-200, -midGap)
+            )(pos);
           }
         } else if (pos.x <= 0) {
-          if (pos.y >= height / 2 - 200) {
-            return new Vector2f(Math.SQRT2, Math.SQRT2);
-          } else if (pos.y >= 200 - height / 2) {
-            return new Vector2f(0, 1);
+          if (
+            pos.subtract(new Vector2f(0, midGap)).magnitudeSqrd() <
+            (gapHeight - 20) ** 2 // Subtract agent radius
+          ) {
+            return new Vector2f(1, 0);
           } else {
-            return new Vector2f(Math.SQRT2, Math.SQRT2);
+            return this.preferredVelocityFromGoalPosition(
+              new Vector2f(0, midGap)
+            )(pos);
           }
         } else if (pos.x <= 200) {
-          if (pos.y >= height / 2 - 200) {
-            return new Vector2f(Math.SQRT2, -Math.SQRT2);
-          } else if (pos.y >= 200 - height / 2) {
-            return new Vector2f(0, -1);
+          if (
+            pos.subtract(new Vector2f(200, -midGap)).magnitudeSqrd() <
+            (gapHeight - 20) ** 2 // Subtract agent radius
+          ) {
+            return new Vector2f(1, 0);
           } else {
-            return new Vector2f(Math.SQRT2, -Math.SQRT2);
+            return this.preferredVelocityFromGoalPosition(
+              new Vector2f(200, -midGap)
+            )(pos);
           }
         } else {
           return this.preferredVelocityFromGoalPosition(
-            startPositions[i].add(new Vector2f(width / 2 + 250, 0))
+            new Vector2f(
+              startPositions[i].x + width / 2 + 250,
+              -startPositions[i].y
+            )
           )(pos);
         }
       };
@@ -416,19 +431,13 @@ export class ConfigurationFactory {
 
     // Slalom
     obstacles.push(
-      new LineObstacle(
-        new Vector2f(-200, -500),
-        new Vector2f(-200, height / 2 - 200)
-      )
+      new LineObstacle(new Vector2f(-200, 500), new Vector2f(-200, -wallHeight))
     );
     obstacles.push(
-      new LineObstacle(new Vector2f(0, 500), new Vector2f(0, 200 - height / 2))
+      new LineObstacle(new Vector2f(0, -500), new Vector2f(0, wallHeight))
     );
     obstacles.push(
-      new LineObstacle(
-        new Vector2f(200, -500),
-        new Vector2f(200, height / 2 - 200)
-      )
+      new LineObstacle(new Vector2f(200, 500), new Vector2f(200, -wallHeight))
     );
 
     return { agents: agents, obstacles: obstacles };
