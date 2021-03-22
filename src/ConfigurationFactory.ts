@@ -31,6 +31,12 @@ export class ConfigurationFactory {
         return this.Bollards(agentType, width, height, numberOfAgents);
       case "Bottleneck":
         return this.Bottleneck(agentType, width, height, numberOfAgents);
+      case "BottleneckWithNav":
+        return this.BottleneckWithNav(agentType, width, height, numberOfAgents);
+      case "Slalom":
+        return this.Slalom(agentType, width, height, numberOfAgents);
+      case "SlalomWithNav":
+        return this.SlalomWithNav(agentType, width, height, numberOfAgents);
       default:
         throw new Error(`Unknown configuration type \"${type}\"`);
     }
@@ -218,6 +224,7 @@ export class ConfigurationFactory {
     height: number,
     numberOfAgents: number
   ): Configuration {
+    const gapWidth = 200;
     const agents: Agent[] = [];
     const startPositions = this.poissonDiskSample(
       width / 2 - 200,
@@ -242,9 +249,196 @@ export class ConfigurationFactory {
 
     // Central wall with narrow opening
     obstacles.push(
-      new LineObstacle(new Vector2f(0, -500), new Vector2f(0, -80))
+      new LineObstacle(new Vector2f(0, -500), new Vector2f(0, -gapWidth / 2))
     );
-    obstacles.push(new LineObstacle(new Vector2f(0, 500), new Vector2f(0, 80)));
+    obstacles.push(
+      new LineObstacle(new Vector2f(0, 500), new Vector2f(0, gapWidth / 2))
+    );
+
+    return { agents: agents, obstacles: obstacles };
+  }
+
+  private static BottleneckWithNav(
+    agentType: string,
+    width: number,
+    height: number,
+    numberOfAgents: number
+  ): Configuration {
+    const gapWidth = 200;
+    const agents: Agent[] = [];
+    const startPositions = this.poissonDiskSample(
+      width / 2 - 200,
+      height - 40,
+      numberOfAgents,
+      80
+    ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+
+    for (let i = 0; i < numberOfAgents; i++) {
+      const prefVel = (pos: Vector2f) => {
+        if (pos.x < 0) {
+          if (pos.magnitudeSqrd() > ((gapWidth - 20) / 2) ** 2) {
+            return this.preferredVelocityFromGoalPosition(new Vector2f(0, 0))(
+              pos
+            );
+          } else {
+            return new Vector2f(1, 0);
+          }
+        } else {
+          return this.preferredVelocityFromGoalPosition(
+            startPositions[i].add(new Vector2f(width / 2 + 200, 0))
+          )(pos);
+        }
+      };
+      const agent = AgentFactory.getAgent(
+        agentType,
+        i,
+        startPositions[i],
+        prefVel
+      );
+      agents.push(agent);
+    }
+
+    const obstacles: IObstacle[] = [];
+
+    // Central wall with narrow opening
+    obstacles.push(
+      new LineObstacle(new Vector2f(0, -500), new Vector2f(0, -gapWidth / 2))
+    );
+    obstacles.push(
+      new LineObstacle(new Vector2f(0, 500), new Vector2f(0, gapWidth / 2))
+    );
+
+    return { agents: agents, obstacles: obstacles };
+  }
+
+  private static Slalom(
+    agentType: string,
+    width: number,
+    height: number,
+    numberOfAgents: number
+  ): Configuration {
+    const agents: Agent[] = [];
+    const startPositions = this.poissonDiskSample(
+      width / 2 - 250,
+      height - 40,
+      numberOfAgents,
+      80
+    ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+
+    const gapHeight = 200;
+    const wallHeight = height / 2 - gapHeight;
+
+    for (let i = 0; i < numberOfAgents; i++) {
+      const agent = AgentFactory.getAgent(
+        agentType,
+        i,
+        startPositions[i],
+        this.preferredVelocityFromGoalPosition(
+          startPositions[i].add(new Vector2f(width / 2 + 250, 0))
+        )
+      );
+      agents.push(agent);
+    }
+
+    const obstacles: IObstacle[] = [];
+
+    // Slalom
+    obstacles.push(
+      new LineObstacle(new Vector2f(-200, 500), new Vector2f(-200, -wallHeight))
+    );
+    obstacles.push(
+      new LineObstacle(new Vector2f(0, -500), new Vector2f(0, wallHeight))
+    );
+    obstacles.push(
+      new LineObstacle(new Vector2f(200, 500), new Vector2f(200, -wallHeight))
+    );
+
+    return { agents: agents, obstacles: obstacles };
+  }
+
+  private static SlalomWithNav(
+    agentType: string,
+    width: number,
+    height: number,
+    numberOfAgents: number
+  ): Configuration {
+    const agents: Agent[] = [];
+    const startPositions = this.poissonDiskSample(
+      width / 2 - 250,
+      height - 40,
+      numberOfAgents,
+      80
+    ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+
+    const gapHeight = 200;
+    const wallHeight = height / 2 - gapHeight;
+    const midGap = wallHeight + gapHeight / 2;
+
+    for (let i = 0; i < numberOfAgents; i++) {
+      const prefVel = (pos: Vector2f) => {
+        if (pos.x <= -200) {
+          if (
+            pos.subtract(new Vector2f(-200, -midGap)).magnitudeSqrd() <
+            (gapHeight - 20) ** 2 // Subtract agent radius
+          ) {
+            return new Vector2f(1, 0);
+          } else {
+            return this.preferredVelocityFromGoalPosition(
+              new Vector2f(-200, -midGap)
+            )(pos);
+          }
+        } else if (pos.x <= 0) {
+          if (
+            pos.subtract(new Vector2f(0, midGap)).magnitudeSqrd() <
+            (gapHeight - 20) ** 2 // Subtract agent radius
+          ) {
+            return new Vector2f(1, 0);
+          } else {
+            return this.preferredVelocityFromGoalPosition(
+              new Vector2f(0, midGap)
+            )(pos);
+          }
+        } else if (pos.x <= 200) {
+          if (
+            pos.subtract(new Vector2f(200, -midGap)).magnitudeSqrd() <
+            (gapHeight - 20) ** 2 // Subtract agent radius
+          ) {
+            return new Vector2f(1, 0);
+          } else {
+            return this.preferredVelocityFromGoalPosition(
+              new Vector2f(200, -midGap)
+            )(pos);
+          }
+        } else {
+          return this.preferredVelocityFromGoalPosition(
+            new Vector2f(
+              startPositions[i].x + width / 2 + 250,
+              -startPositions[i].y
+            )
+          )(pos);
+        }
+      };
+      const agent = AgentFactory.getAgent(
+        agentType,
+        i,
+        startPositions[i],
+        prefVel
+      );
+      agents.push(agent);
+    }
+
+    const obstacles: IObstacle[] = [];
+
+    // Slalom
+    obstacles.push(
+      new LineObstacle(new Vector2f(-200, 500), new Vector2f(-200, -wallHeight))
+    );
+    obstacles.push(
+      new LineObstacle(new Vector2f(0, -500), new Vector2f(0, wallHeight))
+    );
+    obstacles.push(
+      new LineObstacle(new Vector2f(200, 500), new Vector2f(200, -wallHeight))
+    );
 
     return { agents: agents, obstacles: obstacles };
   }

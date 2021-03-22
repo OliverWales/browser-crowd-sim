@@ -125,8 +125,8 @@ export class Renderer2D implements IRenderer {
   private drawLineObstacle(obstacle: LineObstacle) {
     this.context.beginPath();
 
-    this.context.moveTo(obstacle.Start.x, obstacle.Start.y);
-    this.context.lineTo(obstacle.End.x, obstacle.End.y);
+    this.context.moveTo(obstacle.Start.x, -obstacle.Start.y);
+    this.context.lineTo(obstacle.End.x, -obstacle.End.y);
 
     this.context.stroke();
   }

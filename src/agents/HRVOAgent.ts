@@ -55,17 +55,17 @@ export class HRVOAgent extends VOAgent {
       // "Left"
       vertex = Geometry.getLineLineIntersection(
         voVertex,
-        tangent1,
+        voVertex.add(tangent1),
         rvoVertex,
-        tangent2
+        rvoVertex.add(tangent2)
       );
     } else {
       // "Right"
       vertex = Geometry.getLineLineIntersection(
         voVertex,
-        tangent2,
+        voVertex.add(tangent2),
         rvoVertex,
-        tangent1
+        rvoVertex.add(tangent1)
       );
     }
 
