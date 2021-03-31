@@ -63,6 +63,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       50
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2)));
+    numberOfAgents = Math.min(startPositions.length, goalPositions.length);
 
     for (let i = 0; i < numberOfAgents; i++) {
       const agent = AgentFactory.getAgent(
@@ -91,6 +92,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       50
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2)));
+    numberOfAgents = startPositions.length;
 
     for (let i = 0; i < numberOfAgents; i++) {
       const agent = AgentFactory.getAgent(
@@ -195,6 +197,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       80
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+    numberOfAgents = startPositions.length;
 
     for (let i = 0; i < numberOfAgents; i++) {
       const agent = AgentFactory.getAgent(
@@ -232,6 +235,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       80
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+    numberOfAgents = startPositions.length;
 
     for (let i = 0; i < numberOfAgents; i++) {
       const agent = AgentFactory.getAgent(
@@ -272,6 +276,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       80
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+    numberOfAgents = startPositions.length;
 
     for (let i = 0; i < numberOfAgents; i++) {
       const prefVel = (pos: Vector2f) => {
@@ -324,6 +329,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       80
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+    numberOfAgents = startPositions.length;
 
     const gapHeight = 200;
     const wallHeight = height / 2 - gapHeight;
@@ -369,6 +375,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       80
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+    numberOfAgents = startPositions.length;
 
     const gapHeight = 200;
     const wallHeight = height / 2 - gapHeight;
