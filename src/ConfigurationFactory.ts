@@ -468,7 +468,9 @@ export class ConfigurationFactory {
       let resample = true;
       let pos: Vector2f;
 
+      let attempts = 0;
       while (resample) {
+        attempts++;
         resample = false;
         pos = new Vector2f(xRange * Math.random(), yRange * Math.random());
 
@@ -477,6 +479,12 @@ export class ConfigurationFactory {
             resample = true;
           }
         });
+
+        // Prevent crash if there is insufficient space to add a new agent
+        if (attempts > 1000) {
+          console.warn("Failed to find poisson disk sample");
+          return samples;
+        }
       }
 
       samples.push(pos);
