@@ -23,7 +23,13 @@ export class Logger implements ILogger {
     this._logging = false;
     console.log("Stopped logging");
     console.log(`Timesteps: ${this._timeStep}`);
+    console.log(
+      `Total frame time: ${this._frameTimes.reduce((a, b) => a + b, 0)}`
+    );
     console.log(`Frame times: ${this._frameTimes}`);
+    console.log(
+      `Total collisions: ${this._collisions.reduce((a, b) => a + b, 0)}`
+    );
     console.log(`Collisions: ${this._collisions}`);
   }
 
