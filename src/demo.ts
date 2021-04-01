@@ -5,6 +5,7 @@ import { Renderer3D } from "./renderers/Renderer3D";
 import { AgentTree } from "./AgentTree";
 import { ConfigurationFactory } from "./ConfigurationFactory";
 import { TraceRenderer } from "./renderers/TraceRenderer";
+import { Logger } from "./loggers/Logger";
 
 const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
@@ -27,6 +28,7 @@ const renderer2d = new Renderer2D(canvas2d);
 const renderer3d = new Renderer3D(canvas3d);
 const rendererTrace = new TraceRenderer(canvasTrace);
 var renderer: IRenderer = renderer2d;
+const logger = new Logger();
 var play = false;
 var range = 200;
 
@@ -45,12 +47,12 @@ export function init() {
     // Update
     if (play) {
       simulation.update(deltaT, range);
+      logger.log(simulation.getAgents(), deltaT);
     }
 
     if (simulation.isDone()) {
-      play = false;
-      playButton.disabled = true;
-      stepButton.disabled = true;
+      stop();
+      logger.stop();
     }
 
     // Render
@@ -115,9 +117,12 @@ export function playPause() {
   play = !play;
 
   if (play) {
+    logger.start();
+    logger.log(simulation.getAgents(), 0); // log initial conditions
     playButton.textContent = "Pause";
     stepButton.disabled = true;
   } else {
+    logger.stop();
     playButton.textContent = "Play";
     stepButton.disabled = false;
   }
@@ -125,12 +130,11 @@ export function playPause() {
 
 // step simulation by 1 frame
 export function step() {
-  simulation.update(1000 / 60, range); // Assumes 60FPS
+  const deltaT = 1000 / 60; // Assumes 60FPS
+  simulation.update(deltaT, range);
 
   if (simulation.isDone()) {
-    play = false;
-    playButton.disabled = true;
-    stepButton.disabled = true;
+    stop();
   }
 }
 
@@ -156,4 +160,10 @@ export function reconfigure() {
   );
 
   renderer.init(simulation);
+}
+
+function stop() {
+  play = false;
+  playButton.disabled = true;
+  stepButton.disabled = true;
 }
