@@ -489,7 +489,9 @@ export class ConfigurationFactory {
 
         // Prevent crash if there is insufficient space to add a new agent
         if (attempts > 1000) {
-          console.warn("Failed to find poisson disk sample");
+          console.warn(
+            `Failed to find poisson disk sample (placed ${i}/${n}).`
+          );
           return samples;
         }
       }
