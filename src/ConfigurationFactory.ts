@@ -63,6 +63,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       50
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2)));
+    numberOfAgents = Math.min(startPositions.length, goalPositions.length);
 
     for (let i = 0; i < numberOfAgents; i++) {
       const agent = AgentFactory.getAgent(
@@ -91,6 +92,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       50
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2)));
+    numberOfAgents = startPositions.length;
 
     for (let i = 0; i < numberOfAgents; i++) {
       const agent = AgentFactory.getAgent(
@@ -195,6 +197,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       80
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+    numberOfAgents = startPositions.length;
 
     for (let i = 0; i < numberOfAgents; i++) {
       const agent = AgentFactory.getAgent(
@@ -232,6 +235,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       80
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+    numberOfAgents = startPositions.length;
 
     for (let i = 0; i < numberOfAgents; i++) {
       const agent = AgentFactory.getAgent(
@@ -272,6 +276,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       80
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+    numberOfAgents = startPositions.length;
 
     for (let i = 0; i < numberOfAgents; i++) {
       const prefVel = (pos: Vector2f) => {
@@ -324,6 +329,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       80
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+    numberOfAgents = startPositions.length;
 
     const gapHeight = 200;
     const wallHeight = height / 2 - gapHeight;
@@ -369,6 +375,7 @@ export class ConfigurationFactory {
       numberOfAgents,
       80
     ).map((x) => x.subtract(new Vector2f(width / 2, height / 2 - 20)));
+    numberOfAgents = startPositions.length;
 
     const gapHeight = 200;
     const wallHeight = height / 2 - gapHeight;
@@ -468,7 +475,9 @@ export class ConfigurationFactory {
       let resample = true;
       let pos: Vector2f;
 
+      let attempts = 0;
       while (resample) {
+        attempts++;
         resample = false;
         pos = new Vector2f(xRange * Math.random(), yRange * Math.random());
 
@@ -477,6 +486,14 @@ export class ConfigurationFactory {
             resample = true;
           }
         });
+
+        // Prevent crash if there is insufficient space to add a new agent
+        if (attempts > 1000) {
+          console.warn(
+            `Failed to find poisson disk sample (placed ${i}/${n}).`
+          );
+          return samples;
+        }
       }
 
       samples.push(pos);
