@@ -35,4 +35,12 @@ export class Simulation {
   getObstacles() {
     return this._obstacles;
   }
+
+  isDone() {
+    let done = true;
+    this._agents.forEach((agent) => {
+      done &&= agent.isDone();
+    });
+    return done;
+  }
 }

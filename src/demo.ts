@@ -47,6 +47,12 @@ export function init() {
       simulation.update(deltaT, range);
     }
 
+    if (simulation.isDone()) {
+      play = false;
+      playButton.disabled = true;
+      stepButton.disabled = true;
+    }
+
     // Render
     renderer.render(simulation);
     frames++;
@@ -120,12 +126,19 @@ export function playPause() {
 // step simulation by 1 frame
 export function step() {
   simulation.update(1000 / 60, range); // Assumes 60FPS
+
+  if (simulation.isDone()) {
+    play = false;
+    playButton.disabled = true;
+    stepButton.disabled = true;
+  }
 }
 
 export function reconfigure() {
-  if (play) {
-    this.playPause();
-  }
+  play = false;
+  playButton.textContent = "Play";
+  playButton.disabled = false;
+  stepButton.disabled = false;
 
   const config = configSelect.value;
   const agentType = agentTypeSelect.value;
