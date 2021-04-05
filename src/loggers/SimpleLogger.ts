@@ -1,7 +1,8 @@
 import { IAgentCollection } from "../IAgentCollection";
 import { ILogger } from "../ILogger";
 
-export class Logger implements ILogger {
+// Simple logger implementation for basic analysis
+export class SimpleLogger implements ILogger {
   private _logging: boolean = false;
   private _timeStep: number = 0;
   private _collisions: number[] = [];

@@ -5,7 +5,7 @@ import { Renderer3D } from "./renderers/Renderer3D";
 import { AgentTree } from "./AgentTree";
 import { ConfigurationFactory } from "./ConfigurationFactory";
 import { TraceRenderer } from "./renderers/TraceRenderer";
-import { Logger } from "./loggers/Logger";
+import { SimpleLogger } from "./loggers/SimpleLogger";
 
 const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
@@ -28,7 +28,7 @@ const renderer2d = new Renderer2D(canvas2d);
 const renderer3d = new Renderer3D(canvas3d);
 const rendererTrace = new TraceRenderer(canvasTrace);
 var renderer: IRenderer = renderer2d;
-const logger = new Logger();
+const logger = new SimpleLogger();
 var play = false;
 var range = 200;
 
@@ -59,7 +59,7 @@ export function init() {
     renderer.render(simulation);
     frames++;
 
-    // recalculate framerate every 250ms
+    // Recalculate framerate every 250ms
     if (timestamp - lastFPS >= 250) {
       framerate.textContent = `FPS: ${(
         (1000 * frames) /
@@ -128,9 +128,9 @@ export function playPause() {
   }
 }
 
-// step simulation by 1 frame
+// Step simulation by 1 frame
 export function step() {
-  const deltaT = 1000 / 60; // Assumes 60FPS
+  const deltaT = 1000 / 60; // assumes 60FPS
   simulation.update(deltaT, range);
 
   if (simulation.isDone()) {
