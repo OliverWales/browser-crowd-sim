@@ -27,29 +27,36 @@ export class SimpleLogger implements ILogger {
       return;
     }
 
-    this._logging = false;
     console.log("Stopped logging");
+    this._logging = false;
+
+    const totalFrameTime = this.sum(this._frameTimes) / 1000;
+    const totalAgentCollisions = this.sum(this._agentCollisions);
+    const totalObstacleCollisions = this.sum(this._obstacleCollisions);
+
     console.log(`Timesteps: ${this._timeStep}`);
-    console.log(
-      `Total frame time: ${(
-        this._frameTimes.reduce((a, b) => a + b, 0) / 1000
-      ).toFixed(3)} seconds`
-    );
+    console.log(`Total time: ${totalFrameTime.toFixed(3)} seconds`);
     console.log(`Frame times: ${this._frameTimes}`);
-    console.log(
-      `Total agent collisions: ${this._agentCollisions.reduce(
-        (a, b) => a + b,
-        0
-      )}`
-    );
-    console.log(`Agent collisions: ${this._agentCollisions}`);
-    console.log(
-      `Total obstacle collisions: ${this._obstacleCollisions.reduce(
-        (a, b) => a + b,
-        0
-      )}`
-    );
-    console.log(`Obstacle collisions: ${this._obstacleCollisions}`);
+
+    console.log(`Total agent collisions: ${totalAgentCollisions}`);
+    if (totalAgentCollisions > 0) {
+      console.log(
+        `Agent collisions per frame: ${(
+          totalAgentCollisions / this._timeStep
+        ).toFixed(3)}`
+      );
+      console.log(`Agent collisions:\n${this._agentCollisions}`);
+    }
+
+    console.log(`Total obstacle collisions: ${totalObstacleCollisions}`);
+    if (totalObstacleCollisions > 0) {
+      console.log(
+        `Obstacle collisions per frame: ${(
+          totalObstacleCollisions / this._timeStep
+        ).toFixed(3)}`
+      );
+      console.log(`Obstacle collisions:\n${this._obstacleCollisions}`);
+    }
   }
 
   log(agents: IAgentCollection, obstacles: IObstacle[], deltaT: number): void {
@@ -104,5 +111,9 @@ export class SimpleLogger implements ILogger {
 
   round3dp(f: number): number {
     return Math.round((f + Number.EPSILON) * 1000) / 1000; // epsilon to avoid FP errors
+  }
+
+  sum(arr: number[]): number {
+    return arr.reduce((a, b) => a + b, 0);
   }
 }

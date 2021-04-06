@@ -18,5 +18,9 @@ export class VacuousLogger implements ILogger {
     this._logging = false;
   }
 
-  log(agents: IAgentCollection, obstacles: IObstacle[], deltaT: number): void {}
+  log(
+    _agents: IAgentCollection,
+    _obstacles: IObstacle[],
+    _deltaT: number
+  ): void {}
 }
