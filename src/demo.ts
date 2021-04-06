@@ -47,7 +47,7 @@ export function init() {
     // Update
     if (play) {
       simulation.update(deltaT, range);
-      logger.log(simulation.getAgents(), deltaT);
+      logger.log(simulation.getAgents(), simulation.getObstacles(), deltaT);
     }
 
     if (simulation.isDone()) {
@@ -118,7 +118,7 @@ export function playPause() {
 
   if (play) {
     logger.start();
-    logger.log(simulation.getAgents(), 0); // log initial conditions
+    logger.log(simulation.getAgents(), simulation.getObstacles(), 0); // log initial conditions
     playButton.textContent = "Pause";
     stepButton.disabled = true;
   } else {

@@ -1,5 +1,6 @@
 import { IAgentCollection } from "../IAgentCollection";
 import { ILogger } from "../ILogger";
+import { IObstacle } from "../IObstacle";
 
 // Empty logger implementation to allow measurement of the probe effect
 export class VacuousLogger implements ILogger {
@@ -17,5 +18,5 @@ export class VacuousLogger implements ILogger {
     this._logging = false;
   }
 
-  log(agents: IAgentCollection, deltaT: number): void {}
+  log(agents: IAgentCollection, obstacles: IObstacle[], deltaT: number): void {}
 }
