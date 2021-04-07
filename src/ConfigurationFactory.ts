@@ -386,7 +386,7 @@ export class ConfigurationFactory {
         if (pos.x <= -200) {
           if (
             pos.subtract(new Vector2f(-200, -midGap)).magnitudeSqrd() <
-            (gapHeight - 20) ** 2 // Subtract agent radius
+            (gapHeight / 2 - 20) ** 2 // Subtract agent radius
           ) {
             return new Vector2f(1, 0);
           } else {
@@ -397,7 +397,7 @@ export class ConfigurationFactory {
         } else if (pos.x <= 0) {
           if (
             pos.subtract(new Vector2f(0, midGap)).magnitudeSqrd() <
-            (gapHeight - 20) ** 2 // Subtract agent radius
+            (gapHeight / 2 - 20) ** 2 // Subtract agent radius
           ) {
             return new Vector2f(1, 0);
           } else {
@@ -408,7 +408,7 @@ export class ConfigurationFactory {
         } else if (pos.x <= 200) {
           if (
             pos.subtract(new Vector2f(200, -midGap)).magnitudeSqrd() <
-            (gapHeight - 20) ** 2 // Subtract agent radius
+            (gapHeight / 2 - 20) ** 2 // Subtract agent radius
           ) {
             return new Vector2f(1, 0);
           } else {
