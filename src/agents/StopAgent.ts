@@ -42,8 +42,9 @@ export class StopAgent extends Agent {
       return;
     }
 
-    this._direction = preferredVelocity.normalise();
-    const heading = this._position.add(this._direction.multiply(25));
+    const heading = this._position.add(
+      preferredVelocity.normalise().multiply(25)
+    );
 
     // Check if blocked by another agent
     this._isStuck = false;
@@ -63,8 +64,8 @@ export class StopAgent extends Agent {
     }
 
     // Step towards goal
-    this._direction = preferredVelocity;
-    this._position = this._position.add(this._direction.multiply(stepSize));
+    this._direction = preferredVelocity.multiply(stepSize);
+    this._position = this._position.add(this._direction);
   }
 
   collidesAgent(agent: Agent, position: Vector2f): boolean {

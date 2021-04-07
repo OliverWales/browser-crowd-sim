@@ -4,59 +4,33 @@ import { ILogger } from "../ILogger";
 import { IObstacle } from "../IObstacle";
 import { CircleObstacle } from "../obstacles/CircleObstacle";
 import { LineObstacle } from "../obstacles/LineObstacle";
+import { Vector2f } from "../Vector2f";
 
 // Simple logger implementation for basic analysis
 export class SimpleLogger implements ILogger {
   private _logging: boolean = false;
-  private _timeStep: number = 0;
-  private _agentCollisions: number[] = [];
-  private _obstacleCollisions: number[] = [];
-  private _frameTimes: number[] = [];
+  private _timeStep: number;
+  private _agentCollisions: number[];
+  private _obstacleCollisions: number[];
+  private _frameTimes: number[];
+  private _pathLengths: number[];
+  private _startPositions: Vector2f[];
 
-  start(): void {
+  start(agents: IAgentCollection): void {
     this._logging = true;
     this._timeStep = 0;
     this._frameTimes = [];
     this._agentCollisions = [];
     this._obstacleCollisions = [];
+    this._pathLengths = [];
+    this._startPositions = [];
+
+    agents.forEach((agent) => {
+      this._pathLengths[agent.Id] = 0;
+      this._startPositions[agent.Id] = agent.getPosition();
+    });
+
     console.log("Started logging");
-  }
-
-  stop(): void {
-    if (!this._logging) {
-      return;
-    }
-
-    console.log("Stopped logging");
-    this._logging = false;
-
-    const totalFrameTime = this.sum(this._frameTimes) / 1000;
-    const totalAgentCollisions = this.sum(this._agentCollisions);
-    const totalObstacleCollisions = this.sum(this._obstacleCollisions);
-
-    console.log(`Timesteps: ${this._timeStep}`);
-    console.log(`Total time: ${totalFrameTime.toFixed(3)} seconds`);
-    console.log(`Frame times: ${this._frameTimes}`);
-
-    console.log(`Total agent collisions: ${totalAgentCollisions}`);
-    if (totalAgentCollisions > 0) {
-      console.log(
-        `Agent collisions per frame: ${(
-          totalAgentCollisions / this._timeStep
-        ).toFixed(3)}`
-      );
-      console.log(`Agent collisions:\n${this._agentCollisions}`);
-    }
-
-    console.log(`Total obstacle collisions: ${totalObstacleCollisions}`);
-    if (totalObstacleCollisions > 0) {
-      console.log(
-        `Obstacle collisions per frame: ${(
-          totalObstacleCollisions / this._timeStep
-        ).toFixed(3)}`
-      );
-      console.log(`Obstacle collisions:\n${this._obstacleCollisions}`);
-    }
   }
 
   log(agents: IAgentCollection, obstacles: IObstacle[], deltaT: number): void {
@@ -104,9 +78,64 @@ export class SimpleLogger implements ILogger {
           }
         }
       });
+
+      if (!agent.isDone()) {
+        this._pathLengths[agent.Id] += agent.getDirection().magnitude();
+      }
     });
 
     this._timeStep++;
+  }
+
+  stop(agents: IAgentCollection): void {
+    if (!this._logging) {
+      return;
+    }
+
+    console.log("Stopped logging");
+    this._logging = false;
+
+    const totalFrameTime = this.sum(this._frameTimes) / 1000;
+    const totalAgentCollisions = this.sum(this._agentCollisions);
+    const totalObstacleCollisions = this.sum(this._obstacleCollisions);
+    const overhead: number[] = [];
+
+    agents.forEach((agent) => {
+      overhead[agent.Id] =
+        this._pathLengths[agent.Id] /
+          this._startPositions[agent.Id]
+            .subtract(agent.getPosition())
+            .magnitude() -
+        1;
+    });
+    const averageOverhead = this.sum(overhead) / agents.getAll().length;
+
+    console.log(`Timesteps: ${this._timeStep}`);
+    console.log(`Total time: ${totalFrameTime.toFixed(3)} seconds`);
+    console.log(`Frame times: ${this._frameTimes}`);
+
+    console.log(`Total agent collisions: ${totalAgentCollisions}`);
+    if (totalAgentCollisions > 0) {
+      console.log(
+        `Agent collisions per frame: ${(
+          totalAgentCollisions / this._timeStep
+        ).toFixed(3)}`
+      );
+      console.log(`Agent collisions:\n${this._agentCollisions}`);
+    }
+
+    console.log(`Total obstacle collisions: ${totalObstacleCollisions}`);
+    if (totalObstacleCollisions > 0) {
+      console.log(
+        `Obstacle collisions per frame: ${(
+          totalObstacleCollisions / this._timeStep
+        ).toFixed(3)}`
+      );
+      console.log(`Obstacle collisions:\n${this._obstacleCollisions}`);
+    }
+
+    console.log(`Average overhead: ${averageOverhead}`);
+    console.log(`Overheads:\n${overhead}`);
   }
 
   round3dp(f: number): number {

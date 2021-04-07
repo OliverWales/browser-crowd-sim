@@ -73,8 +73,8 @@ export class VOAgent extends Agent {
 
     // If preferred velocity is safe, go in that direction
     if (safe) {
-      this._direction = preferredVelocity;
-      this._position = this._position.add(this._direction.multiply(stepSize));
+      this._direction = preferredVelocity.multiply(stepSize);
+      this._position = this._position.add(this._direction);
       this._colour = Colour.Green;
       return;
     }
@@ -126,18 +126,18 @@ export class VOAgent extends Agent {
           left.subtract(preferredVelocity).magnitudeSqrd() <
           right.subtract(preferredVelocity).magnitudeSqrd()
         ) {
-          this._direction = left;
+          this._direction = left.multiply(stepSize);
         } else {
-          this._direction = right;
+          this._direction = right.multiply(stepSize);
         }
       } else if (leftSafe) {
-        this._direction = left;
+        this._direction = left.multiply(stepSize);
       } else if (rightSafe) {
-        this._direction = right;
+        this._direction = right.multiply(stepSize);
       }
 
       if (leftSafe || rightSafe) {
-        this._position = this._position.add(this._direction.multiply(stepSize));
+        this._position = this._position.add(this._direction);
         this.setColour(preferredVelocity);
         return;
       }
@@ -225,8 +225,8 @@ export class VOAgent extends Agent {
       }
     }
 
-    this._direction = bestVelocity;
-    this._position = this._position.add(this._direction.multiply(stepSize));
+    this._direction = bestVelocity.multiply(stepSize);
+    this._position = this._position.add(this._direction);
     this.setColour(preferredVelocity);
     return;
   }

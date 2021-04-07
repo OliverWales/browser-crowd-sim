@@ -52,7 +52,7 @@ export function init() {
 
     if (simulation.isDone()) {
       stop();
-      logger.stop();
+      logger.stop(simulation.getAgents());
     }
 
     // Render
@@ -117,12 +117,12 @@ export function playPause() {
   play = !play;
 
   if (play) {
-    logger.start();
+    logger.start(simulation.getAgents());
     logger.log(simulation.getAgents(), simulation.getObstacles(), 0); // log initial conditions
     playButton.textContent = "Pause";
     stepButton.disabled = true;
   } else {
-    logger.stop();
+    logger.stop(simulation.getAgents());
     playButton.textContent = "Play";
     stepButton.disabled = false;
   }
