@@ -3,6 +3,8 @@ import { Vector2f } from "../Vector2f";
 import { Colour } from "../Colour";
 import { IObstacle } from "../IObstacle";
 import { CircleObstacle } from "../obstacles/CircleObstacle";
+import { Geometry } from "../Geometry";
+import { LineObstacle } from "../obstacles/LineObstacle";
 
 export class StopAgent extends Agent {
   private _isStuck: boolean;
@@ -78,9 +80,15 @@ export class StopAgent extends Agent {
         obstacle.Position.subtract(position).magnitudeSqrd() <
         (obstacle.Radius + this.Radius) * (obstacle.Radius + this.Radius)
       );
-    } else {
-      // TODO: Implement LineObstacle collision
-      return false;
+    } else if (obstacle instanceof LineObstacle) {
+      const t = Geometry.getFirstRayCircleIntersection(
+        position,
+        this.Radius,
+        obstacle.Start,
+        obstacle.End.subtract(obstacle.Start)
+      );
+
+      return t > 0 && t < 1;
     }
   }
 }
