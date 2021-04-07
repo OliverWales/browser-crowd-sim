@@ -25,7 +25,7 @@ export class BasicAgent extends Agent {
     }
 
     // Step towards goal
-    this._direction = preferredVelocity;
-    this._position = this._position.add(preferredVelocity.multiply(stepSize));
+    this._direction = preferredVelocity.multiply(stepSize);
+    this._position = this._position.add(this._direction);
   }
 }

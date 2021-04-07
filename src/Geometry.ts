@@ -32,9 +32,21 @@ export class Geometry {
       return Infinity;
     }
 
-    const distance = ((-b - Math.sqrt(discrim)) / 2) * a;
+    const sqrtDiscrim = Math.sqrt(discrim);
 
-    return distance;
+    const d1 = (-b - sqrtDiscrim) / (2 * a);
+
+    if (d1 > 0) {
+      return d1;
+    }
+
+    const d2 = (-b + sqrtDiscrim) / (2 * a);
+
+    if (d2 > 0) {
+      return d2;
+    }
+
+    return Infinity;
   }
 
   static getLineLineIntersection(

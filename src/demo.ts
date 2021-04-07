@@ -5,6 +5,7 @@ import { Renderer3D } from "./renderers/Renderer3D";
 import { AgentTree } from "./AgentTree";
 import { ConfigurationFactory } from "./ConfigurationFactory";
 import { TraceRenderer } from "./renderers/TraceRenderer";
+import { SimpleLogger } from "./loggers/SimpleLogger";
 
 const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
@@ -27,6 +28,7 @@ const renderer2d = new Renderer2D(canvas2d);
 const renderer3d = new Renderer3D(canvas3d);
 const rendererTrace = new TraceRenderer(canvasTrace);
 var renderer: IRenderer = renderer2d;
+const logger = new SimpleLogger();
 var play = false;
 var range = 200;
 
@@ -45,13 +47,19 @@ export function init() {
     // Update
     if (play) {
       simulation.update(deltaT, range);
+      logger.log(simulation.getAgents(), simulation.getObstacles(), deltaT);
+    }
+
+    if (simulation.isDone()) {
+      stop();
+      logger.stop(simulation.getAgents());
     }
 
     // Render
     renderer.render(simulation);
     frames++;
 
-    // recalculate framerate every 250ms
+    // Recalculate framerate every 250ms
     if (timestamp - lastFPS >= 250) {
       framerate.textContent = `FPS: ${(
         (1000 * frames) /
@@ -109,23 +117,32 @@ export function playPause() {
   play = !play;
 
   if (play) {
+    logger.start(simulation.getAgents());
+    logger.log(simulation.getAgents(), simulation.getObstacles(), 0); // log initial conditions
     playButton.textContent = "Pause";
     stepButton.disabled = true;
   } else {
+    logger.stop(simulation.getAgents());
     playButton.textContent = "Play";
     stepButton.disabled = false;
   }
 }
 
-// step simulation by 1 frame
+// Step simulation by 1 frame
 export function step() {
-  simulation.update(1000 / 60, range); // Assumes 60FPS
+  const deltaT = 1000 / 60; // assumes 60FPS
+  simulation.update(deltaT, range);
+
+  if (simulation.isDone()) {
+    stop();
+  }
 }
 
 export function reconfigure() {
-  if (play) {
-    this.playPause();
-  }
+  play = false;
+  playButton.textContent = "Play";
+  playButton.disabled = false;
+  stepButton.disabled = false;
 
   const config = configSelect.value;
   const agentType = agentTypeSelect.value;
@@ -143,4 +160,10 @@ export function reconfigure() {
   );
 
   renderer.init(simulation);
+}
+
+function stop() {
+  play = false;
+  playButton.disabled = true;
+  stepButton.disabled = true;
 }
