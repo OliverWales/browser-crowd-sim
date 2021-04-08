@@ -1,9 +1,9 @@
 import { Agent } from "./Agent";
 import { AgentFactory } from "./AgentFactory";
-import { IObstacle } from "./IObstacle";
+import { IObstacle } from "./interfaces/IObstacle";
 import { CircleObstacle } from "./obstacles/CircleObstacle";
 import { LineObstacle } from "./obstacles/LineObstacle";
-import { Vector2f } from "./Vector2f";
+import { Vector2f } from "./maths/Vector2f";
 
 export interface Configuration {
   agents: Agent[];

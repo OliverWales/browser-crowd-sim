@@ -1,7 +1,7 @@
 import { Agent } from "../Agent";
-import { IObstacle } from "../IObstacle";
-import { Vector2f } from "../Vector2f";
-import { VelocityObstacle } from "../VelocityObstacle";
+import { IObstacle } from "../interfaces/IObstacle";
+import { Vector2f } from "../maths/Vector2f";
+import { VelocityObstacle } from "../maths/VelocityObstacle";
 
 export class CircleObstacle implements IObstacle {
   readonly Position: Vector2f;

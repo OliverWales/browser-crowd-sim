@@ -1,4 +1,4 @@
-import { Mat4f } from "../src/Mat4f";
+import { Mat4f } from "../src/maths/Mat4f";
 
 describe("Vector2f Operations Tests", function () {
   it("Matrix multiplication", function () {

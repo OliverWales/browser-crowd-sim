@@ -1,10 +1,10 @@
-import { Geometry } from "../Geometry";
-import { IAgentCollection } from "../IAgentCollection";
-import { ILogger } from "../ILogger";
-import { IObstacle } from "../IObstacle";
+import { Geometry } from "../maths/Geometry";
+import { IAgentCollection } from "../interfaces/IAgentCollection";
+import { ILogger } from "../interfaces/ILogger";
+import { IObstacle } from "../interfaces/IObstacle";
 import { CircleObstacle } from "../obstacles/CircleObstacle";
 import { LineObstacle } from "../obstacles/LineObstacle";
-import { Vector2f } from "../Vector2f";
+import { Vector2f } from "../maths/Vector2f";
 
 // Simple logger implementation for basic analysis
 export class SimpleLogger implements ILogger {

@@ -1,4 +1,4 @@
-import { Simulation } from "./Simulation";
+import { Simulation } from "../Simulation";
 
 export interface IRenderer {
   init(simulation: Simulation): void;

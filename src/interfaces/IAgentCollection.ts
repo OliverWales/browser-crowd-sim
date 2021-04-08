@@ -1,4 +1,4 @@
-import { Agent } from "./Agent";
+import { Agent } from "../Agent";
 
 export interface IAgentCollection {
   update(agents: Agent[]): void;

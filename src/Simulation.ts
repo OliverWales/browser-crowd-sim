@@ -1,5 +1,5 @@
-import { IAgentCollection } from "./IAgentCollection";
-import { IObstacle } from "./IObstacle";
+import { IAgentCollection } from "./interfaces/IAgentCollection";
+import { IObstacle } from "./interfaces/IObstacle";
 import { Configuration } from "./ConfigurationFactory";
 
 export class Simulation {

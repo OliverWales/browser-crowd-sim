@@ -1,4 +1,4 @@
-import { Vector2f } from "../src/Vector2f";
+import { Vector2f } from "../src/maths/Vector2f";
 
 describe("Vector2f Operations Tests", function () {
   it("Add", function () {

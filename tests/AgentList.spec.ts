@@ -1,7 +1,7 @@
-import { AgentList } from "../src/AgentList";
+import { AgentList } from "../src/collections/AgentList";
 import { Agent } from "../src/Agent";
 import { BasicAgent } from "../src/agents/BasicAgent";
-import { Vector2f } from "../src/Vector2f";
+import { Vector2f } from "../src/maths/Vector2f";
 
 describe("AgentList Range Search Tests", function () {
   it("Rectilinear", function () {
