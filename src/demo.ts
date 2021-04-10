@@ -36,13 +36,14 @@ var range = 200;
 export function init() {
   this.reconfigure();
 
-  let lastRender = 0;
+  let lastTimestamp = 0;
   let lastFPS = 0;
   let frames = 0;
 
-  function loop(timestamp: number) {
-    let deltaT = timestamp - lastRender;
-    lastRender = timestamp;
+  function loop() {
+    const timestamp = performance.now();
+    const deltaT = timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
 
     // Update
     if (play) {

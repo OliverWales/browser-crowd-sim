@@ -9,6 +9,7 @@ import { Vector2f } from "../maths/Vector2f";
 // Simple logger implementation for basic analysis
 export class SimpleLogger implements ILogger {
   private _logging: boolean = false;
+  private _startTime: number;
   private _timeStep: number;
   private _agentCollisions: number[];
   private _obstacleCollisions: number[];
@@ -18,6 +19,7 @@ export class SimpleLogger implements ILogger {
 
   start(agents: IAgentCollection): void {
     this._logging = true;
+    this._startTime = performance.now();
     this._timeStep = 0;
     this._frameTimes = [];
     this._agentCollisions = [];
@@ -93,9 +95,12 @@ export class SimpleLogger implements ILogger {
     }
 
     console.log("Stopped logging");
+    console.log(
+      `Total time: ${(performance.now() - this._startTime).toFixed(3)} ms`
+    );
     this._logging = false;
 
-    const totalFrameTime = this.sum(this._frameTimes) / 1000;
+    const totalFrameTime = this.sum(this._frameTimes);
     const totalAgentCollisions = this.sum(this._agentCollisions);
     const totalObstacleCollisions = this.sum(this._obstacleCollisions);
     const overhead: number[] = [];
@@ -111,7 +116,7 @@ export class SimpleLogger implements ILogger {
     const averageOverhead = this.sum(overhead) / agents.getAll().length;
 
     console.log(`Timesteps: ${this._timeStep}`);
-    console.log(`Total time: ${totalFrameTime.toFixed(3)} seconds`);
+    console.log(`Frame time: ${totalFrameTime.toFixed(3)} ms`);
     console.log(`Frame times: ${this._frameTimes}`);
 
     console.log(`Total agent collisions: ${totalAgentCollisions}`);
