@@ -19,15 +19,15 @@ export class Stats {
     const sorted = arr.slice().sort((a, b) => a - b);
     const n = sorted.length;
 
-    const mid = Math.floor(n / 2);
+    const mid = Math.ceil(n / 2) - 1;
     const median =
       n % 2 == 0 ? (sorted[mid] + sorted[mid + 1]) / 2 : sorted[mid];
 
     return {
       minimum: sorted[0],
-      lowerQuart: sorted[Math.floor(n * 0.25) - 1],
+      lowerQuart: sorted[Math.ceil(n * 0.25) - 1],
       median: median,
-      upperQuart: sorted[Math.floor(n * 0.75) - 1],
+      upperQuart: sorted[Math.ceil(n * 0.75) - 1],
       maximum: sorted[n - 1],
     };
   }
