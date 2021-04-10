@@ -5,6 +5,7 @@ import { IObstacle } from "../interfaces/IObstacle";
 import { CircleObstacle } from "../obstacles/CircleObstacle";
 import { LineObstacle } from "../obstacles/LineObstacle";
 import { Vector2f } from "../maths/Vector2f";
+import { Stats } from "../maths/Stats";
 
 // Simple logger implementation for basic analysis
 export class SimpleLogger implements ILogger {
@@ -38,7 +39,7 @@ export class SimpleLogger implements ILogger {
       return;
     }
 
-    this._frameTimes[this._timeStep] = this.round3dp(deltaT);
+    this._frameTimes[this._timeStep] = Stats.round3dp(deltaT);
     this._agentCollisions[this._timeStep] = 0;
     this._obstacleCollisions[this._timeStep] = 0;
 
@@ -97,11 +98,11 @@ export class SimpleLogger implements ILogger {
     );
     this._logging = false;
 
-    const totalFrameTime = this.sum(this._frameTimes);
+    const totalFrameTime = Stats.sum(this._frameTimes);
     const averageFrameTime = totalFrameTime / this._timeStep;
-    const frameTimeQuartiles = this.quartiles(this._frameTimes);
-    const totalAgentCollisions = this.sum(this._agentCollisions);
-    const totalObstacleCollisions = this.sum(this._obstacleCollisions);
+    const frameTimeQuartiles = Stats.quartiles(this._frameTimes);
+    const totalAgentCollisions = Stats.sum(this._agentCollisions);
+    const totalObstacleCollisions = Stats.sum(this._obstacleCollisions);
     const overhead: number[] = [];
 
     agents.forEach((agent) => {
@@ -112,8 +113,8 @@ export class SimpleLogger implements ILogger {
             .magnitude() -
         1;
     });
-    const averageOverhead = this.sum(overhead) / agents.getAll().length;
-    const overheadQuartiles = this.quartiles(overhead.slice(1));
+    const averageOverhead = Stats.sum(overhead) / agents.getAll().length;
+    const overheadQuartiles = Stats.quartiles(overhead.slice(1));
 
     console.log(`Timesteps: ${this._timeStep}`);
     console.log(`Total frame time (ms): ${totalFrameTime.toFixed(3)}`);
@@ -152,30 +153,5 @@ export class SimpleLogger implements ILogger {
     console.log(` UQ: ${overheadQuartiles.upperQuart}`);
     console.log(`Max: ${overheadQuartiles.maximum}`);
     //console.log(`Overheads:\n${overhead}`);
-  }
-
-  round3dp(f: number): number {
-    return Math.round((f + Number.EPSILON) * 1000) / 1000; // epsilon to avoid FP errors
-  }
-
-  sum(arr: number[]): number {
-    return arr.reduce((a, b) => a + b, 0);
-  }
-
-  quartiles(arr: number[]) {
-    const sorted = arr.slice().sort((a, b) => a - b);
-    const n = sorted.length;
-
-    const mid = Math.floor(n / 2);
-    const median =
-      n % 2 == 0 ? (sorted[mid] + sorted[mid + 1]) / 2 : sorted[mid];
-
-    return {
-      minimum: sorted[0],
-      lowerQuart: sorted[Math.floor(n * 0.25) - 1],
-      median: median,
-      upperQuart: sorted[Math.floor(n * 0.75) - 1],
-      maximum: sorted[n - 1],
-    };
   }
 }
