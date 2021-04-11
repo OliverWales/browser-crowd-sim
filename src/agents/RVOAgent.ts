@@ -1,7 +1,7 @@
 import { Agent } from "../Agent";
 import { VOAgent } from "./VOAgent";
-import { Vector2f } from "../Vector2f";
-import { VelocityObstacle } from "../VelocityObstacle";
+import { Vector2f } from "../maths/Vector2f";
+import { VelocityObstacle } from "../maths/VelocityObstacle";
 
 export class RVOAgent extends VOAgent {
   // Override getVelocityObstacle to produce Reciprocal Velocity Obstacle

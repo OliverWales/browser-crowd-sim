@@ -1,11 +1,11 @@
 import { Agent } from "../Agent";
 import { Colour } from "../Colour";
-import { Geometry } from "../Geometry";
-import { IObstacle } from "../IObstacle";
+import { Geometry } from "../maths/Geometry";
+import { IObstacle } from "../interfaces/IObstacle";
 import { CircleObstacle } from "../obstacles/CircleObstacle";
 import { LineObstacle } from "../obstacles/LineObstacle";
-import { Vector2f } from "../Vector2f";
-import { VelocityObstacle } from "../VelocityObstacle";
+import { Vector2f } from "../maths/Vector2f";
+import { VelocityObstacle } from "../maths/VelocityObstacle";
 
 export class VOAgent extends Agent {
   private _colour: Colour;

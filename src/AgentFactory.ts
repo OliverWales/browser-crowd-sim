@@ -1,5 +1,5 @@
 import { Agent } from "./Agent";
-import { Vector2f } from "./Vector2f";
+import { Vector2f } from "./maths/Vector2f";
 import { BasicAgent } from "./agents/BasicAgent";
 import { StopAgent } from "./agents/StopAgent";
 import { VOAgent } from "./agents/VOAgent";

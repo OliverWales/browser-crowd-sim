@@ -1,6 +1,6 @@
-import { IAgentCollection } from "../IAgentCollection";
-import { ILogger } from "../ILogger";
-import { IObstacle } from "../IObstacle";
+import { IAgentCollection } from "../interfaces/IAgentCollection";
+import { ILogger } from "../interfaces/ILogger";
+import { IObstacle } from "../interfaces/IObstacle";
 
 // Empty logger implementation to allow measurement of the probe effect
 export class VacuousLogger implements ILogger {

@@ -1,7 +1,7 @@
-import { IRenderer } from "../IRenderer";
+import { IRenderer } from "../interfaces/IRenderer";
 import { Simulation } from "../Simulation";
-import { Vector2f } from "../Vector2f";
-import { Mat4f } from "../Mat4f";
+import { Vector2f } from "../maths/Vector2f";
+import { Mat4f } from "../maths/Mat4f";
 import { AgentMesh } from "../meshes/AgentMesh";
 import { FloorMesh } from "../meshes/FloorMesh";
 import { CylinderMesh } from "../meshes/CylinderMesh";

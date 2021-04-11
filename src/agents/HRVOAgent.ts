@@ -1,8 +1,8 @@
 import { Agent } from "../Agent";
 import { VOAgent } from "./VOAgent";
-import { Geometry } from "../Geometry";
-import { Vector2f } from "../Vector2f";
-import { VelocityObstacle } from "../VelocityObstacle";
+import { Geometry } from "../maths/Geometry";
+import { Vector2f } from "../maths/Vector2f";
+import { VelocityObstacle } from "../maths/VelocityObstacle";
 
 export class HRVOAgent extends VOAgent {
   // Override getVelocityObstacle to produce Hybrid Reciprocal Velocity Obstacle

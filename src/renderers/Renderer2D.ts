@@ -1,4 +1,4 @@
-import { IRenderer } from "../IRenderer";
+import { IRenderer } from "../interfaces/IRenderer";
 import { Simulation } from "../Simulation";
 import { Agent } from "../Agent";
 import { CircleObstacle } from "../obstacles/CircleObstacle";

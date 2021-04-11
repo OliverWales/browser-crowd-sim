@@ -1,6 +1,6 @@
 import { Colour } from "./Colour";
-import { IObstacle } from "./IObstacle";
-import { Vector2f } from "./Vector2f";
+import { IObstacle } from "./interfaces/IObstacle";
+import { Vector2f } from "./maths/Vector2f";
 
 export abstract class Agent {
   readonly Radius: number;

@@ -1,8 +1,8 @@
 import { Simulation } from "./Simulation";
-import { IRenderer } from "./IRenderer";
+import { IRenderer } from "./interfaces/IRenderer";
 import { Renderer2D } from "./renderers/Renderer2D";
 import { Renderer3D } from "./renderers/Renderer3D";
-import { AgentTree } from "./AgentTree";
+import { AgentTree } from "./collections/AgentTree";
 import { ConfigurationFactory } from "./ConfigurationFactory";
 import { TraceRenderer } from "./renderers/TraceRenderer";
 import { SimpleLogger } from "./loggers/SimpleLogger";
@@ -36,13 +36,14 @@ var range = 200;
 export function init() {
   this.reconfigure();
 
-  let lastRender = 0;
+  let lastTimestamp = 0;
   let lastFPS = 0;
   let frames = 0;
 
-  function loop(timestamp: number) {
-    let deltaT = timestamp - lastRender;
-    lastRender = timestamp;
+  function loop() {
+    const timestamp = performance.now();
+    const deltaT = timestamp - lastTimestamp;
+    lastTimestamp = timestamp;
 
     // Update
     if (play) {

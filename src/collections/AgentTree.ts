@@ -1,5 +1,5 @@
-import { IAgentCollection } from "./IAgentCollection";
-import { Agent } from "./Agent";
+import { IAgentCollection } from "../interfaces/IAgentCollection";
+import { Agent } from "../Agent";
 
 interface Node {
   agent: Agent;

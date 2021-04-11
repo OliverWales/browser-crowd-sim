@@ -1,9 +1,9 @@
 import { Agent } from "../Agent";
-import { Vector2f } from "../Vector2f";
+import { Vector2f } from "../maths/Vector2f";
 import { Colour } from "../Colour";
-import { IObstacle } from "../IObstacle";
+import { IObstacle } from "../interfaces/IObstacle";
 import { CircleObstacle } from "../obstacles/CircleObstacle";
-import { Geometry } from "../Geometry";
+import { Geometry } from "../maths/Geometry";
 import { LineObstacle } from "../obstacles/LineObstacle";
 
 export class StopAgent extends Agent {

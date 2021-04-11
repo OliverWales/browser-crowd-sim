@@ -1,14 +1,17 @@
-import { Geometry } from "../Geometry";
-import { IAgentCollection } from "../IAgentCollection";
-import { ILogger } from "../ILogger";
-import { IObstacle } from "../IObstacle";
+import { Geometry } from "../maths/Geometry";
+import { IAgentCollection } from "../interfaces/IAgentCollection";
+import { ILogger } from "../interfaces/ILogger";
+import { IObstacle } from "../interfaces/IObstacle";
 import { CircleObstacle } from "../obstacles/CircleObstacle";
 import { LineObstacle } from "../obstacles/LineObstacle";
-import { Vector2f } from "../Vector2f";
+import { Vector2f } from "../maths/Vector2f";
+import { Stats } from "../maths/Stats";
+import { Console } from "console";
 
 // Simple logger implementation for basic analysis
 export class SimpleLogger implements ILogger {
   private _logging: boolean = false;
+  private _startTime: number;
   private _timeStep: number;
   private _agentCollisions: number[];
   private _obstacleCollisions: number[];
@@ -17,7 +20,10 @@ export class SimpleLogger implements ILogger {
   private _startPositions: Vector2f[];
 
   start(agents: IAgentCollection): void {
+    console.log("------- Started logging -------");
+
     this._logging = true;
+    this._startTime = performance.now();
     this._timeStep = 0;
     this._frameTimes = [];
     this._agentCollisions = [];
@@ -29,8 +35,6 @@ export class SimpleLogger implements ILogger {
       this._pathLengths[agent.Id] = 0;
       this._startPositions[agent.Id] = agent.getPosition();
     });
-
-    console.log("Started logging");
   }
 
   log(agents: IAgentCollection, obstacles: IObstacle[], deltaT: number): void {
@@ -38,7 +42,7 @@ export class SimpleLogger implements ILogger {
       return;
     }
 
-    this._frameTimes[this._timeStep] = this.round3dp(deltaT);
+    this._frameTimes[this._timeStep] = Stats.round3dp(deltaT);
     this._agentCollisions[this._timeStep] = 0;
     this._obstacleCollisions[this._timeStep] = 0;
 
@@ -92,12 +96,16 @@ export class SimpleLogger implements ILogger {
       return;
     }
 
-    console.log("Stopped logging");
+    console.log(
+      `Total time (ms): ${(performance.now() - this._startTime).toFixed(3)}`
+    );
     this._logging = false;
 
-    const totalFrameTime = this.sum(this._frameTimes) / 1000;
-    const totalAgentCollisions = this.sum(this._agentCollisions);
-    const totalObstacleCollisions = this.sum(this._obstacleCollisions);
+    const totalFrameTime = Stats.sum(this._frameTimes.slice(1));
+    const averageFrameTime = totalFrameTime / this._timeStep;
+    const frameTimeQuartiles = Stats.quartiles(this._frameTimes.slice(1));
+    const totalAgentCollisions = Stats.sum(this._agentCollisions);
+    const totalObstacleCollisions = Stats.sum(this._obstacleCollisions);
     const overhead: number[] = [];
 
     agents.forEach((agent) => {
@@ -108,11 +116,17 @@ export class SimpleLogger implements ILogger {
             .magnitude() -
         1;
     });
-    const averageOverhead = this.sum(overhead) / agents.getAll().length;
+    const averageOverhead = Stats.sum(overhead) / agents.getAll().length;
+    const overheadQuartiles = Stats.quartiles(overhead);
 
     console.log(`Timesteps: ${this._timeStep}`);
-    console.log(`Total time: ${totalFrameTime.toFixed(3)} seconds`);
-    console.log(`Frame times: ${this._frameTimes}`);
+    console.log(`Total frame time (ms): ${totalFrameTime.toFixed(3)}`);
+    console.log(`Average frame time (ms): ${averageFrameTime.toFixed(3)}`);
+    console.log(`Min: ${frameTimeQuartiles.minimum}`);
+    console.log(` LQ: ${frameTimeQuartiles.lowerQuart}`);
+    console.log(`Med: ${frameTimeQuartiles.median}`);
+    console.log(` UQ: ${frameTimeQuartiles.upperQuart}`);
+    console.log(`Max: ${frameTimeQuartiles.maximum}`);
 
     console.log(`Total agent collisions: ${totalAgentCollisions}`);
     if (totalAgentCollisions > 0) {
@@ -121,7 +135,6 @@ export class SimpleLogger implements ILogger {
           totalAgentCollisions / this._timeStep
         ).toFixed(3)}`
       );
-      console.log(`Agent collisions:\n${this._agentCollisions}`);
     }
 
     console.log(`Total obstacle collisions: ${totalObstacleCollisions}`);
@@ -131,18 +144,13 @@ export class SimpleLogger implements ILogger {
           totalObstacleCollisions / this._timeStep
         ).toFixed(3)}`
       );
-      console.log(`Obstacle collisions:\n${this._obstacleCollisions}`);
     }
 
     console.log(`Average overhead: ${averageOverhead}`);
-    console.log(`Overheads:\n${overhead}`);
-  }
-
-  round3dp(f: number): number {
-    return Math.round((f + Number.EPSILON) * 1000) / 1000; // epsilon to avoid FP errors
-  }
-
-  sum(arr: number[]): number {
-    return arr.reduce((a, b) => a + b, 0);
+    console.log(`Min: ${overheadQuartiles.minimum}`);
+    console.log(` LQ: ${overheadQuartiles.lowerQuart}`);
+    console.log(`Med: ${overheadQuartiles.median}`);
+    console.log(` UQ: ${overheadQuartiles.upperQuart}`);
+    console.log(`Max: ${overheadQuartiles.maximum}`);
   }
 }

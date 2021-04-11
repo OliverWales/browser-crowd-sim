@@ -1,5 +1,5 @@
-import { IAgentCollection } from "./IAgentCollection";
-import { Agent } from "./Agent";
+import { IAgentCollection } from "../interfaces/IAgentCollection";
+import { Agent } from "../Agent";
 
 export class AgentList implements IAgentCollection {
   private _agents: Agent[];

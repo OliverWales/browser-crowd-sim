@@ -1,5 +1,5 @@
 import { LineObstacle } from "../obstacles/LineObstacle";
-import { Vector2f } from "../Vector2f";
+import { Vector2f } from "../maths/Vector2f";
 
 export class WallMesh {
   static getVertices(wall: LineObstacle) {

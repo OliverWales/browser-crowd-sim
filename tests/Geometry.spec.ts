@@ -1,5 +1,5 @@
-import { Geometry } from "../src/Geometry";
-import { Vector2f } from "../src/Vector2f";
+import { Geometry } from "../src/maths/Geometry";
+import { Vector2f } from "../src/maths/Vector2f";
 
 describe("Geometry Helper Tests", function () {
   it("Line-line Intersection", function () {

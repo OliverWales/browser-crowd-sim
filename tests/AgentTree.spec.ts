@@ -1,7 +1,7 @@
-import { AgentTree } from "../src/AgentTree";
+import { AgentTree } from "../src/collections/AgentTree";
 import { BasicAgent } from "../src/agents/BasicAgent";
 import { Agent } from "../src/Agent";
-import { Vector2f } from "../src/Vector2f";
+import { Vector2f } from "../src/maths/Vector2f";
 
 describe("AgentTree Range Search Tests", function () {
   it("Rectilinear Range Search", function () {
