@@ -29,7 +29,7 @@ export class VOAgent extends Agent {
     }
 
     const preferredVelocity = this._getPreferredVelocity(this._position);
-    const stepSize = (deltaT * 60) / 4000;
+    const stepSize = (deltaT * 60) / 2000;
 
     // Check if done
     if (preferredVelocity.magnitudeSqrd() < 0.1) {
