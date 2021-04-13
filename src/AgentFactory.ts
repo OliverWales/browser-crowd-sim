@@ -11,19 +11,45 @@ export class AgentFactory {
     type: string,
     id: number,
     startPosition: Vector2f,
+    goalPosition: Vector2f,
     getPreferredVelocity: (position: Vector2f) => Vector2f
   ): Agent {
     switch (type) {
       case "BasicAgent":
-        return new BasicAgent(id, startPosition, getPreferredVelocity);
+        return new BasicAgent(
+          id,
+          startPosition,
+          goalPosition,
+          getPreferredVelocity
+        );
       case "StopAgent":
-        return new StopAgent(id, startPosition, getPreferredVelocity);
+        return new StopAgent(
+          id,
+          startPosition,
+          goalPosition,
+          getPreferredVelocity
+        );
       case "VOAgent":
-        return new VOAgent(id, startPosition, getPreferredVelocity);
+        return new VOAgent(
+          id,
+          startPosition,
+          goalPosition,
+          getPreferredVelocity
+        );
       case "RVOAgent":
-        return new RVOAgent(id, startPosition, getPreferredVelocity);
+        return new RVOAgent(
+          id,
+          startPosition,
+          goalPosition,
+          getPreferredVelocity
+        );
       case "HRVOAgent":
-        return new HRVOAgent(id, startPosition, getPreferredVelocity);
+        return new HRVOAgent(
+          id,
+          startPosition,
+          goalPosition,
+          getPreferredVelocity
+        );
       default:
         throw new Error(`Unknown agent type \"${type}\"`);
     }

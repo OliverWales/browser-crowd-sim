@@ -12,9 +12,10 @@ export class StopAgent extends Agent {
   constructor(
     id: number,
     startPosition: Vector2f,
+    goalPosition: Vector2f,
     getPreferredVelocity: (position: Vector2f) => Vector2f
   ) {
-    super(id, startPosition, getPreferredVelocity);
+    super(id, startPosition, goalPosition, getPreferredVelocity);
     this._isStuck = false;
   }
 

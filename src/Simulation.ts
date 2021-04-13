@@ -19,7 +19,10 @@ export class Simulation {
     this._agents.forEach((agent) => {
       agent.update(
         deltaT,
-        this._agents.getNeighboursInRangeEuclidean(agent, range),
+        this._agents.getNeighboursInRangeEuclidean(
+          agent,
+          Math.min(range, agent.getDistanceToGoal() + agent.Radius) // ignore agents further away than goal position
+        ),
         this._obstacles
       );
     });

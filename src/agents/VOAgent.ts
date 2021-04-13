@@ -13,9 +13,10 @@ export class VOAgent extends Agent {
   constructor(
     id: number,
     startPosition: Vector2f,
+    goalPosition: Vector2f,
     getPreferredVelocity: (position: Vector2f) => Vector2f
   ) {
-    super(id, startPosition, getPreferredVelocity);
+    super(id, startPosition, goalPosition, getPreferredVelocity);
     this._colour = Colour.Green;
   }
 
@@ -161,9 +162,9 @@ export class VOAgent extends Agent {
 
         if (velocityObstacle == null || velocityObstacle.contains(sample)) {
           const timeToCollision = Geometry.getFirstRayCircleIntersection(
-            b.getPosition().add(b.getDirection()),
+            new Vector2f(0, 0),
             this.Radius + b.Radius,
-            this._position,
+            this._position.subtract(b.getPosition()),
             sample.subtract(b.getDirection())
           );
 
