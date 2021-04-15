@@ -37,7 +37,12 @@ export class SimpleLogger implements ILogger {
     });
   }
 
-  log(agents: IAgentCollection, obstacles: IObstacle[], deltaT: number): void {
+  log(
+    agents: IAgentCollection,
+    obstacles: IObstacle[],
+    stepSize: number,
+    deltaT: number
+  ): void {
     if (!this._logging) {
       return;
     }
@@ -84,7 +89,8 @@ export class SimpleLogger implements ILogger {
       });
 
       if (!agent.isDone()) {
-        this._pathLengths[agent.Id] += agent.getDirection().magnitude();
+        this._pathLengths[agent.Id] +=
+          agent.getDirection().magnitude() * stepSize;
       }
     });
 

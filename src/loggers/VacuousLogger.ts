@@ -14,6 +14,7 @@ export class VacuousLogger implements ILogger {
   log(
     _agents: IAgentCollection,
     _obstacles: IObstacle[],
+    _stepSize: number,
     deltaT: number
   ): void {
     this._totalTime += deltaT;

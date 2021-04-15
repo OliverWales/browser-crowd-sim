@@ -47,8 +47,14 @@ export function init() {
 
     // Update
     if (play) {
-      simulation.update(deltaT, range);
-      logger.log(simulation.getAgents(), simulation.getObstacles(), deltaT);
+      const stepSize = (deltaT * 60) / 2000;
+      simulation.update(stepSize, range);
+      logger.log(
+        simulation.getAgents(),
+        simulation.getObstacles(),
+        stepSize,
+        deltaT
+      );
     }
 
     if (simulation.isDone()) {
@@ -119,7 +125,7 @@ export function playPause() {
 
   if (play) {
     logger.start(simulation.getAgents());
-    logger.log(simulation.getAgents(), simulation.getObstacles(), 0); // log initial conditions
+    logger.log(simulation.getAgents(), simulation.getObstacles(), 0, 0); // log initial conditions
     playButton.textContent = "Pause";
     stepButton.disabled = true;
   } else {
@@ -131,8 +137,7 @@ export function playPause() {
 
 // Step simulation by 1 frame
 export function step() {
-  const deltaT = 1000 / 60; // assumes 60FPS
-  simulation.update(deltaT, range);
+  simulation.update(1, range);
 
   if (simulation.isDone()) {
     stop();

@@ -8,12 +8,14 @@ export abstract class Agent {
 
   protected _position: Vector2f;
   protected _direction: Vector2f;
+  protected _goalPosition: Vector2f;
   protected _getPreferredVelocity: (position: Vector2f) => Vector2f;
   protected _isDone: boolean;
 
   constructor(
     id: number,
     startPosition: Vector2f,
+    goalPosition: Vector2f,
     getPreferredVelocity: (position: Vector2f) => Vector2f
   ) {
     this.Id = id;
@@ -21,6 +23,7 @@ export abstract class Agent {
 
     this._position = startPosition;
     this._direction = getPreferredVelocity(startPosition); // Start pointing in goal direction
+    this._goalPosition = goalPosition;
     this._getPreferredVelocity = getPreferredVelocity;
     this._isDone = false;
   }
@@ -31,6 +34,10 @@ export abstract class Agent {
 
   getDirection(): Vector2f {
     return this._direction;
+  }
+
+  getDistanceToGoal(): number {
+    return this._position.subtract(this._goalPosition).magnitude();
   }
 
   isDone(): boolean {

@@ -5,21 +5,26 @@ import { Configuration } from "./ConfigurationFactory";
 export class Simulation {
   private _agents: IAgentCollection;
   private _obstacles: IObstacle[];
+  private _done: boolean;
 
   constructor(agents: IAgentCollection) {
     this._agents = agents;
   }
 
   init(configuration: Configuration) {
+    this._done = false;
     this._agents.update(configuration.agents);
     this._obstacles = configuration.obstacles;
   }
 
-  update(deltaT: number, range: number) {
+  update(stepSize: number, range: number) {
     this._agents.forEach((agent) => {
       agent.update(
-        deltaT,
-        this._agents.getNeighboursInRangeEuclidean(agent, range),
+        stepSize,
+        this._agents.getNeighboursInRangeEuclidean(
+          agent,
+          Math.min(range, agent.getDistanceToGoal() + agent.Radius) // ignore agents further away than goal position
+        ),
         this._obstacles
       );
     });
@@ -37,10 +42,16 @@ export class Simulation {
   }
 
   isDone() {
+    if (this._done) {
+      return true;
+    }
+
     let done = true;
     this._agents.forEach((agent) => {
       done &&= agent.isDone();
     });
-    return done;
+
+    this._done = done;
+    return this._done;
   }
 }

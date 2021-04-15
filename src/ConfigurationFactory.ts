@@ -70,6 +70,7 @@ export class ConfigurationFactory {
         agentType,
         i,
         startPositions[i],
+        goalPositions[i],
         this.preferredVelocityFromGoalPosition(goalPositions[i])
       );
       agents.push(agent);
@@ -95,13 +96,16 @@ export class ConfigurationFactory {
     numberOfAgents = startPositions.length;
 
     for (let i = 0; i < numberOfAgents; i++) {
+      const goalPosition = new Vector2f(
+        ((i + 1) / (numberOfAgents + 1) - 1 / 2) * width,
+        0
+      );
       const agent = AgentFactory.getAgent(
         agentType,
         i,
         startPositions[i],
-        this.preferredVelocityFromGoalPosition(
-          new Vector2f(((i + 1) / (numberOfAgents + 1) - 1 / 2) * width, 0)
-        )
+        goalPosition,
+        this.preferredVelocityFromGoalPosition(goalPosition)
       );
       agents.push(agent);
     }
@@ -121,16 +125,20 @@ export class ConfigurationFactory {
 
     for (let i = 0; i < numberOfAgents; i++) {
       const angle = (2 * Math.PI * i) / numberOfAgents;
+      const startPosition = new Vector2f(
+        radius * Math.cos(angle),
+        radius * Math.sin(angle)
+      );
+      const goalPosition = new Vector2f(
+        radius * Math.cos(angle + Math.PI),
+        radius * Math.sin(angle + Math.PI)
+      );
       const agent = AgentFactory.getAgent(
         agentType,
         i,
-        new Vector2f(radius * Math.cos(angle), radius * Math.sin(angle)),
-        this.preferredVelocityFromGoalPosition(
-          new Vector2f(
-            radius * Math.cos(angle + Math.PI),
-            radius * Math.sin(angle + Math.PI)
-          )
-        )
+        startPosition,
+        goalPosition,
+        this.preferredVelocityFromGoalPosition(goalPosition)
       );
       agents.push(agent);
     }
@@ -158,24 +166,32 @@ export class ConfigurationFactory {
 
       if (i % 2 == 0) {
         // LHS
+        const startPosition = new Vector2f(
+          x + (gridSize - 1 - col) * offset,
+          y - row * offset
+        );
+        const goalPosition = new Vector2f(-x - col * offset, y - row * offset);
         const agent = AgentFactory.getAgent(
           agentType,
           i,
-          new Vector2f(x + (gridSize - 1 - col) * offset, y - row * offset),
-          this.preferredVelocityFromGoalPosition(
-            new Vector2f(-x - col * offset, y - row * offset)
-          )
+          startPosition,
+          goalPosition,
+          this.preferredVelocityFromGoalPosition(goalPosition)
         );
         agents.push(agent);
       } else {
         // RHS
+        const startPosition = new Vector2f(
+          -x - (gridSize - 1 - col) * offset,
+          y - row * offset
+        );
+        const goalPosition = new Vector2f(x + col * offset, y - row * offset);
         const agent = AgentFactory.getAgent(
           agentType,
           i,
-          new Vector2f(-x - (gridSize - 1 - col) * offset, y - row * offset),
-          this.preferredVelocityFromGoalPosition(
-            new Vector2f(x + col * offset, y - row * offset)
-          )
+          startPosition,
+          goalPosition,
+          this.preferredVelocityFromGoalPosition(goalPosition)
         );
         agents.push(agent);
       }
@@ -200,13 +216,15 @@ export class ConfigurationFactory {
     numberOfAgents = startPositions.length;
 
     for (let i = 0; i < numberOfAgents; i++) {
+      const goalPosition = startPositions[i].add(
+        new Vector2f(width / 2 + 200, 0)
+      );
       const agent = AgentFactory.getAgent(
         agentType,
         i,
         startPositions[i],
-        this.preferredVelocityFromGoalPosition(
-          startPositions[i].add(new Vector2f(width / 2 + 200, 0))
-        )
+        goalPosition,
+        this.preferredVelocityFromGoalPosition(goalPosition)
       );
       agents.push(agent);
     }
@@ -238,13 +256,15 @@ export class ConfigurationFactory {
     numberOfAgents = startPositions.length;
 
     for (let i = 0; i < numberOfAgents; i++) {
+      const goalPosition = startPositions[i].add(
+        new Vector2f(width / 2 + 200, 0)
+      );
       const agent = AgentFactory.getAgent(
         agentType,
         i,
         startPositions[i],
-        this.preferredVelocityFromGoalPosition(
-          startPositions[i].add(new Vector2f(width / 2 + 200, 0))
-        )
+        goalPosition,
+        this.preferredVelocityFromGoalPosition(goalPosition)
       );
       agents.push(agent);
     }
@@ -279,6 +299,9 @@ export class ConfigurationFactory {
     numberOfAgents = startPositions.length;
 
     for (let i = 0; i < numberOfAgents; i++) {
+      const goalPosition = startPositions[i].add(
+        new Vector2f(width / 2 + 200, 0)
+      );
       const prefVel = (pos: Vector2f) => {
         if (pos.x < 0) {
           if (pos.magnitudeSqrd() > ((gapWidth - 20) / 2) ** 2) {
@@ -289,15 +312,14 @@ export class ConfigurationFactory {
             return new Vector2f(1, 0);
           }
         } else {
-          return this.preferredVelocityFromGoalPosition(
-            startPositions[i].add(new Vector2f(width / 2 + 200, 0))
-          )(pos);
+          return this.preferredVelocityFromGoalPosition(goalPosition)(pos);
         }
       };
       const agent = AgentFactory.getAgent(
         agentType,
         i,
         startPositions[i],
+        goalPosition,
         prefVel
       );
       agents.push(agent);
@@ -335,13 +357,15 @@ export class ConfigurationFactory {
     const wallHeight = height / 2 - gapHeight;
 
     for (let i = 0; i < numberOfAgents; i++) {
+      const goalPosition = startPositions[i].add(
+        new Vector2f(width / 2 + 250, 0)
+      );
       const agent = AgentFactory.getAgent(
         agentType,
         i,
         startPositions[i],
-        this.preferredVelocityFromGoalPosition(
-          startPositions[i].add(new Vector2f(width / 2 + 250, 0))
-        )
+        goalPosition,
+        this.preferredVelocityFromGoalPosition(goalPosition)
       );
       agents.push(agent);
     }
@@ -382,6 +406,10 @@ export class ConfigurationFactory {
     const midGap = wallHeight + gapHeight / 2;
 
     for (let i = 0; i < numberOfAgents; i++) {
+      const goalPosition = new Vector2f(
+        startPositions[i].x + width / 2 + 250,
+        -startPositions[i].y
+      );
       const prefVel = (pos: Vector2f) => {
         if (pos.x <= -200) {
           if (
@@ -417,18 +445,14 @@ export class ConfigurationFactory {
             )(pos);
           }
         } else {
-          return this.preferredVelocityFromGoalPosition(
-            new Vector2f(
-              startPositions[i].x + width / 2 + 250,
-              -startPositions[i].y
-            )
-          )(pos);
+          return this.preferredVelocityFromGoalPosition(goalPosition)(pos);
         }
       };
       const agent = AgentFactory.getAgent(
         agentType,
         i,
         startPositions[i],
+        goalPosition,
         prefVel
       );
       agents.push(agent);
