@@ -29,13 +29,12 @@ export class StopAgent extends Agent {
     }
   }
 
-  update(deltaT: number, neighbours: Agent[], obstacles: IObstacle[]): void {
+  update(stepSize: number, neighbours: Agent[], obstacles: IObstacle[]): void {
     if (this._isDone) {
       return;
     }
 
     const preferredVelocity = this._getPreferredVelocity(this._position);
-    const stepSize = (deltaT * 60) / 3000;
 
     // Check if done
     if (preferredVelocity.magnitudeSqrd() < 0.1) {
@@ -65,8 +64,8 @@ export class StopAgent extends Agent {
     }
 
     // Step towards goal
-    this._direction = preferredVelocity.multiply(stepSize);
-    this._position = this._position.add(this._direction);
+    this._direction = preferredVelocity;
+    this._position = this._position.add(this._direction.multiply(stepSize));
   }
 
   collidesAgent(agent: Agent, position: Vector2f): boolean {

@@ -17,10 +17,10 @@ export class Simulation {
     this._obstacles = configuration.obstacles;
   }
 
-  update(deltaT: number, range: number) {
+  update(stepSize: number, range: number) {
     this._agents.forEach((agent) => {
       agent.update(
-        deltaT,
+        stepSize,
         this._agents.getNeighboursInRangeEuclidean(
           agent,
           Math.min(range, agent.getDistanceToGoal() + agent.Radius) // ignore agents further away than goal position

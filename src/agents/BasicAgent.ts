@@ -1,5 +1,6 @@
 import { Agent } from "../Agent";
 import { Colour } from "../Colour";
+import { IObstacle } from "../interfaces/IObstacle";
 
 export class BasicAgent extends Agent {
   getColour() {
@@ -10,13 +11,16 @@ export class BasicAgent extends Agent {
     }
   }
 
-  update(deltaT: number): void {
+  update(
+    stepSize: number,
+    _neighbours: Agent[],
+    _obstacles: IObstacle[]
+  ): void {
     if (this._isDone) {
       return;
     }
 
     const preferredVelocity = this._getPreferredVelocity(this._position);
-    const stepSize = (deltaT * 60) / 3000;
 
     // Check if done
     if (preferredVelocity.magnitudeSqrd() < 0.1) {
@@ -25,7 +29,7 @@ export class BasicAgent extends Agent {
     }
 
     // Step towards goal
-    this._direction = preferredVelocity.multiply(stepSize);
-    this._position = this._position.add(this._direction);
+    this._direction = preferredVelocity;
+    this._position = this._position.add(this._direction.multiply(stepSize));
   }
 }

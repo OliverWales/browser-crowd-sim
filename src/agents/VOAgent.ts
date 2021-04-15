@@ -24,13 +24,12 @@ export class VOAgent extends Agent {
     return this._colour;
   }
 
-  update(deltaT: number, neighbours: Agent[], obstacles: IObstacle[]): void {
+  update(stepSize: number, neighbours: Agent[], obstacles: IObstacle[]): void {
     if (this._isDone) {
       return;
     }
 
     const preferredVelocity = this._getPreferredVelocity(this._position);
-    const stepSize = (deltaT * 60) / 2000;
 
     // Check if done
     if (preferredVelocity.magnitudeSqrd() < 0.1) {
@@ -74,8 +73,8 @@ export class VOAgent extends Agent {
 
     // If preferred velocity is safe, go in that direction
     if (safe) {
-      this._direction = preferredVelocity.multiply(stepSize);
-      this._position = this._position.add(this._direction);
+      this._direction = preferredVelocity;
+      this._position = this._position.add(this._direction.multiply(stepSize));
       this._colour = Colour.Green;
       return;
     }
@@ -84,13 +83,13 @@ export class VOAgent extends Agent {
     if (collision != null) {
       const left = Geometry.getClosestPointOnLine(
         collision.vertex,
-        collision.tangent1,
+        collision.tangent2,
         preferredVelocity
       );
 
       const right = Geometry.getClosestPointOnLine(
         collision.vertex,
-        collision.tangent2,
+        collision.tangent1,
         preferredVelocity
       );
 
@@ -104,7 +103,7 @@ export class VOAgent extends Agent {
           if (velocityObstacle != null && velocityObstacle.contains(left)) {
             leftSafe = false;
           }
-          if (velocityObstacle != null && velocityObstacle.contains(left)) {
+          if (velocityObstacle != null && velocityObstacle.contains(right)) {
             rightSafe = false;
           }
         }
@@ -116,7 +115,7 @@ export class VOAgent extends Agent {
         if (velocityObstacle != null && velocityObstacle.contains(left)) {
           leftSafe = false;
         }
-        if (velocityObstacle != null && velocityObstacle.contains(left)) {
+        if (velocityObstacle != null && velocityObstacle.contains(right)) {
           rightSafe = false;
         }
       }
@@ -127,18 +126,18 @@ export class VOAgent extends Agent {
           left.subtract(preferredVelocity).magnitudeSqrd() <
           right.subtract(preferredVelocity).magnitudeSqrd()
         ) {
-          this._direction = left.multiply(stepSize);
+          this._direction = left;
         } else {
-          this._direction = right.multiply(stepSize);
+          this._direction = right;
         }
       } else if (leftSafe) {
-        this._direction = left.multiply(stepSize);
+        this._direction = left;
       } else if (rightSafe) {
-        this._direction = right.multiply(stepSize);
+        this._direction = right;
       }
 
       if (leftSafe || rightSafe) {
-        this._position = this._position.add(this._direction);
+        this._position = this._position.add(this._direction.multiply(stepSize));
         this.setColour(preferredVelocity);
         return;
       }
@@ -182,9 +181,9 @@ export class VOAgent extends Agent {
 
           if (velocityObstacle == null || velocityObstacle.contains(sample)) {
             const timeToCollision = Geometry.getFirstRayCircleIntersection(
-              b.Position,
+              new Vector2f(0, 0),
               this.Radius + b.Radius,
-              this._position,
+              this._position.subtract(b.Position),
               sample
             );
 
@@ -211,11 +210,6 @@ export class VOAgent extends Agent {
         }
       }
 
-      // Attempt to prevent intersection
-      if (minTimeToCollision < 10) {
-        minTimeToCollision = 0;
-      }
-
       // Calculate penalty
       const penalty =
         w / minTimeToCollision + preferredVelocity.subtract(sample).magnitude(); // TS correctly handles divide by zero or infinity
@@ -226,8 +220,8 @@ export class VOAgent extends Agent {
       }
     }
 
-    this._direction = bestVelocity.multiply(stepSize);
-    this._position = this._position.add(this._direction);
+    this._direction = bestVelocity;
+    this._position = this._position.add(this._direction.multiply(stepSize));
     this.setColour(preferredVelocity);
     return;
   }
@@ -272,6 +266,6 @@ export class VOAgent extends Agent {
   protected setColour(preferredVelocity: Vector2f) {
     const stress = preferredVelocity.subtract(this._direction).magnitude();
     const hue = stress > 1 ? 0 : (1 - stress) / 3;
-    this._colour = Colour.FromHsv(hue, 1, 1);
+    this._colour = Colour.fromHsv(hue, 1, 1);
   }
 }
