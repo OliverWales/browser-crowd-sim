@@ -7,6 +7,7 @@ import { CircleObstacle } from "../obstacles/CircleObstacle";
 export class TraceRenderer implements IRenderer {
   private canvas: HTMLCanvasElement;
   private context: CanvasRenderingContext2D;
+  private _done: boolean;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -14,6 +15,8 @@ export class TraceRenderer implements IRenderer {
   }
 
   init(simulation: Simulation) {
+    this._done = false;
+
     // Clear background
     this.context.setTransform(1, 0, 0, 1, 0, 0);
     this.context.fillStyle = "rgb(135, 194, 250)";
@@ -56,6 +59,13 @@ export class TraceRenderer implements IRenderer {
     agents.forEach((agent) => {
       this.drawAgent(agent);
     });
+
+    if (simulation.isDone() && !this._done) {
+      this._done = true;
+      agents.forEach((agent) => {
+        this.drawAgentFinal(agent);
+      });
+    }
   }
 
   private drawAgent(agent: Agent): void {
@@ -65,6 +75,17 @@ export class TraceRenderer implements IRenderer {
     this.context.beginPath();
     this.context.fillStyle = `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
     this.context.fillRect(position.x, -position.y, 1, 1);
+    this.context.stroke();
+  }
+
+  private drawAgentFinal(agent: Agent): void {
+    const position = agent.getPosition();
+    const colour = agent.getColour();
+
+    this.context.beginPath();
+    this.context.fillStyle = `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
+    this.context.arc(position.x, -position.y, agent.Radius, 0, 2 * Math.PI);
+    this.context.stroke();
   }
 
   private drawCircleObstacle(obstacle: CircleObstacle) {

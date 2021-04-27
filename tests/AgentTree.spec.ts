@@ -13,6 +13,7 @@ describe("AgentTree Range Search Tests", function () {
           new BasicAgent(
             5 * i + j,
             new Vector2f(i, j),
+            new Vector2f(0, 0),
             (x) => new Vector2f(0, 0)
           )
         );
@@ -57,6 +58,7 @@ describe("AgentTree Range Search Tests", function () {
           new BasicAgent(
             5 * i + j,
             new Vector2f(i, j),
+            new Vector2f(0, 0),
             (x) => new Vector2f(0, 0)
           )
         );

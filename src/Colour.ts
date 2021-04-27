@@ -21,8 +21,8 @@ export class Colour {
     b: 0,
   };
 
-  static FromHsv(h: number, s: number, v: number): Colour {
-    // assuming hsv values in range 0-1
+  static fromHsv(h: number, s: number, v: number): Colour {
+    // Assumes hsv values in range 0-1
     h *= 6;
 
     const fract = h - Math.floor(h);
