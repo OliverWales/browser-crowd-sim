@@ -21,6 +21,20 @@ export class ConfigurationFactory {
     switch (type) {
       case "RandomToRandom":
         return this.RandomToRandom(agentType, width, height, numberOfAgents);
+      case "RandomToRandom2x":
+        return this.RandomToRandom(
+          agentType,
+          2 * width,
+          2 * height,
+          numberOfAgents
+        );
+      case "RandomToRandom4x":
+        return this.RandomToRandom(
+          agentType,
+          4 * width,
+          4 * height,
+          numberOfAgents
+        );
       case "RandomToLine":
         return this.RandomToLine(agentType, width, height, numberOfAgents);
       case "CircleToCircle":

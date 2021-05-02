@@ -39,7 +39,7 @@ export class Renderer2D implements IRenderer {
 
     // Clear background
     this.context.setTransform(1, 0, 0, 1, 0, 0);
-    this.context.fillStyle = "rgb(135, 194, 250)";
+    this.context.fillStyle = "rgb(51, 51, 51)";
     this.context.fillRect(
       0,
       0,
@@ -55,10 +55,6 @@ export class Renderer2D implements IRenderer {
       this.xPan,
       this.yPan
     );
-
-    // Draw floor
-    this.context.fillStyle = "rgb(51, 51, 51)";
-    this.context.fillRect(-1000, -500, 2000, 1000);
 
     // Draw obstacles
     this.context.strokeStyle = "white";
