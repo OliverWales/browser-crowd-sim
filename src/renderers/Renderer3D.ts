@@ -187,7 +187,7 @@ export class Renderer3D implements IRenderer {
   }
 
   init(simulation: Simulation): void {
-    const floorVerts = FloorMesh.getVertices(2000, 1000);
+    const floorVerts = FloorMesh.getVertices(1280 * 4 + 100, 640 * 4 + 100);
 
     const walls: LineObstacle[] = simulation
       .getObstacles()
