@@ -3,7 +3,7 @@ import { ILogger } from "../interfaces/ILogger";
 import { IObstacle } from "../interfaces/IObstacle";
 
 // Empty logger implementation to allow measurement of the probe effect
-export class VacuousLogger implements ILogger {
+export class EmptyLogger implements ILogger {
   private _logging: boolean = false;
   private _totalTime: number = 0;
   private _frames: number = 0;
