@@ -6,10 +6,8 @@ import { CircleObstacle } from "../obstacles/CircleObstacle";
 import { LineObstacle } from "../obstacles/LineObstacle";
 import { Vector2f } from "../maths/Vector2f";
 import { Stats } from "../maths/Stats";
-import { Console } from "console";
 
-// Simple logger implementation for basic analysis
-export class SimpleLogger implements ILogger {
+export class Logger implements ILogger {
   private _logging: boolean = false;
   private _startTime: number;
   private _timeStep: number;
