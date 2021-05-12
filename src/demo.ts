@@ -5,7 +5,7 @@ import { Renderer3D } from "./renderers/Renderer3D";
 import { AgentTree } from "./collections/AgentTree";
 import { ConfigurationFactory } from "./ConfigurationFactory";
 import { TraceRenderer } from "./renderers/TraceRenderer";
-import { Logger } from "./loggers/Logger";
+import { EmptyLogger } from "./loggers/EmptyLogger";
 
 const configSelect = document.getElementById("config") as HTMLSelectElement;
 const agentTypeSelect = document.getElementById(
@@ -28,7 +28,7 @@ const renderer2d = new Renderer2D(canvas2d);
 const renderer3d = new Renderer3D(canvas3d);
 const rendererTrace = new TraceRenderer(canvasTrace);
 var renderer: IRenderer = renderer2d;
-const logger = new Logger();
+const logger = new EmptyLogger();
 var play = false;
 var range = 200;
 

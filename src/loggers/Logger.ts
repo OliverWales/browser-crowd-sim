@@ -9,6 +9,7 @@ import { Stats } from "../maths/Stats";
 
 export class Logger implements ILogger {
   private _logging: boolean = false;
+  private _totalTime: number;
   private _startTime: number;
   private _timeStep: number;
   private _agentCollisions: number[];
@@ -21,6 +22,7 @@ export class Logger implements ILogger {
     console.log("------- Started logging -------");
 
     this._logging = true;
+    this._totalTime = 0;
     this._startTime = performance.now();
     this._timeStep = 0;
     this._frameTimes = [];
@@ -92,7 +94,13 @@ export class Logger implements ILogger {
       }
     });
 
+    this._totalTime += deltaT;
     this._timeStep++;
+
+    if (this._totalTime > 60000) {
+      console.log("Timed Out");
+      this.stop(agents);
+    }
   }
 
   stop(agents: IAgentCollection): void {

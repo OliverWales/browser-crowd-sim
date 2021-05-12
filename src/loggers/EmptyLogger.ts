@@ -16,7 +16,7 @@ export class EmptyLogger implements ILogger {
   }
 
   log(
-    _agents: IAgentCollection,
+    agents: IAgentCollection,
     _obstacles: IObstacle[],
     _stepSize: number,
     deltaT: number
@@ -27,6 +27,11 @@ export class EmptyLogger implements ILogger {
 
     this._totalTime += deltaT;
     this._frames++;
+
+    if (this._totalTime > 60000) {
+      console.log("Timed Out");
+      this.stop(agents);
+    }
   }
 
   stop(_agents: IAgentCollection): void {
